@@ -1,0 +1,70 @@
+/*
+  Layout style: retrofuturism.
+  Panoramic bridge shell with symmetric pods and a wide central stage. Visual
+  identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.styles.retrofuturism {
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) {
+    --ly-container-max: 110rem;
+    --ly-page-padding-inline: clamp(1rem, 4vw, 4rem);
+    --ly-section-padding-block: clamp(3rem, 8vw, 7rem);
+    --ly-sidebar-width: clamp(12rem, 14vw, 16rem);
+    --ly-grid-min: 15rem;
+    --ly-gap: clamp(1rem, 3vw, 2.5rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(1rem, 2.4vw, 2rem);
+  }
+
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-main {
+    padding-block: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-container {
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-grid--auto {
+    grid-auto-rows: minmax(8rem, auto);
+  }
+
+  @media (min-width: 56rem) {
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-shell {
+      grid-template-areas:
+        "header header header"
+        "sidebar main main";
+      grid-template-columns: minmax(12rem, 0.24fr) minmax(0, 1fr) minmax(12rem, 0.24fr);
+    }
+
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: clamp(1rem, 2vw, 1.5rem);
+      height: calc(100svh - clamp(2rem, 4vw, 3rem));
+      margin: clamp(1rem, 2vw, 1.5rem) 0 clamp(1rem, 2vw, 1.5rem) clamp(1rem, 2vw, 1.5rem);
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-sidebar-layout {
+      grid-template-columns: minmax(12rem, 0.32fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-split {
+      grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
+    }
+
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-panes--two {
+      grid-template-columns: minmax(14rem, 0.44fr) minmax(0, 1.2fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-panes--three {
+      grid-template-columns: minmax(12rem, 0.44fr) minmax(0, 1.4fr) minmax(12rem, 0.44fr);
+    }
+  }
+}

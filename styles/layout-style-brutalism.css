@@ -1,0 +1,69 @@
+/*
+  Layout style: brutalism.
+  Full-bleed slab shell with abrupt section breaks and compressed rails. Visual
+  identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.styles.brutalism {
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) {
+    --ly-container-max: 100vw;
+    --ly-page-padding-inline: clamp(0.75rem, 3vw, 3rem);
+    --ly-section-padding-block: clamp(2rem, 6vw, 5rem);
+    --ly-sidebar-width: clamp(12rem, 15vw, 16rem);
+    --ly-grid-min: 12rem;
+    --ly-gap: clamp(0.75rem, 2vw, 1.5rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-main {
+    padding-block: 0;
+  }
+
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-container {
+    width: min(100%, var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-grid--auto {
+    grid-auto-rows: minmax(7rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-shell {
+      grid-template-areas:
+        "header header"
+        "main sidebar";
+      grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.22fr);
+    }
+
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-sidebar-layout {
+      grid-template-columns: minmax(0, 1.55fr) minmax(12rem, 0.45fr);
+    }
+
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-split {
+      grid-template-columns: minmax(0, 1.7fr) minmax(12rem, 0.3fr);
+    }
+
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-panes--two {
+      grid-template-columns: minmax(12rem, 0.35fr) minmax(0, 1.65fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-panes--three {
+      grid-template-columns: minmax(11rem, 0.28fr) minmax(0, 1.42fr) minmax(14rem, 0.4fr);
+    }
+  }
+}

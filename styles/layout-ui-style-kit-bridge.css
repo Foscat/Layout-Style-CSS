@@ -1,0 +1,55 @@
+/*
+  Compatibility bridge for ui-style-kit-css.
+  This bridge intentionally does not map color, type, border, or shadow tokens.
+  ui-style-kit-css owns those visuals; layout-style-library owns structure.
+*/
+
+@layer ly.bridge {
+  :where(.ly-root[data-ui][data-theme][data-mode], [data-ui][data-theme][data-mode] .ly-root) {
+    --ly-ui-style-kit-bridge: 1;
+  }
+
+  :where(.ly-root[data-ui="minimal-saas"], [data-ui="minimal-saas"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: minimal-saas;
+  }
+
+  :where(.ly-root[data-ui="bento"], [data-ui="bento"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: bento;
+  }
+
+  :where(.ly-root[data-ui="maximalist"], [data-ui="maximalist"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: maximalist;
+  }
+
+  :where(.ly-root[data-ui="bauhaus"], [data-ui="bauhaus"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: bauhaus;
+  }
+
+  :where(.ly-root[data-ui="tactile"], [data-ui="tactile"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: tactile;
+  }
+
+  :where(.ly-root[data-ui="neumorphism"], [data-ui="neumorphism"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: neumorphism;
+  }
+
+  :where(.ly-root[data-ui="retrofuturism"], [data-ui="retrofuturism"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: retrofuturism;
+  }
+
+  :where(.ly-root[data-ui="brutalism"], [data-ui="brutalism"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: brutalism;
+  }
+
+  :where(.ly-root[data-ui="cyberpunk"], [data-ui="cyberpunk"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: cyberpunk;
+  }
+
+  :where(.ly-root[data-ui="y2k"], [data-ui="y2k"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: y2k;
+  }
+
+  :where(.ly-root[data-ui="retro-glass"], [data-ui="retro-glass"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: retro-glass;
+  }
+}

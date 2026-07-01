@@ -1,0 +1,96 @@
+{
+  "name": "layout-style-css",
+  "version": "1.0.0",
+  "description": "Shell-first CSS layout primitives that complement ui-style-kit-css@2.0.1.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/Foscat/layout-style-css#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Foscat/layout-style-css.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Foscat/layout-style-css/issues"
+  },
+  "keywords": [
+    "css",
+    "layout",
+    "design-system",
+    "ui-style-kit-css",
+    "responsive-layout",
+    "shell-layouts"
+  ],
+  "main": "dist/layout-style-css.css",
+  "style": "dist/layout-style-css.min.css",
+  "unpkg": "dist/layout-style-css.min.css",
+  "jsdelivr": "dist/layout-style-css.min.css",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "stylelint \"styles/**/*.css\"",
+    "test": "node test/layout-css-contract.test.mjs && node test/demo-smoke.test.mjs",
+    "check": "npm run build && npm run lint && npm test && npm run pack:dry-run",
+    "pack:dry-run": "npm pack --dry-run --ignore-scripts",
+    "publish:dry-run": "npm publish --dry-run --access public",
+    "release:verify": "npm run check && npm run publish:dry-run",
+    "prepack": "npm run check",
+    "prepublishOnly": "npm run check"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "interactive-surface-css": "1.2.5",
+    "ui-style-kit-css": "2.0.1"
+  },
+  "peerDependenciesMeta": {
+    "interactive-surface-css": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "interactive-surface-css": "1.2.5",
+    "stylelint": "17.14.0",
+    "ui-style-kit-css": "2.0.1"
+  },
+  "exports": {
+    ".": "./dist/layout-style-css.css",
+    "./css": "./dist/layout-style-css.css",
+    "./css.css": "./dist/layout-style-css.css",
+    "./min": "./dist/layout-style-css.min.css",
+    "./min.css": "./dist/layout-style-css.min.css",
+    "./dist/layout-style-css.css": "./dist/layout-style-css.css",
+    "./dist/layout-style-css.min.css": "./dist/layout-style-css.min.css",
+    "./base.css": "./dist/layout-base.css",
+    "./bridge.css": "./dist/layout-ui-style-kit-bridge.css",
+    "./all.css": "./dist/layout-all.css",
+    "./all-with-ui-kit.css": "./dist/layout-all-with-ui-kit.css",
+    "./all-with-ui-kit-and-interactive-surface.css": "./dist/layout-all-with-ui-kit-and-interactive-surface.css",
+    "./minimal-saas.css": "./dist/layout-style-minimal-saas.css",
+    "./bento.css": "./dist/layout-style-bento.css",
+    "./maximalist.css": "./dist/layout-style-maximalist.css",
+    "./bauhaus.css": "./dist/layout-style-bauhaus.css",
+    "./tactile.css": "./dist/layout-style-tactile.css",
+    "./neumorphism.css": "./dist/layout-style-neumorphism.css",
+    "./retrofuturism.css": "./dist/layout-style-retrofuturism.css",
+    "./brutalism.css": "./dist/layout-style-brutalism.css",
+    "./cyberpunk.css": "./dist/layout-style-cyberpunk.css",
+    "./y2k.css": "./dist/layout-style-y2k.css",
+    "./retro-glass.css": "./dist/layout-style-retro-glass.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "styles",
+    "demo/index.html",
+    "demo/assets/apple-touch-icon.svg",
+    "demo/assets/favicon.svg",
+    "demo/assets/social-card.svg",
+    "demo/browserconfig.xml",
+    "demo/robots.txt",
+    "demo/site.webmanifest",
+    "demo/sitemap.xml",
+    "README.md",
+    "LICENSE"
+  ]
+}

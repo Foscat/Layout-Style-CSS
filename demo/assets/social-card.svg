@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">layout-style-css social card</title>
+  <desc id="desc">A shell-first CSS layout card showing independent UI and layout tracks.</desc>
+  <rect width="1200" height="630" fill="#111827"/>
+  <rect x="72" y="72" width="210" height="486" rx="36" fill="#7dd3fc"/>
+  <rect x="330" y="72" width="798" height="180" rx="36" fill="#fbbf24"/>
+  <rect x="330" y="306" width="360" height="252" rx="36" fill="#f472b6"/>
+  <rect x="750" y="306" width="378" height="252" rx="36" fill="#a7f3d0"/>
+  <text x="116" y="154" fill="#111827" font-family="Arial, sans-serif" font-size="38" font-weight="700">Layout</text>
+  <text x="116" y="204" fill="#111827" font-family="Arial, sans-serif" font-size="38" font-weight="700">Style</text>
+  <text x="116" y="254" fill="#111827" font-family="Arial, sans-serif" font-size="38" font-weight="700">Library</text>
+  <text x="378" y="162" fill="#111827" font-family="Arial, sans-serif" font-size="56" font-weight="700">Shells without visual ownership</text>
+  <text x="378" y="414" fill="#111827" font-family="Arial, sans-serif" font-size="34">UI Style Kit controls</text>
+  <text x="378" y="462" fill="#111827" font-family="Arial, sans-serif" font-size="34">color, type, borders</text>
+  <text x="798" y="414" fill="#111827" font-family="Arial, sans-serif" font-size="34">Layout Library controls</text>
+  <text x="798" y="462" fill="#111827" font-family="Arial, sans-serif" font-size="34">size, shape, position</text>
+</svg>

@@ -1,0 +1,92 @@
+/*
+  Layout style: maximalist.
+  Editorial shell with oversized hero splits and staggered supporting regions.
+  Visual identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.styles.maximalist {
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) {
+    --ly-container-max: 102rem;
+    --ly-page-padding-inline: clamp(1rem, 6vw, 5.5rem);
+    --ly-section-padding-block: clamp(4rem, 13vw, 10rem);
+    --ly-sidebar-width: clamp(13rem, 18vw, 20rem);
+    --ly-grid-min: 14rem;
+    --ly-gap: clamp(1.25rem, 4vw, 3rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(1.5rem, 4vw, 3.5rem);
+  }
+
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-main {
+    padding-block: clamp(1rem, 3vw, 3rem);
+  }
+
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-container {
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-section {
+    padding-block: clamp(3.5rem, 11vw, 8rem);
+  }
+
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
+    align-items: stretch;
+  }
+
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid--auto {
+    grid-auto-rows: minmax(10rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
+      /* Keep the editorial stage stacked until the wider shell can carry the oversized rhythm. */
+      grid-template-columns: 1fr;
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid--auto > :nth-child(5n + 1) {
+      grid-column: span 2;
+      min-height: 24rem;
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid--auto > :nth-child(5n + 3) {
+      transform: translateY(var(--ly-space-7));
+    }
+  }
+
+  @media (min-width: 56rem) {
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-shell {
+      grid-template-areas:
+        "header header"
+        "main sidebar";
+      grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.28fr);
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: calc(var(--ly-gap) * 1.5);
+      height: max-content;
+      margin-block: clamp(2rem, 8vw, 7rem);
+      transform: translateX(calc(var(--ly-gap) * -0.35));
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-sidebar-layout {
+      grid-template-columns: minmax(0, 1.55fr) minmax(15rem, 0.45fr);
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
+      grid-template-columns: minmax(0, 1.62fr) minmax(16rem, 0.54fr);
+      gap: clamp(1.5rem, 6vw, 5rem);
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-panes--two {
+      grid-template-columns: minmax(16rem, 0.44fr) minmax(0, 1.56fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-panes--three {
+      grid-template-columns: minmax(14rem, 0.34fr) minmax(0, 1.28fr) minmax(18rem, 0.58fr);
+    }
+  }
+}
