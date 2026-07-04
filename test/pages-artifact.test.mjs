@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const outputDir = join(root, "output", "github-pages");
+const sourceDemoPath = join(root, "demo", "index.html");
 
 rmSync(outputDir, { recursive: true, force: true });
 
@@ -37,9 +38,16 @@ for (const file of requiredArtifactFiles) {
 }
 
 const index = readFileSync(join(outputDir, "index.html"), "utf8");
+const sourceDemo = readFileSync(sourceDemoPath, "utf8");
+const canonicalHrefMatch = sourceDemo.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
+
+assert(canonicalHrefMatch, "Source demo should declare a canonical URL");
 
 assert(index.includes('href="./dist/layout-all.css"'), "Pages root demo should load dist from ./dist");
 assert(!index.includes("../dist/layout-all.css"), "Pages root demo should not reference parent dist paths");
-assert(index.includes("https://foscat.github.io/layout-style-css/"), "Pages demo should keep canonical GitHub Pages URL");
+assert(
+  index.includes(`href="${canonicalHrefMatch[1]}"`) || index.includes(`href='${canonicalHrefMatch[1]}'`),
+  "Pages demo should preserve the source demo canonical URL"
+);
 
 console.log("GitHub Pages artifact checks look good.");
