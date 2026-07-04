@@ -1,12 +1,17 @@
 # layout-style-css
 
-Production-ready CSS layout primitives for shell-first interfaces. `layout-style-css` gives you responsive app shells, grids, panes, sidebars, sections, and layout personalities that can be switched independently from your visual design system.
+Responsive CSS layout primitives for shell-first interfaces.
 
-It is designed to complement `ui-style-kit-css@2.0.1`:
+`layout-style-css` gives applications a small, predictable composition layer: wrappers, app shells, grids, panes, sidebars, split sections, spacing utilities, and switchable layout personalities. It is designed to pair with `ui-style-kit-css@2.0.1`, while keeping layout decisions independent from visual theme decisions.
 
-- `ui-style-kit-css` owns visuals: color, mode, native element styling, typography, borders, shadows, focus states, and UI tokens.
-- `layout-style-css` owns composition: wrapper size, grid tracks, shell regions, pane ratios, sidebar placement, section rhythm, and responsive spatial behavior.
-- `interactive-surface-css` is optional and can be bundled when you need interactive surface behavior.
+## Why It Exists
+
+Modern UI systems often mix two concerns:
+
+- visual design: color, typography, borders, shadows, native controls, focus states, and modes
+- spatial design: wrappers, page width, shell regions, pane ratios, sidebar placement, grid behavior, and responsive collapse
+
+This package owns the spatial layer only. That separation lets you change layout personality without rewriting markup or duplicating your theme system.
 
 ## Install
 
@@ -29,7 +34,7 @@ import "ui-style-kit-css/dist/ui-style-kit.css";
 import "layout-style-css";
 ```
 
-Use `ly-root` and set the UI, layout, theme, and mode attributes on the same app root:
+Use one root element for UI style, layout style, theme, and mode:
 
 ```html
 <body
@@ -43,12 +48,12 @@ Use `ly-root` and set the UI, layout, theme, and mode attributes on the same app
     <aside class="ly-app-sidebar ly-pad-6">Navigation</aside>
     <header class="ly-app-header ly-pad-4">Toolbar</header>
     <main class="ly-app-main">
-      <section class="ly-container ly-section ly-stack">
+      <section class="ly-wrapper ly-wrapper--wide ly-section ly-stack">
         <h1>Dashboard</h1>
         <div class="ly-grid ly-grid--auto">
-          <article class="ly-surface ly-pad-6">Metric</article>
-          <article class="ly-surface ly-pad-6">Metric</article>
-          <article class="ly-surface ly-pad-6">Metric</article>
+          <article class="ly-surface ly-pad-6">Revenue</article>
+          <article class="ly-surface ly-pad-6">Pipeline</article>
+          <article class="ly-surface ly-pad-6">Retention</article>
         </div>
       </section>
     </main>
@@ -92,136 +97,123 @@ The three-library aggregate imports in this order:
 @import url("./layout-all.css");
 ```
 
-## Mix And Match Contract
+## Responsive Wrapper API
 
-UI styles and layout styles are separate controls. Matching names are good defaults, but mixed combinations are supported intentionally.
+Use `.ly-wrapper` for new markup. `.ly-container` remains supported for compatibility.
 
-```html
-<body
-  class="ly-root"
-  data-ui="cyberpunk"
-  data-layout="maximalist"
-  data-theme="arctic-indigo"
-  data-mode="dark"
->
-  ...
-</body>
-```
+| Class | Purpose |
+| --- | --- |
+| `.ly-wrapper` / `.ly-container` | Responsive centered content wrapper. |
+| `.ly-wrapper--sm` / `.ly-container--sm` | Small wrapper, up to `40rem`. |
+| `.ly-wrapper--md` / `.ly-container--md` | Medium wrapper, up to `56rem`. |
+| `.ly-wrapper--lg` / `.ly-container--lg` | Large wrapper, up to `72rem`. |
+| `.ly-wrapper--xl` / `.ly-container--xl` | Extra-large wrapper, up to `88rem`. |
+| `.ly-wrapper--wide` / `.ly-container--wide` | Wide wrapper, up to `112rem`. |
+| `.ly-wrapper--fluid` / `.ly-container--fluid` | Full-width wrapper with responsive inline padding. |
+| `.ly-wrapper--readable` | Readable content wrapper based on `68ch`. |
 
-Supported layout selectors:
+Wrappers are mobile-first and tested against:
 
-```html
-data-layout="maximalist"
-layout-style="maximalist"
-class="ly-layout-maximalist"
-class="ly-style-maximalist"
-```
+- mobile portrait and landscape
+- tablet portrait and landscape
+- desktop resize behavior
+- wide desktop
 
-Runtime switching:
+## Layout Recipes
 
-```js
-const root = document.body;
-
-root.dataset.ui = "cyberpunk";
-root.dataset.layout = "maximalist";
-root.setAttribute("layout-style", "maximalist");
-root.dataset.theme = "arctic-indigo";
-root.dataset.mode = "dark";
-```
-
-## Layout Examples
+Recipes are recommended class combinations, not separate theme files. They keep the public API small while making common layouts easy to copy.
 
 ### App Shell
 
-Use `ly-app-shell` for a header, sidebar, and main workspace. Layout styles decide whether the sidebar behaves like a SaaS rail, command rail, floating dock, support panel, or editorial sidecar.
+Use for dashboards, admin tools, and multi-region product screens.
 
 ```html
 <div class="ly-app-shell">
-  <aside class="ly-app-sidebar ly-pad-6">
-    <nav class="ly-stack">
-      <a href="/overview">Overview</a>
-      <a href="/reports">Reports</a>
-      <a href="/settings">Settings</a>
-    </nav>
-  </aside>
-
-  <header class="ly-app-header ly-pad-4">
-    <div class="ly-cluster ly-justify-between">
-      <strong>Workspace</strong>
-      <button type="button">New report</button>
-    </div>
-  </header>
-
+  <aside class="ly-app-sidebar ly-pad-6">Navigation</aside>
+  <header class="ly-app-header ly-pad-4">Toolbar</header>
   <main class="ly-app-main">
-    <section class="ly-container ly-container--wide ly-section ly-stack">
-      <h1>Executive dashboard</h1>
-      <div class="ly-grid ly-grid--auto">
-        <article class="ly-surface ly-pad-6">Revenue</article>
-        <article class="ly-surface ly-pad-6">Pipeline</article>
-        <article class="ly-surface ly-pad-6">Retention</article>
-      </div>
-    </section>
+    <section class="ly-wrapper ly-wrapper--wide ly-section">Workspace</section>
   </main>
 </div>
 ```
 
-### Split Hero
+### Content Page
 
-Use `ly-split` when a section needs a primary message and supporting panel. The selected layout style controls the ratio and stacking behavior.
+Use for docs, articles, policy pages, and focused editorial content.
 
 ```html
-<section class="ly-container ly-section">
-  <div class="ly-split">
-    <div class="ly-stack">
-      <p>Shell-first CSS</p>
-      <h1>Change layout personality without rewriting markup.</h1>
-      <p>Keep your UI theme independent from spatial composition.</p>
-    </div>
+<main class="ly-main">
+  <article class="ly-wrapper ly-wrapper--readable ly-section ly-stack">
+    <h1>Documentation</h1>
+    <p>Readable content stays centered and responsive.</p>
+  </article>
+</main>
+```
 
-    <aside class="ly-surface ly-pad-6">
-      <p>Use the same markup for SaaS, bento, editorial, command, and glass shells.</p>
-    </aside>
+### Dashboard Grid
+
+Use for metric cards and repeated operational surfaces.
+
+```html
+<section class="ly-wrapper ly-wrapper--wide ly-section">
+  <div class="ly-grid ly-grid--auto">
+    <article class="ly-surface ly-pad-6">Metric</article>
+    <article class="ly-surface ly-pad-6">Metric</article>
+    <article class="ly-surface ly-pad-6">Metric</article>
   </div>
 </section>
 ```
 
-### Adaptive Panes
+### Split Hero
 
-Use panes for list/detail, editor/preview, or support/workspace layouts.
-
-```html
-<div class="ly-panes ly-panes--two">
-  <aside class="ly-surface ly-pad-6">
-    <h2>Queue</h2>
-    <p>Supporting content, filters, or navigation.</p>
-  </aside>
-
-  <section class="ly-surface ly-pad-6">
-    <h2>Detail</h2>
-    <p>Main workspace content.</p>
-  </section>
-</div>
-```
-
-### Context Sidebar
-
-Use `ly-sidebar-layout` inside pages when the shell already has a global sidebar but the page also needs local context.
+Use when a message needs a supporting panel, preview, form, or media frame.
 
 ```html
-<div class="ly-sidebar-layout">
-  <aside class="ly-surface ly-pad-5">Filters</aside>
-  <section class="ly-surface ly-pad-6">Results</section>
-</div>
+<section class="ly-wrapper ly-wrapper--xl ly-section">
+  <div class="ly-split">
+    <div class="ly-stack">
+      <h1>Primary message</h1>
+      <p>Supporting copy.</p>
+    </div>
+    <aside class="ly-frame ly-surface ly-pad-6">Preview</aside>
+  </div>
+</section>
 ```
 
-## Base API
+### Docs Sidebar
+
+Use for local filters, table of contents, and secondary navigation.
+
+```html
+<section class="ly-wrapper ly-wrapper--wide ly-section">
+  <div class="ly-sidebar-layout">
+    <aside class="ly-sidebar ly-surface ly-pad-5">Contents</aside>
+    <article class="ly-content ly-surface ly-pad-6">Documentation body</article>
+  </div>
+</section>
+```
+
+### List Detail
+
+Use for inboxes, editors, queues, and preview workflows.
+
+```html
+<section class="ly-wrapper ly-wrapper--wide ly-section">
+  <div class="ly-panes ly-panes--two">
+    <aside class="ly-surface ly-pad-5 ly-scroll-area">List</aside>
+    <article class="ly-surface ly-pad-6">Detail</article>
+  </div>
+</section>
+```
+
+## Base Primitives
 
 | Class | Purpose |
 | --- | --- |
 | `.ly-root` | Scope root for layout variables and resets. |
 | `.ly-page` | Full-height page wrapper. |
 | `.ly-header`, `.ly-footer`, `.ly-main` | Basic document regions. |
-| `.ly-container` | Responsive centered content region. |
+| `.ly-wrapper`, `.ly-container` | Responsive content wrappers. |
 | `.ly-section` | Vertical section spacing. |
 | `.ly-stack` | Vertical rhythm. |
 | `.ly-cluster` | Wrapping horizontal group. |
@@ -254,15 +246,15 @@ Each layout style file targets layout selectors only. It does not key off `data-
 | `y2k` | `layout-style-y2k.css` | Centered hub shell with floating window rhythm and dock-like support regions. |
 | `retro-glass` | `layout-style-retro-glass.css` | Top-framed glass shell with a floating right utility rail and layered panes. |
 
-## Recommended Pairings
+## Mix And Match Contract
 
-Matching names are the safest starting point:
+Matching UI and layout names are good defaults:
 
 ```html
 data-ui="bento" data-layout="bento"
 ```
 
-Useful mixed combinations:
+Mixed combinations are supported:
 
 ```html
 data-ui="cyberpunk" data-layout="maximalist" data-theme="arctic-indigo" data-mode="dark"
@@ -270,6 +262,46 @@ data-ui="bauhaus" data-layout="retro-glass" data-theme="graphite-cyan" data-mode
 data-ui="minimal-saas" data-layout="bento" data-theme="ocean-steel" data-mode="light"
 data-ui="brutalism" data-layout="cyberpunk" data-theme="midnight-gold" data-mode="contrast"
 ```
+
+Supported layout selectors:
+
+```html
+data-layout="maximalist"
+layout-style="maximalist"
+class="ly-layout-maximalist"
+class="ly-style-maximalist"
+```
+
+Runtime switching:
+
+```js
+const root = document.body;
+
+root.dataset.ui = "cyberpunk";
+root.dataset.layout = "maximalist";
+root.setAttribute("layout-style", "maximalist");
+root.dataset.theme = "arctic-indigo";
+root.dataset.mode = "dark";
+```
+
+## Demo And GitHub Pages
+
+The demo lives in `demo/index.html` for local development and package distribution.
+
+Build the GitHub Pages artifact:
+
+```bash
+npm run pages:build
+```
+
+The artifact is written to `output/github-pages/` and contains:
+
+- `index.html` at the Pages root
+- copied demo assets and metadata
+- generated `dist/` CSS
+- `.nojekyll`
+
+The repository includes a GitHub Actions workflow that verifies the package, builds the artifact, uploads it, and deploys it to GitHub Pages from `main` or `workflow_dispatch`.
 
 ## Package Files
 
@@ -290,9 +322,12 @@ dist/
 demo/
   index.html
   assets/
+scripts/
+  build.mjs
+  build-pages.mjs
 ```
 
-`styles/` is the authored source. `dist/` is generated by `npm run build`.
+`styles/` is the authored source. `dist/` and `output/github-pages/` are generated.
 
 ## Development
 
@@ -309,7 +344,7 @@ Run the complete release gate:
 npm run check
 ```
 
-The check command builds `dist/`, runs Stylelint, runs contract tests, runs Playwright smoke checks against `demo/index.html`, and performs an npm pack dry-run.
+The check command builds `dist/`, runs Stylelint, runs contract tests, runs responsive Playwright smoke checks against `demo/index.html`, validates the GitHub Pages artifact, and performs an npm pack dry-run.
 
 ## Publishing
 
@@ -339,9 +374,9 @@ Tag the release as `v1.0.0` in `Foscat/layout-style-css`.
 
 ## Compatibility
 
-- `ui-style-kit-css`: pinned peer at `2.0.1`.
-- `interactive-surface-css`: optional peer at `1.2.5`.
-- Default npm and CDN entries are layout-only.
+- `ui-style-kit-css`: pinned peer at `2.0.1`
+- `interactive-surface-css`: optional peer at `1.2.5`
+- default npm and CDN entries: layout-only
 
 ## Extension Rules
 
@@ -350,7 +385,8 @@ Tag the release as `v1.0.0` in `Foscat/layout-style-css`.
 3. Put shared composition behavior in `styles/layout-base.css`.
 4. Put layout-style-specific shell behavior in the matching `styles/layout-style-*.css` file.
 5. Prefer changing layout variables before adding new public classes.
-6. Test at mobile, tablet, desktop, and wide desktop breakpoints before promoting a new layout pattern.
+6. Treat recipes as documentation and demo patterns unless a repeated production need justifies a new class.
+7. Test mobile portrait, mobile landscape, tablet portrait, tablet landscape, desktop resize, and wide desktop before promoting a new layout pattern.
 
 ## References
 

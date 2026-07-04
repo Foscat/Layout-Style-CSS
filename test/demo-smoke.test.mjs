@@ -90,6 +90,8 @@ async function verifyDemoState(page, path, expectedState, viewport) {
     header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
     main: document.querySelector(".ly-app-main")?.getBoundingClientRect().toJSON(),
     stage: document.querySelector("#stage")?.getBoundingClientRect().toJSON(),
+    wrappers: document.querySelectorAll(".ly-wrapper").length,
+    recipes: document.querySelectorAll("#recipes article").length,
     surfaces: document.querySelectorAll(".ly-surface").length,
     uiButtonClasses: document.querySelector("[data-ui-kit~='button']")?.className,
     uiSurfaceClasses: document.querySelector("[data-ui-kit~='card'], [data-ui-kit~='panel']")?.className
@@ -108,6 +110,8 @@ async function verifyDemoState(page, path, expectedState, viewport) {
   assert(state.header?.width > 0 && state.header.height > 0, "Demo header should be visible");
   assert(state.main?.width > 0 && state.main.height > 0, "Demo main region should be visible");
   assert(state.stage?.width > 0 && state.stage.height > 0, "Demo stage should be visible");
+  assert(state.wrappers >= 6, `Demo should exercise responsive wrapper recipes; found ${state.wrappers}`);
+  assert(state.recipes >= 6, `Demo should render recipe-style organization examples; found ${state.recipes}`);
   assert(state.surfaces >= 8, "Demo should render the layout surface examples");
   assert(
     state.uiButtonClasses?.includes(`${expectedState.uiPrefix}-button`),
@@ -135,32 +139,52 @@ const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
   const baseUrl = `http://127.0.0.1:${port}/demo/index.html`;
-
-  await verifyDemoState(
-    page,
-    baseUrl,
+  const viewports = [
+    { name: "mobile portrait", width: 375, height: 667 },
+    { name: "mobile landscape", width: 667, height: 375 },
+    { name: "tablet portrait", width: 768, height: 1024 },
+    { name: "tablet landscape", width: 1024, height: 768 },
+    { name: "desktop", width: 1280, height: 900 },
+    { name: "desktop resized", width: 1440, height: 900 }
+  ];
+  const presets = [
     {
-      ui: "minimal-saas",
-      layout: "minimal-saas",
-      theme: "arctic-indigo",
-      mode: "light",
-      uiPrefix: "saas"
+      path: baseUrl,
+      state: {
+        ui: "minimal-saas",
+        layout: "minimal-saas",
+        theme: "arctic-indigo",
+        mode: "light",
+        uiPrefix: "saas"
+      }
     },
-    { width: 1280, height: 900 }
-  );
-
-  await verifyDemoState(
-    page,
-    `${baseUrl}?preset=mixed`,
     {
-      ui: "cyberpunk",
-      layout: "maximalist",
-      theme: "arctic-indigo",
-      mode: "dark",
-      uiPrefix: "cyber"
+      path: `${baseUrl}?preset=mixed`,
+      state: {
+        ui: "cyberpunk",
+        layout: "maximalist",
+        theme: "arctic-indigo",
+        mode: "dark",
+        uiPrefix: "cyber"
+      }
     },
-    { width: 390, height: 844 }
-  );
+    {
+      path: `${baseUrl}?preset=retroGlass`,
+      state: {
+        ui: "retro-glass",
+        layout: "retro-glass",
+        theme: "graphite-cyan",
+        mode: "dark",
+        uiPrefix: "rg"
+      }
+    }
+  ];
+
+  for (const viewport of viewports) {
+    for (const preset of presets) {
+      await verifyDemoState(page, preset.path, preset.state, viewport);
+    }
+  }
 } finally {
   await browser.close();
   server.close();

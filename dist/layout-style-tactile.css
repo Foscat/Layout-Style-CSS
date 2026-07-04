@@ -20,7 +20,8 @@
     padding-block: clamp(1rem, 2.5vw, 2rem);
   }
 
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-container {
+  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-container,
+  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 

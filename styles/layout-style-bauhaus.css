@@ -20,7 +20,8 @@
     padding-block: clamp(0.75rem, 2vw, 1.5rem);
   }
 
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-container {
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-container,
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 

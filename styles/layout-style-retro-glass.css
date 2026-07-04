@@ -20,7 +20,8 @@
     padding: clamp(1rem, 3vw, 2rem);
   }
 
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-container {
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-container,
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-wrapper {
     width: min(100%, var(--ly-container-max));
   }
 

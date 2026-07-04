@@ -80,6 +80,7 @@
   .ly-header,
   .ly-footer,
   .ly-main,
+  .ly-wrapper,
   .ly-section,
   .ly-surface {
     min-width: 0;
@@ -95,35 +96,47 @@
     z-index: var(--ly-z-header);
   }
 
-  .ly-container {
+  .ly-container,
+  .ly-wrapper {
+    /* Keep wrappers resilient during viewport resizing without owning visual paint. */
     width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
     margin-inline: auto;
   }
 
-  .ly-container--sm {
+  .ly-container--sm,
+  .ly-wrapper--sm {
     --ly-container-max: var(--ly-container-sm);
   }
 
-  .ly-container--md {
+  .ly-container--md,
+  .ly-wrapper--md {
     --ly-container-max: var(--ly-container-md);
   }
 
-  .ly-container--lg {
+  .ly-container--lg,
+  .ly-wrapper--lg {
     --ly-container-max: var(--ly-container-lg);
   }
 
-  .ly-container--xl {
+  .ly-container--xl,
+  .ly-wrapper--xl {
     --ly-container-max: var(--ly-container-xl);
   }
 
-  .ly-container--wide {
+  .ly-container--wide,
+  .ly-wrapper--wide {
     --ly-container-max: var(--ly-container-wide);
   }
 
-  .ly-container--fluid {
+  .ly-container--fluid,
+  .ly-wrapper--fluid {
     width: 100%;
     max-width: none;
     padding-inline: var(--ly-page-padding-inline);
+  }
+
+  .ly-wrapper--readable {
+    --ly-container-max: var(--ly-content-readable);
   }
 
   .ly-readable {
@@ -537,7 +550,8 @@
     padding-block: clamp(1rem, 2vw, 2rem);
   }
 
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-container {
+  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-container,
+  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -605,7 +619,8 @@
     padding-block: clamp(1rem, 3vw, 2.5rem);
   }
 
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-container {
+  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-container,
+  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -682,7 +697,8 @@
     padding-block: clamp(1rem, 3vw, 3rem);
   }
 
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-container {
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-container,
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -776,7 +792,8 @@
     padding-block: clamp(0.75rem, 2vw, 1.5rem);
   }
 
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-container {
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-container,
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -847,7 +864,8 @@
     padding-block: clamp(1rem, 2.5vw, 2rem);
   }
 
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-container {
+  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-container,
+  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -918,7 +936,8 @@
     padding-block: clamp(2rem, 5vw, 4rem);
   }
 
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-container {
+  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-container,
+  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -991,7 +1010,8 @@
     padding-block: clamp(1.5rem, 4vw, 3rem);
   }
 
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-container {
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-container,
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -1063,7 +1083,8 @@
     padding-block: 0;
   }
 
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-container {
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-container,
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-wrapper {
     width: min(100%, var(--ly-container-max));
   }
 
@@ -1134,7 +1155,8 @@
     padding-block: clamp(0.75rem, 2vw, 1.5rem);
   }
 
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-container {
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-container,
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -1205,7 +1227,8 @@
     padding-block: clamp(2rem, 6vw, 4rem);
   }
 
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-container {
+  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-container,
+  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 
@@ -1278,7 +1301,8 @@
     padding: clamp(1rem, 3vw, 2rem);
   }
 
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-container {
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-container,
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-wrapper {
     width: min(100%, var(--ly-container-max));
   }
 

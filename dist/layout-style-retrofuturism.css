@@ -20,7 +20,8 @@
     padding-block: clamp(1.5rem, 4vw, 3rem);
   }
 
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-container {
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-container,
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-wrapper {
     width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
   }
 

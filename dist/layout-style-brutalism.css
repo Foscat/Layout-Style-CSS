@@ -20,7 +20,8 @@
     padding-block: 0;
   }
 
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-container {
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-container,
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-wrapper {
     width: min(100%, var(--ly-container-max));
   }
 
