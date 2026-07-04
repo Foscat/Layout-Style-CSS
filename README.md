@@ -15,14 +15,28 @@ This package owns the spatial layer only. That separation lets you change layout
 
 ## Install
 
+Use as a standalone layout system with all styles or just one layout personality.
+
 ```bash
-npm install layout-style-css ui-style-kit-css@2.0.1
+# Install the full layout system
+npm install layout-style-css@1.0.0
+
+# install a single layout personality
+npm install layout-style-css@1.0.0/layout-base.css
+npm install layout-style-css@1.0.0/layout-style-minimal-saas.css
+// 
 ```
 
-Install Interactive Surface CSS only when you want the optional three-library bundle:
+Pair with UI Style Kit CSS for a complete layout and visual system. Themes and layouts can mix and match UI styles.  Set the vibe with color schemes that offer a range of moods, from minimal to maximal, from Bauhaus to Brutalism.
 
 ```bash
-npm install interactive-surface-css@1.2.5
+npm install layout-style-css@1.0.0 ui-style-kit-css@2.0.1
+```
+
+Additionally installing Interactive Surface CSS sets you up with a complete reactive layout and surface system.
+
+```bash
+npm install layout-style-css@1.0.0 ui-style-kit-css@2.0.1 interactive-surface-css@1.2.5
 ```
 
 ## Quick Start
@@ -30,8 +44,9 @@ npm install interactive-surface-css@1.2.5
 Import UI Style Kit first, then the layout CSS:
 
 ```js
-import "ui-style-kit-css/dist/ui-style-kit.css";
-import "layout-style-css";
+import "interactive-surface-css"
+import "ui-style-kit-css/with-bridge.css";
+import "layout-style-css/layout-ui-style-kit-bridge.css";
 ```
 
 Use one root element for UI style, layout style, theme, and mode:
@@ -39,10 +54,10 @@ Use one root element for UI style, layout style, theme, and mode:
 ```html
 <body
   class="ly-root"
-  data-ui="minimal-saas"
-  data-layout="minimal-saas"
-  data-theme="arctic-indigo"
-  data-mode="light"
+  data-ui="retro-glass"
+  data-layout="cyberpunk"
+  data-theme="ocean-steel"
+  data-mode="auto"
 >
   <div class="ly-app-shell">
     <aside class="ly-app-sidebar ly-pad-6">Navigation</aside>
@@ -70,11 +85,13 @@ Layout-only CDN entry:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@1/dist/layout-style-css.min.css">
 ```
 
-Recommended CDN pairing with UI Style Kit:
+Recommended CDN pairing with UI Style Kit and Interactive Surface:
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.min.css">
+<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/with-bridge.css"
+">
 <link rel="stylesheet" href="https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.2.5/dist/interactive-surface.min.css">
 ```
 
 ## Import Options
@@ -227,6 +244,59 @@ Use for inboxes, editors, queues, and preview workflows.
 | `.ly-panes`, `.ly-panes--two`, `.ly-panes--three` | Adaptive pane layouts. |
 | `.ly-surface` | Layout wrapper surface; paint remains owned by the UI system. |
 | `.ly-frame` | Aspect-ratio media or content frame. |
+
+## Utility API
+
+Utilities are composition-only. They set layout variables, spacing, flow, visibility, overflow, or frame ratios without introducing colors, fonts, shadows, borders, or theme-specific visuals.
+
+### Grid Columns And Spans
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-cols-1` through `.ly-cols-12`, `.ly-cols-16` | Set the base grid column count. |
+| `.ly-md-cols-1`, `2`, `3`, `4`, `6`, `8`, `12`, `16` | Change grid column count from the tablet breakpoint up. |
+| `.ly-lg-cols-1`, `2`, `3`, `4`, `6`, `8`, `12`, `16` | Change grid column count from the desktop breakpoint up. |
+| `.ly-span-1` through `.ly-span-16` | Span a grid item across a fixed number of tracks. |
+| `.ly-span-full` | Span a grid item across the full grid. |
+
+### Flex Columns
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-row` | Flex row with wrapped columns and negative gutter compensation. |
+| `.ly-col` | Flexible column that shares available space. |
+| `.ly-col-1` through `.ly-col-12` | Percentage-based column widths on the 12-column scale. |
+
+### Spacing
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-gap-0` through `.ly-gap-9` | Set shared layout, grid, stack, and cluster gaps. |
+| `.ly-pad-0` through `.ly-pad-9` | Set all-side padding from the layout spacing scale. |
+| `.ly-px-4`, `.ly-px-6`, `.ly-px-8` | Set inline padding. |
+| `.ly-py-4`, `.ly-py-6`, `.ly-py-8` | Set block padding. |
+| `.ly-mx-auto` | Center with automatic inline margins. |
+
+### Sizing, Overflow, And Alignment
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-w-full`, `.ly-h-full` | Force full inline or block size. |
+| `.ly-min-h-screen` | Set minimum viewport-height section sizing with `100svh`. |
+| `.ly-bleed` | Break a section out to viewport width. |
+| `.ly-overflow-auto`, `.ly-overflow-hidden` | Control overflow behavior. |
+| `.ly-items-start`, `.ly-items-center`, `.ly-items-end`, `.ly-items-stretch` | Align children on the cross axis. |
+| `.ly-justify-start`, `.ly-justify-center`, `.ly-justify-end`, `.ly-justify-between` | Distribute children on the main axis. |
+
+### Frames And Visibility
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-frame-1x1`, `.ly-frame-2x1`, `.ly-frame-3x2`, `.ly-frame-4x3`, `.ly-frame-16x9`, `.ly-frame-21x9` | Set common media/content aspect ratios. |
+| `.ly-hidden` | Hide an element. |
+| `.ly-show-md-up` | Reveal an element from the tablet breakpoint up. |
+| `.ly-show-lg-up` | Reveal an element from the desktop breakpoint up. |
+| `.ly-visually-hidden` | Hide content visually while keeping it available to assistive technology. |
 
 ## Layout Styles
 

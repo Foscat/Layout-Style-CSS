@@ -159,6 +159,36 @@ try {
       }
     },
     {
+      path: `${baseUrl}?preset=bento`,
+      state: {
+        ui: "bento",
+        layout: "bento",
+        theme: "ocean-steel",
+        mode: "light",
+        uiPrefix: "bento"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=bauhaus`,
+      state: {
+        ui: "bauhaus",
+        layout: "bauhaus",
+        theme: "graphite-cyan",
+        mode: "light",
+        uiPrefix: "bau"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=tactile`,
+      state: {
+        ui: "tactile",
+        layout: "tactile",
+        theme: "forest-moss",
+        mode: "light",
+        uiPrefix: "tactile"
+      }
+    },
+    {
       path: `${baseUrl}?preset=mixed`,
       state: {
         ui: "cyberpunk",
@@ -169,6 +199,26 @@ try {
       }
     },
     {
+      path: `${baseUrl}?preset=y2k`,
+      state: {
+        ui: "y2k",
+        layout: "y2k",
+        theme: "rose-quartz",
+        mode: "light",
+        uiPrefix: "y2k"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=neumorphism`,
+      state: {
+        ui: "neumorphism",
+        layout: "neumorphism",
+        theme: "desert-sage",
+        mode: "light",
+        uiPrefix: "neo"
+      }
+    },
+    {
       path: `${baseUrl}?preset=retroGlass`,
       state: {
         ui: "retro-glass",
@@ -176,6 +226,46 @@ try {
         theme: "graphite-cyan",
         mode: "dark",
         uiPrefix: "rg"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=retrofuturism`,
+      state: {
+        ui: "retrofuturism",
+        layout: "retrofuturism",
+        theme: "midnight-gold",
+        mode: "dark",
+        uiPrefix: "retro"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=brutalism`,
+      state: {
+        ui: "brutalism",
+        layout: "brutalism",
+        theme: "midnight-gold",
+        mode: "contrast",
+        uiPrefix: "brutal"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=cyberpunk`,
+      state: {
+        ui: "cyberpunk",
+        layout: "cyberpunk",
+        theme: "cyber-lime",
+        mode: "dark",
+        uiPrefix: "cyber"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=maximalist`,
+      state: {
+        ui: "maximalist",
+        layout: "maximalist",
+        theme: "sunset-ember",
+        mode: "light",
+        uiPrefix: "max"
       }
     }
   ];
