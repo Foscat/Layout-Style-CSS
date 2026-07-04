@@ -58,6 +58,7 @@ const requiredDemoAssets = [
 const requiredBaseClasses = [
   ".ly-root",
   ".ly-page",
+  ".ly-wrapper",
   ".ly-container",
   ".ly-section",
   ".ly-stack",
@@ -70,6 +71,17 @@ const requiredBaseClasses = [
   ".ly-split",
   ".ly-panes",
   ".ly-surface"
+];
+
+const requiredWrapperClasses = [
+  ".ly-wrapper",
+  ".ly-wrapper--sm",
+  ".ly-wrapper--md",
+  ".ly-wrapper--lg",
+  ".ly-wrapper--xl",
+  ".ly-wrapper--wide",
+  ".ly-wrapper--fluid",
+  ".ly-wrapper--readable"
 ];
 
 const requiredStyleClasses = [
@@ -250,6 +262,17 @@ assert(
 assert(base.includes(".ly-split > *"), "Base split children must allow shrinkage");
 assert(base.includes(".ly-panes > *"), "Base pane children must allow shrinkage");
 assert(base.includes(".ly-sidebar-layout > *"), "Base sidebar layout children must allow shrinkage");
+for (const className of requiredWrapperClasses) {
+  assert(base.includes(className), `Base responsive wrapper contract missing ${className}`);
+}
+assert(
+  base.includes(".ly-container,\n  .ly-wrapper"),
+  "Base wrapper sizing should be shared by .ly-container and .ly-wrapper"
+);
+assert(
+  base.includes(".ly-container--wide,\n  .ly-wrapper--wide"),
+  "Wide wrapper sizing should be shared by container and wrapper modifiers"
+);
 
 for (const className of requiredStyleClasses) {
   const styleName = className.replace(".ly-style-", "");
@@ -407,8 +430,9 @@ assert.equal(packageJson.scripts.build, "node scripts/build.mjs");
 assert.equal(packageJson.scripts.lint, "stylelint \"styles/**/*.css\"");
 assert.equal(
   packageJson.scripts.test,
-  "node test/layout-css-contract.test.mjs && node test/demo-smoke.test.mjs"
+  "node test/layout-css-contract.test.mjs && node test/demo-smoke.test.mjs && node test/pages-artifact.test.mjs"
 );
+assert.equal(packageJson.scripts["pages:build"], "node scripts/build-pages.mjs");
 assert.equal(packageJson.scripts.check, "npm run build && npm run lint && npm test && npm run pack:dry-run");
 assert.equal(packageJson.scripts["pack:dry-run"], "npm pack --dry-run --ignore-scripts");
 assert.equal(packageJson.scripts["publish:dry-run"], "npm publish --dry-run --access public");
@@ -497,6 +521,8 @@ for (const snippet of requiredSeoSnippets) {
 assert(demo.includes("layout-style-css"), "Demo copy should use the production package name");
 assert(demo.includes("../dist/layout-all.css"), "Demo should load the local layout distribution");
 assert(demo.includes("ui-style-kit-css@2.0.1"), "Demo should pin UI Style Kit CSS v2.0.1");
+assert(demo.includes("Layout Recipes"), "Demo should expose recipe-style organization examples");
+assert(demo.includes("ly-wrapper"), "Demo should exercise the responsive wrapper alias");
 assert(
   !/<button\b[^>]*\bclass=/.test(demo),
   "Demo buttons must avoid local class attributes so ui-style-kit-css can own their visual style"

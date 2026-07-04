@@ -77,6 +77,7 @@
   .ly-header,
   .ly-footer,
   .ly-main,
+  .ly-wrapper,
   .ly-section,
   .ly-surface {
     min-width: 0;
@@ -92,35 +93,47 @@
     z-index: var(--ly-z-header);
   }
 
-  .ly-container {
+  .ly-container,
+  .ly-wrapper {
+    /* Keep wrappers resilient during viewport resizing without owning visual paint. */
     width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
     margin-inline: auto;
   }
 
-  .ly-container--sm {
+  .ly-container--sm,
+  .ly-wrapper--sm {
     --ly-container-max: var(--ly-container-sm);
   }
 
-  .ly-container--md {
+  .ly-container--md,
+  .ly-wrapper--md {
     --ly-container-max: var(--ly-container-md);
   }
 
-  .ly-container--lg {
+  .ly-container--lg,
+  .ly-wrapper--lg {
     --ly-container-max: var(--ly-container-lg);
   }
 
-  .ly-container--xl {
+  .ly-container--xl,
+  .ly-wrapper--xl {
     --ly-container-max: var(--ly-container-xl);
   }
 
-  .ly-container--wide {
+  .ly-container--wide,
+  .ly-wrapper--wide {
     --ly-container-max: var(--ly-container-wide);
   }
 
-  .ly-container--fluid {
+  .ly-container--fluid,
+  .ly-wrapper--fluid {
     width: 100%;
     max-width: none;
     padding-inline: var(--ly-page-padding-inline);
+  }
+
+  .ly-wrapper--readable {
+    --ly-container-max: var(--ly-content-readable);
   }
 
   .ly-readable {

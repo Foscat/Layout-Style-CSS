@@ -62,67 +62,80 @@ function listen(server) {
 async function verifyDemoState(page, path, expectedState, viewport) {
   const consoleErrors = [];
   const pageErrors = [];
-
-  page.on("console", (message) => {
+  const routeUrl =
+    "https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css";
+  const onConsole = (message) => {
     if (message.type() === "error") {
       consoleErrors.push(message.text());
     }
-  });
-  page.on("pageerror", (error) => {
+  };
+  const onPageError = (error) => {
     pageErrors.push(error.message);
-  });
+  };
+  const routeHandler = (route) => route.fulfill({ path: uiKitCssPath, contentType: "text/css" });
 
-  await page.setViewportSize(viewport);
-  await page.route("https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css", (route) =>
-    route.fulfill({ path: uiKitCssPath, contentType: "text/css" })
-  );
-  await page.goto(path, { waitUntil: "networkidle" });
+  page.on("console", onConsole);
+  page.on("pageerror", onPageError);
+  await page.route(routeUrl, routeHandler);
 
-  const state = await page.evaluate(() => ({
-    title: document.title,
-    ui: document.body.dataset.ui,
-    layout: document.body.dataset.layout,
-    theme: document.body.dataset.theme,
-    mode: document.body.dataset.mode,
-    layoutStyle: document.body.getAttribute("layout-style"),
-    bodyHeight: document.body.getBoundingClientRect().height,
-    horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth,
-    header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
-    main: document.querySelector(".ly-app-main")?.getBoundingClientRect().toJSON(),
-    stage: document.querySelector("#stage")?.getBoundingClientRect().toJSON(),
-    surfaces: document.querySelectorAll(".ly-surface").length,
-    uiButtonClasses: document.querySelector("[data-ui-kit~='button']")?.className,
-    uiSurfaceClasses: document.querySelector("[data-ui-kit~='card'], [data-ui-kit~='panel']")?.className
-  }));
+  try {
+    await page.setViewportSize(viewport);
+    await page.goto(path, { waitUntil: "networkidle" });
 
-  assert(
-    state.title.includes("layout-style-css"),
-    `Demo title should use production naming; received "${state.title}"`
-  );
-  assert.equal(state.ui, expectedState.ui);
-  assert.equal(state.layout, expectedState.layout);
-  assert.equal(state.theme, expectedState.theme);
-  assert.equal(state.mode, expectedState.mode);
-  assert.equal(state.layoutStyle, expectedState.layout);
-  assert(state.bodyHeight > 0, "Demo body should render with measurable height");
-  assert(state.header?.width > 0 && state.header.height > 0, "Demo header should be visible");
-  assert(state.main?.width > 0 && state.main.height > 0, "Demo main region should be visible");
-  assert(state.stage?.width > 0 && state.stage.height > 0, "Demo stage should be visible");
-  assert(state.surfaces >= 8, "Demo should render the layout surface examples");
-  assert(
-    state.uiButtonClasses?.includes(`${expectedState.uiPrefix}-button`),
-    `Demo buttons should receive the active UI Style Kit prefix; received "${state.uiButtonClasses}"`
-  );
-  assert(
-    state.uiSurfaceClasses?.match(new RegExp(`\\b${expectedState.uiPrefix}-(card|panel)\\b`)),
-    `Demo surfaces should receive the active UI Style Kit prefix; received "${state.uiSurfaceClasses}"`
-  );
-  assert(
-    state.horizontalOverflow <= 4,
-    `Demo should not create meaningful horizontal overflow; received ${state.horizontalOverflow}px`
-  );
-  assert.deepEqual(consoleErrors, [], "Demo should not log console errors");
-  assert.deepEqual(pageErrors, [], "Demo should not throw page errors");
+    const state = await page.evaluate(() => ({
+      title: document.title,
+      ui: document.body.dataset.ui,
+      layout: document.body.dataset.layout,
+      theme: document.body.dataset.theme,
+      mode: document.body.dataset.mode,
+      layoutStyle: document.body.getAttribute("layout-style"),
+      bodyHeight: document.body.getBoundingClientRect().height,
+      horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth,
+      header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
+      main: document.querySelector(".ly-app-main")?.getBoundingClientRect().toJSON(),
+      stage: document.querySelector("#stage")?.getBoundingClientRect().toJSON(),
+      wrappers: document.querySelectorAll(".ly-wrapper").length,
+      recipes: document.querySelectorAll("#recipes article").length,
+      surfaces: document.querySelectorAll(".ly-surface").length,
+      uiButtonClasses: document.querySelector("[data-ui-kit~='button']")?.className,
+      uiSurfaceClasses: document.querySelector("[data-ui-kit~='card'], [data-ui-kit~='panel']")?.className
+    }));
+
+    assert(
+      state.title.includes("layout-style-css"),
+      `Demo title should use production naming; received "${state.title}"`
+    );
+    assert.equal(state.ui, expectedState.ui);
+    assert.equal(state.layout, expectedState.layout);
+    assert.equal(state.theme, expectedState.theme);
+    assert.equal(state.mode, expectedState.mode);
+    assert.equal(state.layoutStyle, expectedState.layout);
+    assert(state.bodyHeight > 0, "Demo body should render with measurable height");
+    assert(state.header?.width > 0 && state.header.height > 0, "Demo header should be visible");
+    assert(state.main?.width > 0 && state.main.height > 0, "Demo main region should be visible");
+    assert(state.stage?.width > 0 && state.stage.height > 0, "Demo stage should be visible");
+    assert(state.wrappers >= 6, `Demo should exercise responsive wrapper recipes; found ${state.wrappers}`);
+    assert(state.recipes >= 6, `Demo should render recipe-style organization examples; found ${state.recipes}`);
+    assert(state.surfaces >= 8, "Demo should render the layout surface examples");
+    assert(
+      state.uiButtonClasses?.includes(`${expectedState.uiPrefix}-button`),
+      `Demo buttons should receive the active UI Style Kit prefix; received "${state.uiButtonClasses}"`
+    );
+    assert(
+      state.uiSurfaceClasses?.match(new RegExp(`\\b${expectedState.uiPrefix}-(card|panel)\\b`)),
+      `Demo surfaces should receive the active UI Style Kit prefix; received "${state.uiSurfaceClasses}"`
+    );
+    assert(
+      state.horizontalOverflow <= 4,
+      `Demo should not create meaningful horizontal overflow; received ${state.horizontalOverflow}px`
+    );
+    assert.deepEqual(consoleErrors, [], "Demo should not log console errors");
+    assert.deepEqual(pageErrors, [], "Demo should not throw page errors");
+  } finally {
+    page.off("console", onConsole);
+    page.off("pageerror", onPageError);
+    await page.unroute(routeUrl, routeHandler);
+  }
 }
 
 assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
@@ -135,32 +148,149 @@ const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
   const baseUrl = `http://127.0.0.1:${port}/demo/index.html`;
-
-  await verifyDemoState(
-    page,
-    baseUrl,
+  const exhaustiveMatrix = process.env.DEMO_SMOKE_FULL_MATRIX === "1";
+  const viewports = exhaustiveMatrix
+    ? [
+        { name: "mobile portrait", width: 375, height: 667 },
+        { name: "mobile landscape", width: 667, height: 375 },
+        { name: "tablet portrait", width: 768, height: 1024 },
+        { name: "tablet landscape", width: 1024, height: 768 },
+        { name: "desktop", width: 1280, height: 900 },
+        { name: "desktop resized", width: 1440, height: 900 }
+      ]
+    : [
+        { name: "mobile portrait", width: 375, height: 667 },
+        { name: "tablet landscape", width: 1024, height: 768 },
+        { name: "desktop", width: 1280, height: 900 }
+      ];
+  const presets = [
     {
-      ui: "minimal-saas",
-      layout: "minimal-saas",
-      theme: "arctic-indigo",
-      mode: "light",
-      uiPrefix: "saas"
+      path: baseUrl,
+      state: {
+        ui: "minimal-saas",
+        layout: "minimal-saas",
+        theme: "arctic-indigo",
+        mode: "light",
+        uiPrefix: "saas"
+      }
     },
-    { width: 1280, height: 900 }
-  );
-
-  await verifyDemoState(
-    page,
-    `${baseUrl}?preset=mixed`,
     {
-      ui: "cyberpunk",
-      layout: "maximalist",
-      theme: "arctic-indigo",
-      mode: "dark",
-      uiPrefix: "cyber"
+      path: `${baseUrl}?preset=bento`,
+      state: {
+        ui: "bento",
+        layout: "bento",
+        theme: "ocean-steel",
+        mode: "light",
+        uiPrefix: "bento"
+      }
     },
-    { width: 390, height: 844 }
-  );
+    {
+      path: `${baseUrl}?preset=bauhaus`,
+      state: {
+        ui: "bauhaus",
+        layout: "bauhaus",
+        theme: "graphite-cyan",
+        mode: "light",
+        uiPrefix: "bau"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=tactile`,
+      state: {
+        ui: "tactile",
+        layout: "tactile",
+        theme: "forest-moss",
+        mode: "light",
+        uiPrefix: "tactile"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=mixed`,
+      state: {
+        ui: "cyberpunk",
+        layout: "maximalist",
+        theme: "arctic-indigo",
+        mode: "dark",
+        uiPrefix: "cyber"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=y2k`,
+      state: {
+        ui: "y2k",
+        layout: "y2k",
+        theme: "rose-quartz",
+        mode: "light",
+        uiPrefix: "y2k"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=neumorphism`,
+      state: {
+        ui: "neumorphism",
+        layout: "neumorphism",
+        theme: "desert-sage",
+        mode: "light",
+        uiPrefix: "neo"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=retroGlass`,
+      state: {
+        ui: "retro-glass",
+        layout: "retro-glass",
+        theme: "graphite-cyan",
+        mode: "dark",
+        uiPrefix: "rg"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=retrofuturism`,
+      state: {
+        ui: "retrofuturism",
+        layout: "retrofuturism",
+        theme: "midnight-gold",
+        mode: "dark",
+        uiPrefix: "retro"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=brutalism`,
+      state: {
+        ui: "brutalism",
+        layout: "brutalism",
+        theme: "midnight-gold",
+        mode: "contrast",
+        uiPrefix: "brutal"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=cyberpunk`,
+      state: {
+        ui: "cyberpunk",
+        layout: "cyberpunk",
+        theme: "cyber-lime",
+        mode: "dark",
+        uiPrefix: "cyber"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=maximalist`,
+      state: {
+        ui: "maximalist",
+        layout: "maximalist",
+        theme: "sunset-ember",
+        mode: "light",
+        uiPrefix: "max"
+      }
+    }
+  ];
+
+  for (const viewport of viewports) {
+    for (const preset of presets) {
+      await verifyDemoState(page, preset.path, preset.state, viewport);
+    }
+  }
 } finally {
   await browser.close();
   server.close();

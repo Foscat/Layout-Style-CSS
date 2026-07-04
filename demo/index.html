@@ -203,6 +203,27 @@
         grid-template-columns: 1fr;
       }
 
+      .demo-recipe-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+        gap: var(--ly-space-4);
+      }
+
+      .demo-recipe-card {
+        display: grid;
+        align-content: start;
+        gap: var(--ly-space-3);
+      }
+
+      .demo-recipe-preview {
+        display: grid;
+        gap: var(--ly-space-2);
+      }
+
+      .demo-recipe-preview code {
+        overflow-wrap: anywhere;
+      }
+
       @media (min-width: 90rem) {
         .demo-detail-layout {
           grid-template-columns: minmax(10rem, 0.4fr) minmax(0, 1fr);
@@ -308,6 +329,7 @@
               <li><a href="#stage" aria-current="page" data-ui-kit="nav-link">Stage</a></li>
               <li><a href="#metrics" data-ui-kit="nav-link">Metrics</a></li>
               <li><a href="#panes" data-ui-kit="nav-link">Panes</a></li>
+              <li><a href="#recipes" data-ui-kit="nav-link">Recipes</a></li>
             </ul>
           </nav>
           <p>
@@ -318,7 +340,7 @@
 
       <main class="ly-app-main">
         <section class="ly-section" id="stage">
-          <div class="ly-container ly-container--wide ly-stack ly-gap-8">
+          <div class="ly-wrapper ly-wrapper--wide ly-stack ly-gap-8">
             <div class="ly-split">
               <div class="ly-stack ly-gap-5 ly-readable">
                 <span class="demo-pill" data-ui-kit="badge badge-primary">Matched by default, mixed by design</span>
@@ -403,6 +425,84 @@
                 </div>
               </article>
             </div>
+
+            <section class="ly-stack ly-gap-5" id="recipes" aria-labelledby="recipes-title">
+              <div class="ly-wrapper ly-wrapper--readable ly-stack ly-gap-3">
+                <span class="demo-pill" data-ui-kit="badge badge-secondary">Layout Recipes</span>
+                <h2 class="demo-panel-title" id="recipes-title">Recipe-style organization for common wrappers.</h2>
+                <p>
+                  Start with a recipe, then mix UI style, layout style, theme, and mode without changing the wrapper contract.
+                </p>
+              </div>
+
+              <div class="demo-recipe-grid">
+                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">App shell</h3>
+                  <p>Use one root shell for a persistent header, sidebar, and main workspace.</p>
+                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
+                    <code>.ly-app-shell</code>
+                    <code>.ly-app-header</code>
+                    <code>.ly-app-sidebar</code>
+                    <code>.ly-app-main</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Content page</h3>
+                  <p>Use a readable wrapper for documentation, articles, and focused landing sections.</p>
+                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
+                    <code>.ly-wrapper</code>
+                    <code>.ly-wrapper--readable</code>
+                    <code>.ly-section</code>
+                    <code>.ly-stack</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Dashboard grid</h3>
+                  <p>Use auto-fit tracks for cards that collapse from desktop to tablet and mobile.</p>
+                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
+                    <code>.ly-wrapper--wide</code>
+                    <code>.ly-grid</code>
+                    <code>.ly-grid--auto</code>
+                    <code>.ly-surface</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Split hero</h3>
+                  <p>Use a split when one message needs a supporting panel or interactive preview.</p>
+                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
+                    <code>.ly-wrapper--xl</code>
+                    <code>.ly-split</code>
+                    <code>.ly-stack</code>
+                    <code>.ly-frame</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Docs sidebar</h3>
+                  <p>Use a local sidebar inside the main content when the global shell is not enough.</p>
+                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
+                    <code>.ly-sidebar-layout</code>
+                    <code>.ly-sidebar-layout--right</code>
+                    <code>.ly-sidebar</code>
+                    <code>.ly-content</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">List detail</h3>
+                  <p>Use adaptive panes for inboxes, editors, queues, and preview-driven workflows.</p>
+                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
+                    <code>.ly-panes</code>
+                    <code>.ly-panes--two</code>
+                    <code>.ly-scroll-area</code>
+                    <code>.ly-surface</code>
+                  </div>
+                </article>
+              </div>
+            </section>
           </div>
         </section>
       </main>
