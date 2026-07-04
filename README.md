@@ -228,6 +228,59 @@ Use for inboxes, editors, queues, and preview workflows.
 | `.ly-surface` | Layout wrapper surface; paint remains owned by the UI system. |
 | `.ly-frame` | Aspect-ratio media or content frame. |
 
+## Utility API
+
+Utilities are composition-only. They set layout variables, spacing, flow, visibility, overflow, or frame ratios without introducing colors, fonts, shadows, borders, or theme-specific visuals.
+
+### Grid Columns And Spans
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-cols-1` through `.ly-cols-12`, `.ly-cols-16` | Set the base grid column count. |
+| `.ly-md-cols-1`, `2`, `3`, `4`, `6`, `8`, `12`, `16` | Change grid column count from the tablet breakpoint up. |
+| `.ly-lg-cols-1`, `2`, `3`, `4`, `6`, `8`, `12`, `16` | Change grid column count from the desktop breakpoint up. |
+| `.ly-span-1` through `.ly-span-16` | Span a grid item across a fixed number of tracks. |
+| `.ly-span-full` | Span a grid item across the full grid. |
+
+### Flex Columns
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-row` | Flex row with wrapped columns and negative gutter compensation. |
+| `.ly-col` | Flexible column that shares available space. |
+| `.ly-col-1` through `.ly-col-12` | Percentage-based column widths on the 12-column scale. |
+
+### Spacing
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-gap-0` through `.ly-gap-9` | Set shared layout, grid, stack, and cluster gaps. |
+| `.ly-pad-0` through `.ly-pad-9` | Set all-side padding from the layout spacing scale. |
+| `.ly-px-4`, `.ly-px-6`, `.ly-px-8` | Set inline padding. |
+| `.ly-py-4`, `.ly-py-6`, `.ly-py-8` | Set block padding. |
+| `.ly-mx-auto` | Center with automatic inline margins. |
+
+### Sizing, Overflow, And Alignment
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-w-full`, `.ly-h-full` | Force full inline or block size. |
+| `.ly-min-h-screen` | Set minimum viewport-height section sizing with `100svh`. |
+| `.ly-bleed` | Break a section out to viewport width. |
+| `.ly-overflow-auto`, `.ly-overflow-hidden` | Control overflow behavior. |
+| `.ly-items-start`, `.ly-items-center`, `.ly-items-end`, `.ly-items-stretch` | Align children on the cross axis. |
+| `.ly-justify-start`, `.ly-justify-center`, `.ly-justify-end`, `.ly-justify-between` | Distribute children on the main axis. |
+
+### Frames And Visibility
+
+| Class group | Purpose |
+| --- | --- |
+| `.ly-frame-1x1`, `.ly-frame-2x1`, `.ly-frame-3x2`, `.ly-frame-4x3`, `.ly-frame-16x9`, `.ly-frame-21x9` | Set common media/content aspect ratios. |
+| `.ly-hidden` | Hide an element. |
+| `.ly-show-md-up` | Reveal an element from the tablet breakpoint up. |
+| `.ly-show-lg-up` | Reveal an element from the desktop breakpoint up. |
+| `.ly-visually-hidden` | Hide content visually while keeping it available to assistive technology. |
+
 ## Layout Styles
 
 Each layout style file targets layout selectors only. It does not key off `data-ui`, so `data-ui="cyberpunk"` can pair with `data-layout="maximalist"` without forcing a cyberpunk shell.
