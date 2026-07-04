@@ -38,7 +38,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(18rem, var(--ly-sidebar-width)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 18rem), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-app-sidebar {
@@ -50,21 +50,21 @@
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-sidebar-layout {
-      grid-template-columns: minmax(18rem, 0.42fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 18rem), 0.42fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-split {
-      grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
+      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 18rem), 0.82fr);
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.62fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 20rem), 0.62fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-panes--three {
-      grid-template-columns: minmax(17rem, 0.4fr) minmax(0, 1fr) minmax(18rem, 0.46fr);
+      grid-template-columns: minmax(min(100%, 17rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.46fr);
     }
   }
 }

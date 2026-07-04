@@ -296,11 +296,15 @@
 
 @layer ly.responsive {
   @media (min-width: 48rem) {
+    /*
+      Fixed support tracks are capped against their container so nested layouts
+      can compress instead of forcing horizontal page overflow.
+    */
     .ly-app-shell {
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(var(--ly-sidebar-min), var(--ly-sidebar-width)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     .ly-app-sidebar {
@@ -313,12 +317,12 @@
     }
 
     .ly-sidebar-layout {
-      grid-template-columns: minmax(var(--ly-sidebar-min), var(--ly-sidebar-max)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max)) minmax(0, 1fr);
       align-items: start;
     }
 
     .ly-sidebar-layout--right {
-      grid-template-columns: minmax(0, 1fr) minmax(var(--ly-sidebar-min), var(--ly-sidebar-max));
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max));
     }
 
     .ly-split {
@@ -332,7 +336,7 @@
 
   @media (min-width: 64rem) {
     .ly-panes--three {
-      grid-template-columns: minmax(14rem, 0.35fr) minmax(0, 1fr) minmax(14rem, 0.35fr);
+      grid-template-columns: minmax(min(100%, 14rem), 0.35fr) minmax(0, 1fr) minmax(min(100%, 14rem), 0.35fr);
     }
   }
 }

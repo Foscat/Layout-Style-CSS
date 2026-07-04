@@ -38,7 +38,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(7rem, 0.18fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 7rem), 0.18fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-sidebar {
@@ -50,7 +50,7 @@
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-sidebar-layout {
-      grid-template-columns: minmax(8rem, 0.22fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 8rem), 0.22fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-split {
@@ -58,13 +58,13 @@
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.5fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 12rem), 0.5fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--three {
-      grid-template-columns: minmax(10rem, 0.25fr) minmax(0, 1fr) minmax(10rem, 0.25fr);
+      grid-template-columns: minmax(min(100%, 10rem), 0.25fr) minmax(0, 1fr) minmax(min(100%, 10rem), 0.25fr);
     }
   }
 }

@@ -38,7 +38,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.34fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.34fr);
       align-items: start;
     }
 
@@ -52,21 +52,21 @@
     }
 
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 0.92fr) minmax(16rem, 1.08fr);
+      grid-template-columns: minmax(0, 0.92fr) minmax(min(100%, 16rem), 1.08fr);
     }
 
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-split {
-      grid-template-columns: minmax(0, 0.86fr) minmax(18rem, 1.14fr);
+      grid-template-columns: minmax(0, 0.86fr) minmax(min(100%, 18rem), 1.14fr);
     }
 
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.56fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.56fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-panes--three {
-      grid-template-columns: minmax(16rem, 0.5fr) minmax(0, 1fr) minmax(16rem, 0.5fr);
+      grid-template-columns: minmax(min(100%, 16rem), 0.5fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.5fr);
     }
   }
 }

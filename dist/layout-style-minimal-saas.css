@@ -38,7 +38,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(14rem, var(--ly-sidebar-width)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 14rem), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-app-sidebar {
@@ -50,18 +50,18 @@
     }
 
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-sidebar-layout {
-      grid-template-columns: minmax(14rem, 0.24fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 14rem), 0.24fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-split,
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.44fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 18rem), 0.44fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-panes--three {
-      grid-template-columns: minmax(13rem, 0.22fr) minmax(0, 1fr) minmax(16rem, 0.32fr);
+      grid-template-columns: minmax(min(100%, 13rem), 0.22fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.32fr);
     }
   }
 }

@@ -44,7 +44,7 @@
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.62fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.62fr);
     }
   }
 
@@ -53,7 +53,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, var(--ly-sidebar-width));
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), var(--ly-sidebar-width));
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-sidebar {
@@ -66,17 +66,17 @@
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.48fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.48fr);
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
-      grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+      grid-template-columns: minmax(0, 1.1fr) minmax(min(100%, 18rem), 0.9fr);
     }
   }
 
   @media (min-width: 78rem) {
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--three {
-      grid-template-columns: minmax(15rem, 0.4fr) minmax(0, 1fr) minmax(18rem, 0.52fr);
+      grid-template-columns: minmax(min(100%, 15rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.52fr);
     }
   }
 }

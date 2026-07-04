@@ -203,6 +203,25 @@ function findOwnedVisualDeclarations(css) {
   return matches;
 }
 
+function findUnguardedGridTrackFloors(css, file) {
+  const matches = [];
+  const declaration = /grid-template-columns:\s*([^;]+);/g;
+  let match = declaration.exec(css);
+
+  while (match) {
+    const value = match[1].trim();
+    const unguardedFloor = /minmax\(\s*(?!0\s*,|min\(\s*100%)/;
+
+    if (unguardedFloor.test(value)) {
+      matches.push(`${file}: ${value}`);
+    }
+
+    match = declaration.exec(css);
+  }
+
+  return matches;
+}
+
 function runNpmPackDryRun() {
   const command = "npm pack --dry-run --json --ignore-scripts";
   const result = spawnSync(command, {
@@ -227,12 +246,18 @@ for (const file of requiredFiles) {
 for (const file of requiredSourceFiles) {
   const sourcePath = join(styles, file);
   const distPath = join(dist, file);
+  const sourceCss = readFileSync(sourcePath, "utf8");
 
   assert(existsSync(sourcePath), `Missing source CSS ${file}`);
   assert.equal(
     readFileSync(distPath, "utf8"),
-    readFileSync(sourcePath, "utf8"),
+    sourceCss,
     `${file} must be generated from styles/${file}`
+  );
+  assert.deepEqual(
+    findUnguardedGridTrackFloors(sourceCss, file),
+    [],
+    `${file} grid tracks must guard fixed floors with min(100%, ...)`
   );
 }
 
@@ -243,6 +268,7 @@ for (const asset of requiredDemoAssets) {
 assert(existsSync(join(root, "demo", "index.html")), "Demo must live at demo/index.html");
 
 const base = readFileSync(join(dist, "layout-base.css"), "utf8");
+const normalizedBase = base.replace(/\r\n/g, "\n");
 assert.deepEqual(
   findOwnedVisualDeclarations(base),
   [],
@@ -266,12 +292,16 @@ for (const className of requiredWrapperClasses) {
   assert(base.includes(className), `Base responsive wrapper contract missing ${className}`);
 }
 assert(
-  base.includes(".ly-container,\n  .ly-wrapper"),
+  normalizedBase.includes(".ly-container,\n  .ly-wrapper"),
   "Base wrapper sizing should be shared by .ly-container and .ly-wrapper"
 );
 assert(
-  base.includes(".ly-container--wide,\n  .ly-wrapper--wide"),
+  normalizedBase.includes(".ly-container--wide,\n  .ly-wrapper--wide"),
   "Wide wrapper sizing should be shared by container and wrapper modifiers"
+);
+assert(
+  normalizedBase.includes(":where(.ly-root),\n  :where(.ly-root *) {\n    box-sizing: border-box;"),
+  "Base reset must keep padded fluid wrappers inside their assigned inline size"
 );
 
 for (const className of requiredStyleClasses) {

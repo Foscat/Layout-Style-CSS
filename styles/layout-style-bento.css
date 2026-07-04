@@ -38,7 +38,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(13rem, 0.26fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 13rem), 0.26fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-app-sidebar {
@@ -56,21 +56,21 @@
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-sidebar-layout {
-      grid-template-columns: minmax(12rem, 0.3fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.3fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-split {
-      grid-template-columns: minmax(0, 0.78fr) minmax(18rem, 1.22fr);
+      grid-template-columns: minmax(0, 0.78fr) minmax(min(100%, 18rem), 1.22fr);
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-panes--two {
-      grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
+      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 18rem), 0.82fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-panes--three {
-      grid-template-columns: minmax(12rem, 0.6fr) minmax(0, 1.4fr) minmax(14rem, 0.8fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.6fr) minmax(0, 1.4fr) minmax(min(100%, 14rem), 0.8fr);
     }
   }
 }

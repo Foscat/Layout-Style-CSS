@@ -299,11 +299,15 @@
 
 @layer ly.responsive {
   @media (min-width: 48rem) {
+    /*
+      Fixed support tracks are capped against their container so nested layouts
+      can compress instead of forcing horizontal page overflow.
+    */
     .ly-app-shell {
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(var(--ly-sidebar-min), var(--ly-sidebar-width)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     .ly-app-sidebar {
@@ -316,12 +320,12 @@
     }
 
     .ly-sidebar-layout {
-      grid-template-columns: minmax(var(--ly-sidebar-min), var(--ly-sidebar-max)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max)) minmax(0, 1fr);
       align-items: start;
     }
 
     .ly-sidebar-layout--right {
-      grid-template-columns: minmax(0, 1fr) minmax(var(--ly-sidebar-min), var(--ly-sidebar-max));
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max));
     }
 
     .ly-split {
@@ -335,7 +339,7 @@
 
   @media (min-width: 64rem) {
     .ly-panes--three {
-      grid-template-columns: minmax(14rem, 0.35fr) minmax(0, 1fr) minmax(14rem, 0.35fr);
+      grid-template-columns: minmax(min(100%, 14rem), 0.35fr) minmax(0, 1fr) minmax(min(100%, 14rem), 0.35fr);
     }
   }
 }
@@ -568,7 +572,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(14rem, var(--ly-sidebar-width)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 14rem), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-app-sidebar {
@@ -580,18 +584,18 @@
     }
 
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-sidebar-layout {
-      grid-template-columns: minmax(14rem, 0.24fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 14rem), 0.24fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-split,
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.44fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 18rem), 0.44fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-panes--three {
-      grid-template-columns: minmax(13rem, 0.22fr) minmax(0, 1fr) minmax(16rem, 0.32fr);
+      grid-template-columns: minmax(min(100%, 13rem), 0.22fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.32fr);
     }
   }
 }
@@ -637,7 +641,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(13rem, 0.26fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 13rem), 0.26fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-app-sidebar {
@@ -655,21 +659,21 @@
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-sidebar-layout {
-      grid-template-columns: minmax(12rem, 0.3fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.3fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-split {
-      grid-template-columns: minmax(0, 0.78fr) minmax(18rem, 1.22fr);
+      grid-template-columns: minmax(0, 0.78fr) minmax(min(100%, 18rem), 1.22fr);
     }
 
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-panes--two {
-      grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
+      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 18rem), 0.82fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-panes--three {
-      grid-template-columns: minmax(12rem, 0.6fr) minmax(0, 1.4fr) minmax(14rem, 0.8fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.6fr) minmax(0, 1.4fr) minmax(min(100%, 14rem), 0.8fr);
     }
   }
 }
@@ -735,7 +739,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.28fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 13rem), 0.28fr);
     }
 
     :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-sidebar {
@@ -749,22 +753,22 @@
     }
 
     :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1.55fr) minmax(15rem, 0.45fr);
+      grid-template-columns: minmax(0, 1.55fr) minmax(min(100%, 15rem), 0.45fr);
     }
 
     :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
-      grid-template-columns: minmax(0, 1.62fr) minmax(16rem, 0.54fr);
+      grid-template-columns: minmax(0, 1.62fr) minmax(min(100%, 16rem), 0.54fr);
       gap: clamp(1.5rem, 6vw, 5rem);
     }
 
     :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-panes--two {
-      grid-template-columns: minmax(16rem, 0.44fr) minmax(0, 1.56fr);
+      grid-template-columns: minmax(min(100%, 16rem), 0.44fr) minmax(0, 1.56fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-panes--three {
-      grid-template-columns: minmax(14rem, 0.34fr) minmax(0, 1.28fr) minmax(18rem, 0.58fr);
+      grid-template-columns: minmax(min(100%, 14rem), 0.34fr) minmax(0, 1.28fr) minmax(min(100%, 18rem), 0.58fr);
     }
   }
 }
@@ -810,7 +814,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(7rem, 0.18fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 7rem), 0.18fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-sidebar {
@@ -822,7 +826,7 @@
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-sidebar-layout {
-      grid-template-columns: minmax(8rem, 0.22fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 8rem), 0.22fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-split {
@@ -830,13 +834,13 @@
     }
 
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.5fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 12rem), 0.5fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--three {
-      grid-template-columns: minmax(10rem, 0.25fr) minmax(0, 1fr) minmax(10rem, 0.25fr);
+      grid-template-columns: minmax(min(100%, 10rem), 0.25fr) minmax(0, 1fr) minmax(min(100%, 10rem), 0.25fr);
     }
   }
 }
@@ -882,7 +886,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: minmax(18rem, var(--ly-sidebar-width)) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 18rem), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-app-sidebar {
@@ -894,21 +898,21 @@
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-sidebar-layout {
-      grid-template-columns: minmax(18rem, 0.42fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 18rem), 0.42fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-split {
-      grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
+      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 18rem), 0.82fr);
     }
 
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.62fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 20rem), 0.62fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-panes--three {
-      grid-template-columns: minmax(17rem, 0.4fr) minmax(0, 1fr) minmax(18rem, 0.46fr);
+      grid-template-columns: minmax(min(100%, 17rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.46fr);
     }
   }
 }
@@ -954,7 +958,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.34fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.34fr);
       align-items: start;
     }
 
@@ -968,7 +972,7 @@
     }
 
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.42fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.42fr);
     }
 
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-split {
@@ -976,13 +980,13 @@
     }
 
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.5fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.5fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-panes--three {
-      grid-template-columns: minmax(15rem, 0.38fr) minmax(0, 1fr) minmax(15rem, 0.38fr);
+      grid-template-columns: minmax(min(100%, 15rem), 0.38fr) minmax(0, 1fr) minmax(min(100%, 15rem), 0.38fr);
     }
   }
 }
@@ -1028,7 +1032,7 @@
       grid-template-areas:
         "header header header"
         "sidebar main main";
-      grid-template-columns: minmax(12rem, 0.24fr) minmax(0, 1fr) minmax(12rem, 0.24fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.24fr) minmax(0, 1fr) minmax(min(100%, 12rem), 0.24fr);
     }
 
     :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-sidebar {
@@ -1041,21 +1045,21 @@
     }
 
     :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-sidebar-layout {
-      grid-template-columns: minmax(12rem, 0.32fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.32fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-split {
-      grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
+      grid-template-columns: minmax(0, 1.35fr) minmax(min(100%, 16rem), 0.65fr);
     }
 
     :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-panes--two {
-      grid-template-columns: minmax(14rem, 0.44fr) minmax(0, 1.2fr);
+      grid-template-columns: minmax(min(100%, 14rem), 0.44fr) minmax(0, 1.2fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-panes--three {
-      grid-template-columns: minmax(12rem, 0.44fr) minmax(0, 1.4fr) minmax(12rem, 0.44fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.44fr) minmax(0, 1.4fr) minmax(min(100%, 12rem), 0.44fr);
     }
   }
 }
@@ -1101,7 +1105,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.22fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 12rem), 0.22fr);
     }
 
     :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-sidebar {
@@ -1113,21 +1117,21 @@
     }
 
     :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1.55fr) minmax(12rem, 0.45fr);
+      grid-template-columns: minmax(0, 1.55fr) minmax(min(100%, 12rem), 0.45fr);
     }
 
     :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-split {
-      grid-template-columns: minmax(0, 1.7fr) minmax(12rem, 0.3fr);
+      grid-template-columns: minmax(0, 1.7fr) minmax(min(100%, 12rem), 0.3fr);
     }
 
     :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-panes--two {
-      grid-template-columns: minmax(12rem, 0.35fr) minmax(0, 1.65fr);
+      grid-template-columns: minmax(min(100%, 12rem), 0.35fr) minmax(0, 1.65fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-panes--three {
-      grid-template-columns: minmax(11rem, 0.28fr) minmax(0, 1.42fr) minmax(14rem, 0.4fr);
+      grid-template-columns: minmax(min(100%, 11rem), 0.28fr) minmax(0, 1.42fr) minmax(min(100%, 14rem), 0.4fr);
     }
   }
 }
@@ -1173,7 +1177,7 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
-      grid-template-columns: var(--ly-sidebar-width) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-width)), var(--ly-sidebar-width)) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-sidebar {
@@ -1185,21 +1189,21 @@
     }
 
     :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-sidebar-layout {
-      grid-template-columns: minmax(10rem, 0.24fr) minmax(0, 1fr);
+      grid-template-columns: minmax(min(100%, 10rem), 0.24fr) minmax(0, 1fr);
     }
 
     :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-split {
-      grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(min(100%, 16rem), 0.8fr);
     }
 
     :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.38fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 15rem), 0.38fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-panes--three {
-      grid-template-columns: minmax(10rem, 0.24fr) minmax(0, 1fr) minmax(16rem, 0.38fr);
+      grid-template-columns: minmax(min(100%, 10rem), 0.24fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.38fr);
     }
   }
 }
@@ -1245,7 +1249,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.34fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.34fr);
       align-items: start;
     }
 
@@ -1259,21 +1263,21 @@
     }
 
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 0.92fr) minmax(16rem, 1.08fr);
+      grid-template-columns: minmax(0, 0.92fr) minmax(min(100%, 16rem), 1.08fr);
     }
 
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-split {
-      grid-template-columns: minmax(0, 0.86fr) minmax(18rem, 1.14fr);
+      grid-template-columns: minmax(0, 0.86fr) minmax(min(100%, 18rem), 1.14fr);
     }
 
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.56fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.56fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-panes--three {
-      grid-template-columns: minmax(16rem, 0.5fr) minmax(0, 1fr) minmax(16rem, 0.5fr);
+      grid-template-columns: minmax(min(100%, 16rem), 0.5fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.5fr);
     }
   }
 }
@@ -1325,7 +1329,7 @@
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.62fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.62fr);
     }
   }
 
@@ -1334,7 +1338,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, var(--ly-sidebar-width));
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), var(--ly-sidebar-width));
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-sidebar {
@@ -1347,17 +1351,17 @@
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.48fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.48fr);
     }
 
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
-      grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+      grid-template-columns: minmax(0, 1.1fr) minmax(min(100%, 18rem), 0.9fr);
     }
   }
 
   @media (min-width: 78rem) {
     :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--three {
-      grid-template-columns: minmax(15rem, 0.4fr) minmax(0, 1fr) minmax(18rem, 0.52fr);
+      grid-template-columns: minmax(min(100%, 15rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.52fr);
     }
   }
 }

@@ -38,7 +38,7 @@
       grid-template-areas:
         "header header"
         "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.34fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.34fr);
       align-items: start;
     }
 
@@ -52,7 +52,7 @@
     }
 
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.42fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.42fr);
     }
 
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-split {
@@ -60,13 +60,13 @@
     }
 
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.5fr);
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.5fr);
     }
   }
 
   @media (min-width: 80rem) {
     :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-panes--three {
-      grid-template-columns: minmax(15rem, 0.38fr) minmax(0, 1fr) minmax(15rem, 0.38fr);
+      grid-template-columns: minmax(min(100%, 15rem), 0.38fr) minmax(0, 1fr) minmax(min(100%, 15rem), 0.38fr);
     }
   }
 }
