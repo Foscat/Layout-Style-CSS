@@ -20,11 +20,13 @@ Use as a standalone layout system with all styles or just one layout personality
 ```bash
 # Install the full layout system
 npm install layout-style-css@1.0.0
+```
 
-# install a single layout personality
-npm install layout-style-css@1.0.0/layout-base.css
-npm install layout-style-css@1.0.0/layout-style-minimal-saas.css
-// 
+Then import whichever CSS entrypoints you need:
+
+```js
+import "layout-style-css/base.css";
+import "layout-style-css/minimal-saas.css";
 ```
 
 Pair with UI Style Kit CSS for a complete layout and visual system. Themes and layouts can mix and match UI styles.  Set the vibe with color schemes that offer a range of moods, from minimal to maximal, from Bauhaus to Brutalism.
@@ -44,9 +46,9 @@ npm install layout-style-css@1.0.0 ui-style-kit-css@2.0.1 interactive-surface-cs
 Import UI Style Kit first, then the layout CSS:
 
 ```js
-import "interactive-surface-css"
+import "interactive-surface-css/interactive-surface.css";
 import "ui-style-kit-css/with-bridge.css";
-import "layout-style-css/layout-ui-style-kit-bridge.css";
+import "layout-style-css/bridge.css";
 ```
 
 Use one root element for UI style, layout style, theme, and mode:
@@ -88,8 +90,7 @@ Layout-only CDN entry:
 Recommended CDN pairing with UI Style Kit and Interactive Surface:
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/with-bridge.css"
-">
+<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/with-bridge.css">
 <link rel="stylesheet" href="https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css">
 <link rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.2.5/dist/interactive-surface.min.css">
 ```
