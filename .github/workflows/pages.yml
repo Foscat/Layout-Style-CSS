@@ -25,6 +25,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      - name: Verify Pages configuration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Configure Pages cannot recover from a disabled Pages site, so fail early with a targeted operator message.
+          if ! gh api "repos/${{ github.repository }}/pages" --silent; then
+            echo "::error title=GitHub Pages is not configured::Enable Pages in Settings > Pages, set Source to GitHub Actions, then re-run this workflow. The demo build already publishes output/github-pages/index.html at the Pages root."
+            exit 1
+          fi
+
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
@@ -44,13 +54,13 @@ jobs:
         run: npm run pages:build
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: output/github-pages
 
       - name: Deploy Pages artifact
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

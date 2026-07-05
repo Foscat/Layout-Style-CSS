@@ -19,7 +19,12 @@ const sourceFiles = [
   "layout-style-brutalism.css",
   "layout-style-cyberpunk.css",
   "layout-style-y2k.css",
-  "layout-style-retro-glass.css"
+  "layout-style-retro-glass.css",
+  "layout-style-f-pattern.css",
+  "layout-style-z-pattern.css",
+  "layout-style-split-screen.css",
+  "layout-style-mondrian.css",
+  "layout-style-synthwave.css"
 ];
 
 const generatedFiles = new Map([
@@ -38,7 +43,12 @@ const generatedFiles = new Map([
       "./layout-style-brutalism.css",
       "./layout-style-cyberpunk.css",
       "./layout-style-y2k.css",
-      "./layout-style-retro-glass.css"
+      "./layout-style-retro-glass.css",
+      "./layout-style-f-pattern.css",
+      "./layout-style-z-pattern.css",
+      "./layout-style-split-screen.css",
+      "./layout-style-mondrian.css",
+      "./layout-style-synthwave.css"
     ]
   ],
   ["layout-all-with-ui-kit.css", ["ui-style-kit-css/dist/ui-style-kit.css", "./layout-all.css"]],
