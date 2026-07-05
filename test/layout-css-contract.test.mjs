@@ -350,6 +350,7 @@ function extractPackageImports(markdown) {
   const importPattern = /import\s+["']([^"']+)["'];?/g;
 
   for (const block of extractFencedBlocks(markdown, "js")) {
+    importPattern.lastIndex = 0;
     let match = importPattern.exec(block);
 
     while (match) {

@@ -159,8 +159,24 @@ async function verifyMobileControlsDrawer(page, baseUrl, viewport) {
     `Closed mobile header should not create horizontal overflow; received ${closedState.horizontalOverflow}px`
   );
 
+  const waitForDrawerOpen = () =>
+    page.waitForFunction((viewportWidth) => {
+      const toggle = document.querySelector("#demoControlsToggle");
+      const drawer = document.querySelector("#demoControlsDrawer");
+      if (!(toggle instanceof HTMLElement) || !(drawer instanceof HTMLElement)) {
+        return false;
+      }
+
+      if (toggle.getAttribute("aria-expanded") !== "true" || drawer.getAttribute("aria-hidden") !== "false") {
+        return false;
+      }
+
+      const { width, height, left, right } = drawer.getBoundingClientRect();
+      return width > 0 && height > 0 && left >= -1 && right <= viewportWidth + 1;
+    }, viewport.width);
+
   await page.click("#demoControlsToggle");
-  await page.waitForTimeout(220);
+  await waitForDrawerOpen();
   const openState = await page.evaluate(() => ({
     toggleExpanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
     drawerHidden: document.querySelector("#demoControlsDrawer")?.getAttribute("aria-hidden"),
@@ -199,7 +215,7 @@ async function verifyMobileControlsDrawer(page, baseUrl, viewport) {
   );
 
   await page.click("#demoControlsToggle");
-  await page.waitForTimeout(220);
+  await waitForDrawerOpen();
   await page.click("#demoControlsBackdrop", { position: { x: 8, y: 8 } });
   assert.equal(
     await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
@@ -208,7 +224,7 @@ async function verifyMobileControlsDrawer(page, baseUrl, viewport) {
   );
 
   await page.click("#demoControlsToggle");
-  await page.waitForTimeout(220);
+  await waitForDrawerOpen();
   await page.click("#demoControlsClose");
   assert.equal(
     await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),

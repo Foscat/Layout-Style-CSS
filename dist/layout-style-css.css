@@ -599,7 +599,7 @@
 
   :where(.saas-container, .bento-container, .max-container, .bau-container, .tactile-container, .neo-container, .retro-container, .brutal-container, .cyber-container, .y2k-container, .rg-container) {
     /* UI Style Kit naming can opt into layout sizing without taking over visual paint. */
-    width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
     margin-inline: auto;
   }
 
