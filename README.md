@@ -37,14 +37,30 @@ This package owns the spatial layer only. That separation lets you change layout
 
 ## Install
 
+Use as a standalone layout system with all styles or just one layout personality.
+
 ```bash
-npm install layout-style-css ui-style-kit-css@2.0.1
+# Install the full layout system
+npm install layout-style-css@1.0.0
 ```
 
-Install Interactive Surface CSS only when you want the optional three-library bundle:
+Then import whichever CSS entrypoints you need:
+
+```js
+import "layout-style-css/base.css";
+import "layout-style-css/minimal-saas.css";
+```
+
+Pair with UI Style Kit CSS for a complete layout and visual system. Themes and layouts can mix and match UI styles.  Set the vibe with color schemes that offer a range of moods, from minimal to maximal, from Bauhaus to Brutalism.
 
 ```bash
-npm install interactive-surface-css@1.2.5
+npm install layout-style-css@1.0.0 ui-style-kit-css@2.0.1
+```
+
+Additionally installing Interactive Surface CSS sets you up with a complete reactive layout and surface system.
+
+```bash
+npm install layout-style-css@1.0.0 ui-style-kit-css@2.0.1 interactive-surface-css@1.2.5
 ```
 
 ## Quick Start
@@ -52,8 +68,9 @@ npm install interactive-surface-css@1.2.5
 Import UI Style Kit first, then the layout CSS:
 
 ```js
-import "ui-style-kit-css/dist/ui-style-kit.css";
-import "layout-style-css";
+import "interactive-surface-css/interactive-surface.css";
+import "ui-style-kit-css/with-bridge.css";
+import "layout-style-css/bridge.css";
 ```
 
 For a direct three-library setup, import each CSS entrypoint explicitly:
@@ -70,10 +87,10 @@ Use one root element for UI style, layout style, theme, and mode:
 ```html
 <body
   class="ly-root"
-  data-ui="minimal-saas"
-  data-layout="minimal-saas"
-  data-theme="arctic-indigo"
-  data-mode="light"
+  data-ui="retro-glass"
+  data-layout="cyberpunk"
+  data-theme="ocean-steel"
+  data-mode="auto"
 >
   <div class="ly-app-shell">
     <aside class="ly-app-sidebar ly-pad-6">Navigation</aside>
@@ -99,13 +116,6 @@ Layout-only CDN entry:
 ```html
 <link rel="stylesheet" href="https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@1/dist/layout-style-css.min.css">
-```
-
-Recommended CDN pairing with UI Style Kit:
-
-```html
-<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css">
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css">
 ```
 
 Recommended CDN pairing with UI Style Kit and Interactive Surface:
