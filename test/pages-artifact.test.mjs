@@ -73,5 +73,11 @@ assert(
     pagesWorkflow.includes("actions/deploy-pages@v5"),
   "Pages workflow should use current GitHub Pages action majors"
 );
+assert(
+  pagesWorkflow.includes("continue-on-error: true") &&
+    pagesWorkflow.includes("Retry Pages deploy once on transient failure") &&
+    pagesWorkflow.includes("steps.deployment.outcome == 'failure'"),
+  "Pages workflow should retry deploy-pages once when the first deploy attempt fails"
+);
 
 console.log("GitHub Pages artifact checks look good.");
