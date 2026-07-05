@@ -334,12 +334,13 @@ function runNpmPackDryRun() {
 
 function extractFencedBlocks(markdown, language) {
   const blocks = [];
+  const normalizedMarkdown = markdown.replace(/\r\n/g, "\n");
   const pattern = new RegExp(`\`\`\`${language}\\n([\\s\\S]*?)\\n\`\`\``, "g");
-  let match = pattern.exec(markdown);
+  let match = pattern.exec(normalizedMarkdown);
 
   while (match) {
     blocks.push(match[1]);
-    match = pattern.exec(markdown);
+    match = pattern.exec(normalizedMarkdown);
   }
 
   return blocks;
@@ -522,7 +523,7 @@ const newLayoutStructuralContracts = [
 ];
 
 for (const { file, snippets } of newLayoutStructuralContracts) {
-  const css = readFileSync(join(dist, file), "utf8");
+  const css = readFileSync(join(dist, file), "utf8").replace(/\r\n/g, "\n");
 
   for (const snippet of snippets) {
     assert(css.includes(snippet), `${file} should preserve its distinct layout behavior: ${snippet}`);
