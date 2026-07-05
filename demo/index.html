@@ -125,6 +125,24 @@
         gap: 0.625rem;
       }
 
+      .demo-controls-shell {
+        min-width: 0;
+      }
+
+      .demo-controls-panel {
+        min-width: 0;
+      }
+
+      .demo-controls-heading {
+        display: none;
+      }
+
+      #demoControlsToggle,
+      #demoControlsClose,
+      #demoControlsBackdrop {
+        display: none;
+      }
+
       .demo-select {
         min-width: 10.5rem;
       }
@@ -225,29 +243,102 @@
         overflow-wrap: anywhere;
       }
 
+      .demo-recipe-swatch {
+        min-block-size: 3.75rem;
+      }
+
       @media (min-width: 90rem) {
         .demo-detail-layout {
           grid-template-columns: minmax(10rem, 0.4fr) minmax(0, 1fr);
         }
       }
 
-      @media (max-width: 48rem) {
+      @media (max-width: 74.999rem) {
         .demo-header {
-          align-items: stretch;
-          flex-direction: column;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .demo-brand {
+          flex: 1 1 min(100%, 13rem);
+          min-width: 0;
+        }
+
+        #demoControlsToggle {
+          display: inline-flex;
+          flex: 0 0 auto;
+        }
+
+        #demoControlsClose {
+          display: inline-flex;
+        }
+
+        #demoControlsBackdrop {
+          position: fixed;
+          inset: 0;
+          z-index: calc(var(--ly-z-header) + 10);
+        }
+
+        #demoControlsBackdrop[data-open="true"] {
+          display: block;
+        }
+
+        .demo-controls-shell {
+          position: fixed;
+          inset-block: 0;
+          inset-inline-end: 0;
+          z-index: calc(var(--ly-z-header) + 20);
+          width: min(calc(100% - 2rem), 24rem);
+          padding: var(--ly-space-4);
+          overflow: auto;
+          pointer-events: none;
+          transform: translateX(100%);
+          transition: transform 160ms ease;
+        }
+
+        .demo-controls-shell[aria-hidden="false"] {
+          pointer-events: auto;
+          transform: translateX(0);
+        }
+
+        .demo-controls-panel {
+          min-height: 100%;
+          display: grid;
+          grid-auto-rows: max-content;
+          align-content: start;
+          gap: var(--ly-space-4);
+        }
+
+        .demo-controls-heading {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--ly-space-3);
         }
 
         .demo-controls {
+          display: grid;
+          grid-auto-rows: max-content;
+          align-content: start;
           justify-content: stretch;
         }
 
         .demo-controls > * {
-          flex: 1 1 100%;
           min-width: 0;
         }
 
         .demo-select {
           width: 100%;
+        }
+
+        .ly-root[data-demo-controls-open="true"] {
+          overflow: hidden;
+        }
+      }
+
+      @media (min-width: 75rem) {
+        .demo-controls-panel {
+          display: contents;
         }
       }
     </style>
@@ -261,63 +352,87 @@
             <span>Independent shell layouts for ui-style-kit-css@2.0.1</span>
           </div>
 
-          <div class="demo-controls">
-            <label>
-              <span class="ly-visually-hidden">UI system</span>
-              <select class="demo-select" id="uiSelect" data-ui-kit="select">
-                <option value="minimal-saas">Minimal SaaS UI</option>
-                <option value="bento">Bento UI</option>
-                <option value="maximalist">Maximalist UI</option>
-                <option value="bauhaus">Bauhaus UI</option>
-                <option value="tactile">Tactile UI</option>
-                <option value="neumorphism">Neumorphism UI</option>
-                <option value="retrofuturism">Retrofuturism UI</option>
-                <option value="brutalism">Brutalism UI</option>
-                <option value="cyberpunk">Cyberpunk UI</option>
-                <option value="y2k">Y2K UI</option>
-                <option value="retro-glass">Retro Glass UI</option>
-              </select>
-            </label>
-            <label>
-              <span class="ly-visually-hidden">Layout style</span>
-              <select class="demo-select" id="layoutSelect" data-ui-kit="select">
-                <option value="minimal-saas">Minimal SaaS Layout</option>
-                <option value="bento">Bento Layout</option>
-                <option value="maximalist">Maximalist Layout</option>
-                <option value="bauhaus">Bauhaus Layout</option>
-                <option value="tactile">Tactile Layout</option>
-                <option value="neumorphism">Neumorphism Layout</option>
-                <option value="retrofuturism">Retrofuturism Layout</option>
-                <option value="brutalism">Brutalism Layout</option>
-                <option value="cyberpunk">Cyberpunk Layout</option>
-                <option value="y2k">Y2K Layout</option>
-                <option value="retro-glass">Retro Glass Layout</option>
-              </select>
-            </label>
-            <label>
-              <span class="ly-visually-hidden">Theme</span>
-              <select class="demo-select" id="themeSelect" data-ui-kit="select">
-                <option value="arctic-indigo">Arctic Indigo</option>
-                <option value="midnight-gold">Midnight Gold</option>
-                <option value="ocean-steel">Ocean Steel</option>
-                <option value="forest-moss">Forest Moss</option>
-                <option value="sunset-ember">Sunset Ember</option>
-                <option value="royal-plum">Royal Plum</option>
-                <option value="graphite-cyan">Graphite Cyan</option>
-                <option value="desert-sage">Desert Sage</option>
-                <option value="rose-quartz">Rose Quartz</option>
-                <option value="cyber-lime">Cyber Lime</option>
-              </select>
-            </label>
-            <label>
-              <span class="ly-visually-hidden">Mode</span>
-              <select class="demo-select" id="modeSelect" data-ui-kit="select">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="contrast">Contrast</option>
-              </select>
-            </label>
-            <button type="button" id="mixedPreset" data-ui-kit="button button-secondary">Cyberpunk UI + Maximalist Layout</button>
+          <button
+            type="button"
+            id="demoControlsToggle"
+            aria-controls="demoControlsDrawer"
+            aria-expanded="false"
+            data-ui-kit="button button-secondary"
+          >Controls</button>
+
+          <span id="demoControlsBackdrop" aria-hidden="true"></span>
+
+          <div class="demo-controls-shell" id="demoControlsDrawer" aria-hidden="true">
+            <div class="demo-controls-panel" data-ui-kit="panel">
+              <div class="demo-controls-heading">
+                <strong>Demo controls</strong>
+                <button type="button" id="demoControlsClose" data-ui-kit="button">Close</button>
+              </div>
+
+              <div class="demo-controls">
+                <label>
+                  <span class="ly-visually-hidden">UI system</span>
+                  <select class="demo-select" id="uiSelect" data-ui-kit="select">
+                    <option value="minimal-saas">Minimal SaaS UI</option>
+                    <option value="bento">Bento UI</option>
+                    <option value="maximalist">Maximalist UI</option>
+                    <option value="bauhaus">Bauhaus UI</option>
+                    <option value="tactile">Tactile UI</option>
+                    <option value="neumorphism">Neumorphism UI</option>
+                    <option value="retrofuturism">Retrofuturism UI</option>
+                    <option value="brutalism">Brutalism UI</option>
+                    <option value="cyberpunk">Cyberpunk UI</option>
+                    <option value="y2k">Y2K UI</option>
+                    <option value="retro-glass">Retro Glass UI</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="ly-visually-hidden">Layout style</span>
+                  <select class="demo-select" id="layoutSelect" data-ui-kit="select">
+                    <option value="minimal-saas">Minimal SaaS Layout</option>
+                    <option value="bento">Bento Layout</option>
+                    <option value="maximalist">Maximalist Layout</option>
+                    <option value="bauhaus">Bauhaus Layout</option>
+                    <option value="tactile">Tactile Layout</option>
+                    <option value="neumorphism">Neumorphism Layout</option>
+                    <option value="retrofuturism">Retrofuturism Layout</option>
+                    <option value="brutalism">Brutalism Layout</option>
+                    <option value="cyberpunk">Cyberpunk Layout</option>
+                    <option value="y2k">Y2K Layout</option>
+                    <option value="retro-glass">Retro Glass Layout</option>
+                    <option value="f-pattern">F-pattern Layout</option>
+                    <option value="z-pattern">Z-pattern Layout</option>
+                    <option value="split-screen">Split-Screen Layout</option>
+                    <option value="mondrian">Mondrian Layout</option>
+                    <option value="synthwave">Synthwave Layout</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="ly-visually-hidden">Theme</span>
+                  <select class="demo-select" id="themeSelect" data-ui-kit="select">
+                    <option value="arctic-indigo">Arctic Indigo</option>
+                    <option value="midnight-gold">Midnight Gold</option>
+                    <option value="ocean-steel">Ocean Steel</option>
+                    <option value="forest-moss">Forest Moss</option>
+                    <option value="sunset-ember">Sunset Ember</option>
+                    <option value="royal-plum">Royal Plum</option>
+                    <option value="graphite-cyan">Graphite Cyan</option>
+                    <option value="desert-sage">Desert Sage</option>
+                    <option value="rose-quartz">Rose Quartz</option>
+                    <option value="cyber-lime">Cyber Lime</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="ly-visually-hidden">Mode</span>
+                  <select class="demo-select" id="modeSelect" data-ui-kit="select">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="contrast">Contrast</option>
+                  </select>
+                </label>
+                <button type="button" id="mixedPreset" data-ui-kit="button button-secondary">Cyberpunk UI + Maximalist Layout</button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -334,7 +449,7 @@
             </ul>
           </nav>
           <p>
-            This same rail becomes a steady SaaS sidebar, a narrow Cyberpunk utility rail, a floating Y2K dock, or a Retro Glass side panel.
+            This same rail becomes a SaaS sidebar, Z-pattern support rail, Split-Screen half, Mondrian block, Synthwave dock, or Retro Glass side panel.
           </p>
         </div>
       </aside>
@@ -382,7 +497,7 @@
             <div class="ly-grid ly-grid--auto" id="metrics">
               <article class="ly-surface ly-pad-6 demo-stat" data-ui-kit="card">
                 <span>Shell mode</span>
-                <strong>11</strong>
+                <strong>16</strong>
                 <span>layout styles</span>
               </article>
               <article class="ly-surface ly-pad-6 demo-stat" data-ui-kit="card">
@@ -430,14 +545,14 @@
             <section class="ly-stack ly-gap-5" id="recipes" aria-labelledby="recipes-title">
               <div class="ly-wrapper ly-wrapper--readable ly-stack ly-gap-3">
                 <span class="demo-pill" data-ui-kit="badge badge-secondary">Layout Recipes</span>
-                <h2 class="demo-panel-title" id="recipes-title">Recipe-style organization for common wrappers.</h2>
+                <h2 class="demo-panel-title" id="recipes-title">Recipe-style organization for major wrapper contracts.</h2>
                 <p>
                   Start with a recipe, then mix UI style, layout style, theme, and mode without changing the wrapper contract.
                 </p>
               </div>
 
-              <div class="demo-recipe-grid">
-                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+              <div class="ly-card-grid demo-recipe-grid">
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
                   <h3 class="demo-panel-title">App shell</h3>
                   <p>Use one root shell for a persistent header, sidebar, and main workspace.</p>
                   <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
@@ -448,7 +563,7 @@
                   </div>
                 </article>
 
-                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
                   <h3 class="demo-panel-title">Content page</h3>
                   <p>Use a readable wrapper for documentation, articles, and focused landing sections.</p>
                   <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
@@ -459,18 +574,17 @@
                   </div>
                 </article>
 
-                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Dashboard grid</h3>
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Card grid</h3>
                   <p>Use auto-fit tracks for cards that collapse from desktop to tablet and mobile.</p>
                   <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
                     <code>.ly-wrapper--wide</code>
-                    <code>.ly-grid</code>
-                    <code>.ly-grid--auto</code>
+                    <code>.ly-card-grid</code>
                     <code>.ly-surface</code>
                   </div>
                 </article>
 
-                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
                   <h3 class="demo-panel-title">Split hero</h3>
                   <p>Use a split when one message needs a supporting panel or interactive preview.</p>
                   <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
@@ -481,7 +595,7 @@
                   </div>
                 </article>
 
-                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
                   <h3 class="demo-panel-title">Docs sidebar</h3>
                   <p>Use a local sidebar inside the main content when the global shell is not enough.</p>
                   <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
@@ -492,7 +606,7 @@
                   </div>
                 </article>
 
-                <article class="ly-surface ly-pad-5 demo-recipe-card" data-ui-kit="card">
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
                   <h3 class="demo-panel-title">List detail</h3>
                   <p>Use adaptive panes for inboxes, editors, queues, and preview-driven workflows.</p>
                   <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
@@ -500,6 +614,69 @@
                     <code>.ly-panes--two</code>
                     <code>.ly-scroll-area</code>
                     <code>.ly-surface</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 ly-card-sm demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Button group</h3>
+                  <p>Use a wrapping action row without forcing buttons to fill the mobile viewport.</p>
+                  <div class="ly-button-group">
+                    <button type="button" data-ui-kit="button button-primary">Primary</button>
+                    <button type="button" data-ui-kit="button">Secondary</button>
+                  </div>
+                  <div class="demo-recipe-preview">
+                    <code>.ly-button-group</code>
+                    <code>.saas-button-group</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 ly-card-lg demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Card size</h3>
+                  <p>Use sizing helpers when cards need consistent rhythm without hard-coded visual styles.</p>
+                  <div class="demo-recipe-preview">
+                    <code>.ly-card-sm</code>
+                    <code>.ly-card-md</code>
+                    <code>.ly-card-lg</code>
+                    <code>.saas-card-grid</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Gallery</h3>
+                  <p>Use gallery tracks for image or media groups that should reflow without a script.</p>
+                  <div class="ly-gallery">
+                    <div class="ly-frame ly-frame-4x3 demo-recipe-swatch" data-ui-kit="panel"></div>
+                    <div class="ly-frame ly-frame-4x3 demo-recipe-swatch" data-ui-kit="panel"></div>
+                    <div class="ly-frame ly-frame-4x3 demo-recipe-swatch" data-ui-kit="panel"></div>
+                  </div>
+                  <div class="demo-recipe-preview">
+                    <code>.ly-gallery</code>
+                    <code>.rg-gallery</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Carousel</h3>
+                  <p>Use horizontal snap tracks for preview rows while keeping card visuals external.</p>
+                  <div class="ly-carousel">
+                    <div class="ly-surface ly-pad-4 ly-card-sm" data-ui-kit="panel">One</div>
+                    <div class="ly-surface ly-pad-4 ly-card-sm" data-ui-kit="panel">Two</div>
+                    <div class="ly-surface ly-pad-4 ly-card-sm" data-ui-kit="panel">Three</div>
+                  </div>
+                  <div class="demo-recipe-preview">
+                    <code>.ly-carousel</code>
+                    <code>.bento-carousel</code>
+                  </div>
+                </article>
+
+                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
+                  <h3 class="demo-panel-title">Frame and scroll</h3>
+                  <p>Use frames for media ratios and scroll areas for bounded content regions.</p>
+                  <div class="demo-recipe-preview">
+                    <code>.ly-frame</code>
+                    <code>.ly-frame-16x9</code>
+                    <code>.ly-scroll-area</code>
+                    <code>.ly-overflow-auto</code>
                   </div>
                 </article>
               </div>
@@ -515,9 +692,15 @@
       const layoutSelect = document.querySelector("#layoutSelect");
       const themeSelect = document.querySelector("#themeSelect");
       const modeSelect = document.querySelector("#modeSelect");
+      const controlsToggle = document.querySelector("#demoControlsToggle");
+      const controlsDrawer = document.querySelector("#demoControlsDrawer");
+      const controlsBackdrop = document.querySelector("#demoControlsBackdrop");
+      const controlsClose = document.querySelector("#demoControlsClose");
       const mixedPreset = document.querySelector("#mixedPreset");
       const matchedPreset = document.querySelector("#matchedPreset");
       const contrastPreset = document.querySelector("#contrastPreset");
+      const mobileControlsQuery = window.matchMedia("(max-width: 74.999rem)");
+      let previousDemoControlsFocus = null;
       const uiClassPrefixes = {
         "minimal-saas": "saas",
         bento: "bento",
@@ -567,6 +750,44 @@
         layoutSelect.value = layout;
         themeSelect.value = theme;
         modeSelect.value = mode;
+      }
+
+      // Mobile and tablet controls use a drawer so the sticky header stays compact.
+      function setDemoControlsOpen(open, { returnFocus = true } = {}) {
+        if (!mobileControlsQuery.matches) {
+          controlsToggle.setAttribute("aria-expanded", "false");
+          controlsDrawer.setAttribute("aria-hidden", "false");
+          controlsBackdrop.dataset.open = "false";
+          delete body.dataset.demoControlsOpen;
+          previousDemoControlsFocus = null;
+          return;
+        }
+
+        controlsToggle.setAttribute("aria-expanded", String(open));
+        controlsDrawer.setAttribute("aria-hidden", String(!open));
+        controlsBackdrop.dataset.open = String(open);
+
+        if (open) {
+          previousDemoControlsFocus = document.activeElement;
+          body.dataset.demoControlsOpen = "true";
+          controlsDrawer.querySelector("select, button, a, input")?.focus({ preventScroll: true });
+          return;
+        }
+
+        delete body.dataset.demoControlsOpen;
+
+        if (returnFocus) {
+          const focusTarget = previousDemoControlsFocus instanceof HTMLElement
+            ? previousDemoControlsFocus
+            : controlsToggle;
+          focusTarget.focus({ preventScroll: true });
+        }
+
+        previousDemoControlsFocus = null;
+      }
+
+      function syncDemoControlsMode() {
+        setDemoControlsOpen(false, { returnFocus: false });
       }
 
       // Deep-linked state keeps visual regression checks and shared demos reproducible.
@@ -643,6 +864,36 @@
           layout: "maximalist",
           theme: "sunset-ember",
           mode: "light"
+        },
+        fPattern: {
+          ui: "minimal-saas",
+          layout: "f-pattern",
+          theme: "arctic-indigo",
+          mode: "light"
+        },
+        zPattern: {
+          ui: "bento",
+          layout: "z-pattern",
+          theme: "ocean-steel",
+          mode: "light"
+        },
+        splitScreen: {
+          ui: "maximalist",
+          layout: "split-screen",
+          theme: "sunset-ember",
+          mode: "light"
+        },
+        mondrian: {
+          ui: "bauhaus",
+          layout: "mondrian",
+          theme: "graphite-cyan",
+          mode: "contrast"
+        },
+        synthwave: {
+          ui: "cyberpunk",
+          layout: "synthwave",
+          theme: "cyber-lime",
+          mode: "dark"
         }
       };
       applyDemoState(presetState[queryState.get("preset")] || {
@@ -651,6 +902,7 @@
         theme: queryState.get("theme") || body.dataset.theme,
         mode: queryState.get("mode") || body.dataset.mode
       });
+      syncDemoControlsMode();
 
       uiSelect.addEventListener("change", () => {
         body.dataset.ui = uiSelect.value;
@@ -670,6 +922,26 @@
         body.dataset.mode = modeSelect.value;
       });
 
+      controlsToggle.addEventListener("click", () => {
+        setDemoControlsOpen(controlsToggle.getAttribute("aria-expanded") !== "true");
+      });
+
+      controlsClose.addEventListener("click", () => {
+        setDemoControlsOpen(false);
+      });
+
+      controlsBackdrop.addEventListener("click", () => {
+        setDemoControlsOpen(false);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && controlsToggle.getAttribute("aria-expanded") === "true") {
+          setDemoControlsOpen(false);
+        }
+      });
+
+      mobileControlsQuery.addEventListener("change", syncDemoControlsMode);
+
       mixedPreset.addEventListener("click", () => {
         applyDemoState({
           ui: "cyberpunk",
@@ -677,6 +949,7 @@
           theme: "arctic-indigo",
           mode: "dark"
         });
+        setDemoControlsOpen(false);
       });
 
       matchedPreset.addEventListener("click", () => {
@@ -686,6 +959,7 @@
           theme: themeSelect.value,
           mode: modeSelect.value
         });
+        setDemoControlsOpen(false);
       });
 
       contrastPreset.addEventListener("click", () => {
@@ -695,6 +969,7 @@
           theme: "graphite-cyan",
           mode: "dark"
         });
+        setDemoControlsOpen(false);
       });
     </script>
   </body>

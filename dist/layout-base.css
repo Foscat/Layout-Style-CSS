@@ -34,6 +34,13 @@
 
     --ly-grid-columns: 12;
     --ly-grid-min: 16rem;
+    --ly-card-grid-min: 16rem;
+    --ly-card-size-sm: 10rem;
+    --ly-card-size-md: 14rem;
+    --ly-card-size-lg: 18rem;
+    --ly-gallery-min: 12rem;
+    --ly-carousel-item-min: 16rem;
+    --ly-carousel-item-max: 28rem;
     --ly-sidebar-min: 14rem;
     --ly-sidebar-width: 18rem;
     --ly-sidebar-max: 22rem;
@@ -165,6 +172,19 @@
     gap: var(--ly-cluster-gap);
   }
 
+  .ly-button-group {
+    /* Button groups provide flow only; UI libraries keep button paint and states. */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+  }
+
+  .ly-button-group > * {
+    flex: 0 1 auto;
+    min-width: min(100%, var(--ly-button-min, 8rem));
+  }
+
   .ly-grid {
     display: grid;
     grid-template-columns: repeat(var(--ly-grid-columns), minmax(0, 1fr));
@@ -173,6 +193,53 @@
 
   .ly-grid--auto {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
+  }
+
+  .ly-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
+    gap: var(--ly-grid-gap);
+  }
+
+  .ly-card-grid > * {
+    min-width: 0;
+  }
+
+  .ly-card-sm {
+    min-block-size: var(--ly-card-size-sm);
+  }
+
+  .ly-card-md {
+    min-block-size: var(--ly-card-size-md);
+  }
+
+  .ly-card-lg {
+    min-block-size: var(--ly-card-size-lg);
+  }
+
+  .ly-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
+    gap: var(--ly-grid-gap);
+  }
+
+  .ly-gallery > * {
+    min-width: 0;
+  }
+
+  .ly-carousel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min(100%, var(--ly-carousel-item-min)), var(--ly-carousel-item-max));
+    gap: var(--ly-grid-gap);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  .ly-carousel > * {
+    min-width: 0;
+    scroll-snap-align: start;
   }
 
   .ly-row {

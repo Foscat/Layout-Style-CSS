@@ -1,6 +1,6 @@
 {
   "name": "layout-style-css",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Shell-first CSS layout primitives that complement ui-style-kit-css@2.0.1.",
   "type": "module",
   "license": "MIT",
@@ -60,6 +60,7 @@
     "./css.css": "./dist/layout-style-css.css",
     "./min": "./dist/layout-style-css.min.css",
     "./min.css": "./dist/layout-style-css.min.css",
+    "./dist/*.css": "./dist/*.css",
     "./dist/layout-style-css.css": "./dist/layout-style-css.css",
     "./dist/layout-style-css.min.css": "./dist/layout-style-css.min.css",
     "./base.css": "./dist/layout-base.css",
@@ -78,11 +79,17 @@
     "./cyberpunk.css": "./dist/layout-style-cyberpunk.css",
     "./y2k.css": "./dist/layout-style-y2k.css",
     "./retro-glass.css": "./dist/layout-style-retro-glass.css",
+    "./f-pattern.css": "./dist/layout-style-f-pattern.css",
+    "./z-pattern.css": "./dist/layout-style-z-pattern.css",
+    "./split-screen.css": "./dist/layout-style-split-screen.css",
+    "./mondrian.css": "./dist/layout-style-mondrian.css",
+    "./synthwave.css": "./dist/layout-style-synthwave.css",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "styles",
+    "docs/wiki",
     "demo/index.html",
     "demo/assets/apple-touch-icon.svg",
     "demo/assets/favicon.svg",
@@ -92,6 +99,9 @@
     "demo/site.webmanifest",
     "demo/sitemap.xml",
     "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "LICENSE"
   ]
 }

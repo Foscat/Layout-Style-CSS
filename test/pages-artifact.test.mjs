@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const outputDir = join(root, "output", "github-pages");
 const sourceDemoPath = join(root, "demo", "index.html");
+const pagesWorkflowPath = join(root, ".github", "workflows", "pages.yml");
 
 rmSync(outputDir, { recursive: true, force: true });
 
@@ -48,6 +49,29 @@ assert(!index.includes("../dist/layout-all.css"), "Pages root demo should not re
 assert(
   index.includes(`href="${canonicalHrefMatch[1]}"`) || index.includes(`href='${canonicalHrefMatch[1]}'`),
   "Pages demo should preserve the source demo canonical URL"
+);
+
+const pagesWorkflow = readFileSync(pagesWorkflowPath, "utf8");
+const pagesPreflightStep = pagesWorkflow.indexOf("- name: Verify Pages configuration");
+const setupNodeStep = pagesWorkflow.indexOf("- name: Set up Node");
+
+// The artifact root is already correct, so disabled Pages settings should fail before package work starts.
+assert.notEqual(pagesPreflightStep, -1, "Pages workflow should verify repository Pages configuration");
+assert.notEqual(setupNodeStep, -1, "Pages workflow should set up Node after preflight checks");
+assert(
+  pagesPreflightStep < setupNodeStep,
+  "Pages configuration should be checked before package verification starts"
+);
+assert(
+  pagesWorkflow.includes("GH_TOKEN: ${{ github.token }}") &&
+    pagesWorkflow.includes('gh api "repos/${{ github.repository }}/pages"'),
+  "Pages workflow should query the GitHub Pages API with the workflow token"
+);
+assert(
+  pagesWorkflow.includes("actions/configure-pages@v6") &&
+    pagesWorkflow.includes("actions/upload-pages-artifact@v5") &&
+    pagesWorkflow.includes("actions/deploy-pages@v5"),
+  "Pages workflow should use current GitHub Pages action majors"
 );
 
 console.log("GitHub Pages artifact checks look good.");

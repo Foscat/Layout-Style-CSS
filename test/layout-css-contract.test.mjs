@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
@@ -22,6 +22,11 @@ const requiredFiles = [
   "layout-style-cyberpunk.css",
   "layout-style-y2k.css",
   "layout-style-retro-glass.css",
+  "layout-style-f-pattern.css",
+  "layout-style-z-pattern.css",
+  "layout-style-split-screen.css",
+  "layout-style-mondrian.css",
+  "layout-style-synthwave.css",
   "layout-all.css",
   "layout-all-with-ui-kit.css",
   "layout-all-with-ui-kit-and-interactive-surface.css",
@@ -42,7 +47,12 @@ const requiredSourceFiles = [
   "layout-style-brutalism.css",
   "layout-style-cyberpunk.css",
   "layout-style-y2k.css",
-  "layout-style-retro-glass.css"
+  "layout-style-retro-glass.css",
+  "layout-style-f-pattern.css",
+  "layout-style-z-pattern.css",
+  "layout-style-split-screen.css",
+  "layout-style-mondrian.css",
+  "layout-style-synthwave.css"
 ];
 
 const requiredDemoAssets = [
@@ -53,6 +63,24 @@ const requiredDemoAssets = [
   "demo/robots.txt",
   "demo/sitemap.xml",
   "demo/site.webmanifest"
+];
+
+const requiredDocumentationFiles = [
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
+  "docs/wiki/Home.md",
+  "docs/wiki/_Sidebar.md",
+  "docs/wiki/Getting-Started.md",
+  "docs/wiki/Installation-And-CDN.md",
+  "docs/wiki/Layout-Primitives.md",
+  "docs/wiki/Layout-Recipes.md",
+  "docs/wiki/Layout-Styles.md",
+  "docs/wiki/UI-Style-Kit-Compatibility.md",
+  "docs/wiki/Demo-And-GitHub-Pages.md",
+  "docs/wiki/Release-And-Publishing.md",
+  "docs/wiki/Security-And-Support.md",
+  "docs/wiki/Contributing.md"
 ];
 
 const requiredBaseClasses = [
@@ -84,6 +112,16 @@ const requiredWrapperClasses = [
   ".ly-wrapper--readable"
 ];
 
+const requiredRecipeClasses = [
+  ".ly-button-group",
+  ".ly-card-grid",
+  ".ly-card-sm",
+  ".ly-card-md",
+  ".ly-card-lg",
+  ".ly-gallery",
+  ".ly-carousel"
+];
+
 const requiredStyleClasses = [
   ".ly-style-minimal-saas",
   ".ly-style-bento",
@@ -95,7 +133,12 @@ const requiredStyleClasses = [
   ".ly-style-brutalism",
   ".ly-style-cyberpunk",
   ".ly-style-y2k",
-  ".ly-style-retro-glass"
+  ".ly-style-retro-glass",
+  ".ly-style-f-pattern",
+  ".ly-style-z-pattern",
+  ".ly-style-split-screen",
+  ".ly-style-mondrian",
+  ".ly-style-synthwave"
 ];
 
 const requiredDataUiSelectors = [
@@ -112,6 +155,39 @@ const requiredDataUiSelectors = [
   '[data-ui="retro-glass"]'
 ];
 
+const uiStylePrefixes = [
+  "saas",
+  "bento",
+  "max",
+  "bau",
+  "tactile",
+  "neo",
+  "retro",
+  "brutal",
+  "cyber",
+  "y2k",
+  "rg"
+];
+
+const requiredUiStructuralAliasSuffixes = [
+  "container",
+  "section",
+  "stack",
+  "cluster",
+  "grid",
+  "split"
+];
+
+const requiredUiRecipeAliasSuffixes = [
+  "button-group",
+  "card-grid",
+  "card-sm",
+  "card-md",
+  "card-lg",
+  "gallery",
+  "carousel"
+];
+
 const requiredLayoutSelectors = [
   '[data-layout="minimal-saas"]',
   '[data-layout="bento"]',
@@ -123,7 +199,12 @@ const requiredLayoutSelectors = [
   '[data-layout="brutalism"]',
   '[data-layout="cyberpunk"]',
   '[data-layout="y2k"]',
-  '[data-layout="retro-glass"]'
+  '[data-layout="retro-glass"]',
+  '[data-layout="f-pattern"]',
+  '[data-layout="z-pattern"]',
+  '[data-layout="split-screen"]',
+  '[data-layout="mondrian"]',
+  '[data-layout="synthwave"]'
 ];
 
 const requiredLayoutStyleSelectors = [
@@ -137,7 +218,20 @@ const requiredLayoutStyleSelectors = [
   '[layout-style="brutalism"]',
   '[layout-style="cyberpunk"]',
   '[layout-style="y2k"]',
-  '[layout-style="retro-glass"]'
+  '[layout-style="retro-glass"]',
+  '[layout-style="f-pattern"]',
+  '[layout-style="z-pattern"]',
+  '[layout-style="split-screen"]',
+  '[layout-style="mondrian"]',
+  '[layout-style="synthwave"]'
+];
+
+const newLayoutStyleFiles = [
+  "layout-style-f-pattern.css",
+  "layout-style-z-pattern.css",
+  "layout-style-split-screen.css",
+  "layout-style-mondrian.css",
+  "layout-style-synthwave.css"
 ];
 
 const requiredShellPrimitives = [
@@ -238,6 +332,58 @@ function runNpmPackDryRun() {
   return parsed[0].files.map((file) => file.path).sort();
 }
 
+function extractFencedBlocks(markdown, language) {
+  const blocks = [];
+  const pattern = new RegExp(`\`\`\`${language}\\n([\\s\\S]*?)\\n\`\`\``, "g");
+  let match = pattern.exec(markdown);
+
+  while (match) {
+    blocks.push(match[1]);
+    match = pattern.exec(markdown);
+  }
+
+  return blocks;
+}
+
+function extractPackageImports(markdown) {
+  const imports = [];
+  const importPattern = /import\s+["']([^"']+)["'];?/g;
+
+  for (const block of extractFencedBlocks(markdown, "js")) {
+    importPattern.lastIndex = 0;
+    let match = importPattern.exec(block);
+
+    while (match) {
+      imports.push(match[1]);
+      match = importPattern.exec(block);
+    }
+  }
+
+  return imports;
+}
+
+function extractMarkdownLinks(markdown) {
+  const links = [];
+  const linkPattern = /\[[^\]]+\]\(([^)]+)\)/g;
+  let match = linkPattern.exec(markdown);
+
+  while (match) {
+    links.push(match[1]);
+    match = linkPattern.exec(markdown);
+  }
+
+  return links;
+}
+
+function isLocalMarkdownLink(link) {
+  return (
+    !link.startsWith("http://") &&
+    !link.startsWith("https://") &&
+    !link.startsWith("#") &&
+    link.endsWith(".md")
+  );
+}
+
 const files = readdirSync(dist);
 for (const file of requiredFiles) {
   assert(files.includes(file), `Missing ${file}`);
@@ -265,6 +411,10 @@ for (const asset of requiredDemoAssets) {
   assert(existsSync(join(root, asset)), `Missing demo asset ${asset}`);
 }
 
+for (const file of requiredDocumentationFiles) {
+  assert(existsSync(join(root, file)), `Missing professional documentation file ${file}`);
+}
+
 assert(existsSync(join(root, "demo", "index.html")), "Demo must live at demo/index.html");
 
 const base = readFileSync(join(dist, "layout-base.css"), "utf8");
@@ -290,6 +440,9 @@ assert(base.includes(".ly-panes > *"), "Base pane children must allow shrinkage"
 assert(base.includes(".ly-sidebar-layout > *"), "Base sidebar layout children must allow shrinkage");
 for (const className of requiredWrapperClasses) {
   assert(base.includes(className), `Base responsive wrapper contract missing ${className}`);
+}
+for (const className of requiredRecipeClasses) {
+  assert(base.includes(className), `Base layout recipe contract missing ${className}`);
 }
 assert(
   normalizedBase.includes(".ly-container,\n  .ly-wrapper"),
@@ -345,6 +498,37 @@ assert(
   "Retro Glass layout must keep the tablet hero split stacked before the floating rail shell"
 );
 
+const newLayoutStructuralContracts = [
+  {
+    file: "layout-style-f-pattern.css",
+    snippets: ['"header header"\n        "sidebar main"', "grid-column: span 2;"]
+  },
+  {
+    file: "layout-style-z-pattern.css",
+    snippets: ['"header header"\n        "main sidebar"', "align-items: end;"]
+  },
+  {
+    file: "layout-style-split-screen.css",
+    snippets: ['"header header"\n        "main sidebar"', "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);"]
+  },
+  {
+    file: "layout-style-mondrian.css",
+    snippets: ['"sidebar header header"', "grid-row: span 2;"]
+  },
+  {
+    file: "layout-style-synthwave.css",
+    snippets: ['"main main"\n        "sidebar sidebar"', "--ly-carousel-item-max: 34rem;"]
+  }
+];
+
+for (const { file, snippets } of newLayoutStructuralContracts) {
+  const css = readFileSync(join(dist, file), "utf8");
+
+  for (const snippet of snippets) {
+    assert(css.includes(snippet), `${file} should preserve its distinct layout behavior: ${snippet}`);
+  }
+}
+
 for (const dataLayout of requiredLayoutSelectors) {
   const styleName = dataLayout.match(/"(.+)"/)[1];
   const css = readFileSync(join(dist, `layout-style-${styleName}.css`), "utf8");
@@ -360,6 +544,15 @@ for (const layoutStyle of requiredLayoutStyleSelectors) {
 const bridge = readFileSync(join(dist, "layout-ui-style-kit-bridge.css"), "utf8");
 for (const dataUi of requiredDataUiSelectors) {
   assert(bridge.includes(dataUi), `Bridge missing ${dataUi}`);
+}
+for (const prefix of uiStylePrefixes) {
+  for (const suffix of requiredUiStructuralAliasSuffixes) {
+    assert(bridge.includes(`.${prefix}-${suffix}`), `Bridge missing .${prefix}-${suffix} structural alias`);
+  }
+
+  for (const suffix of requiredUiRecipeAliasSuffixes) {
+    assert(bridge.includes(`.${prefix}-${suffix}`), `Bridge missing .${prefix}-${suffix} recipe alias`);
+  }
 }
 assert.deepEqual(
   findOwnedVisualDeclarations(bridge),
@@ -377,6 +570,9 @@ assert(
   allCss.indexOf("layout-ui-style-kit-bridge.css") < allCss.indexOf("layout-style-minimal-saas.css"),
   "layout-all.css must import layout-base.css before style files"
 );
+for (const file of newLayoutStyleFiles) {
+  assert(allCss.includes(file), `layout-all.css must import ${file}`);
+}
 
 const allWithUiKit = readFileSync(join(dist, "layout-all-with-ui-kit.css"), "utf8");
 assert(
@@ -403,7 +599,8 @@ assert(
 );
 assert(
   flattened.includes("Layout Style Library base primitives") &&
-    flattened.includes("Layout style: retro-glass."),
+    flattened.includes("Layout style: retro-glass.") &&
+    flattened.includes("Layout style: synthwave."),
   "Flattened bundle must include base, bridge, and every layout style"
 );
 assert(
@@ -424,7 +621,7 @@ assert(!minified.includes("@import"), "Minified bundle must be layout-only and f
 
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 assert.equal(packageJson.name, "layout-style-css");
-assert.equal(packageJson.version, "1.0.0");
+assert.equal(packageJson.version, "1.1.0");
 assert.equal(packageJson.license, "MIT");
 assert.equal(packageJson.private, undefined);
 assert.equal(packageJson.description.includes("ui-style-kit-css@2.0.1"), true);
@@ -445,6 +642,7 @@ assert(packageJson.devDependencies["@playwright/test"], "Playwright must be inst
 assert.deepEqual(packageJson.files, [
   "dist",
   "styles",
+  "docs/wiki",
   "demo/index.html",
   "demo/assets/apple-touch-icon.svg",
   "demo/assets/favicon.svg",
@@ -454,6 +652,9 @@ assert.deepEqual(packageJson.files, [
   "demo/site.webmanifest",
   "demo/sitemap.xml",
   "README.md",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
   "LICENSE"
 ]);
 assert.equal(packageJson.scripts.build, "node scripts/build.mjs");
@@ -475,11 +676,16 @@ assert.equal(packageJson.exports["./css"], "./dist/layout-style-css.css");
 assert.equal(packageJson.exports["./css.css"], "./dist/layout-style-css.css");
 assert.equal(packageJson.exports["./min"], "./dist/layout-style-css.min.css");
 assert.equal(packageJson.exports["./min.css"], "./dist/layout-style-css.min.css");
+assert.equal(packageJson.exports["./dist/*.css"], "./dist/*.css");
 assert.equal(packageJson.exports["./package.json"], "./package.json");
 assert.equal(
   packageJson.exports["./all-with-ui-kit-and-interactive-surface.css"],
   "./dist/layout-all-with-ui-kit-and-interactive-surface.css"
 );
+for (const file of newLayoutStyleFiles) {
+  const exportName = file.replace("layout-style-", "").replace(".css", "");
+  assert.equal(packageJson.exports[`./${exportName}.css`], `./dist/${file}`);
+}
 
 const demo = readFileSync(join(root, "demo", "index.html"), "utf8");
 const demoInlineCss = demo.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
@@ -552,6 +758,22 @@ assert(demo.includes("layout-style-css"), "Demo copy should use the production p
 assert(demo.includes("../dist/layout-all.css"), "Demo should load the local layout distribution");
 assert(demo.includes("ui-style-kit-css@2.0.1"), "Demo should pin UI Style Kit CSS v2.0.1");
 assert(demo.includes("Layout Recipes"), "Demo should expose recipe-style organization examples");
+assert(demo.includes("Button group"), "Demo should expose the button group layout recipe");
+assert(demo.includes("Card grid"), "Demo should expose the card grid layout recipe");
+assert(demo.includes("Card size"), "Demo should expose the card size layout recipe");
+assert(demo.includes("Gallery"), "Demo should expose the gallery layout recipe");
+assert(demo.includes("Carousel"), "Demo should expose the carousel layout recipe");
+assert(demo.includes("Frame and scroll"), "Demo should expose the frame and scroll layout recipe");
+assert(demo.includes('value="f-pattern"'), "Demo should expose the F-pattern layout option");
+assert(demo.includes('value="z-pattern"'), "Demo should expose the Z-pattern layout option");
+assert(demo.includes('value="split-screen"'), "Demo should expose the Split-Screen layout option");
+assert(demo.includes('value="mondrian"'), "Demo should expose the Mondrian layout option");
+assert(demo.includes('value="synthwave"'), "Demo should expose the Synthwave layout option");
+assert(demo.includes("F-pattern"), "Demo should describe the F-pattern layout style");
+assert(demo.includes("Z-pattern"), "Demo should describe the Z-pattern layout style");
+assert(demo.includes("Synthwave"), "Demo should describe the Synthwave layout style");
+assert(demo.includes('id="demoControlsToggle"'), "Demo should expose a mobile controls drawer toggle");
+assert(demo.includes('id="demoControlsDrawer"'), "Demo should expose a reusable controls drawer");
 assert(demo.includes("ly-wrapper"), "Demo should exercise the responsive wrapper alias");
 assert(
   !/<button\b[^>]*\bclass=/.test(demo),
@@ -577,9 +799,129 @@ for (const file of requiredFiles) {
   assert(!css.includes("TODO"), `${file} still contains TODO`);
 }
 
+const readme = readFileSync(join(root, "README.md"), "utf8");
+assert(
+  readme.includes("UI Style Kit Naming Compatibility"),
+  "README should document UI Style Kit naming compatibility"
+);
+assert(
+  readme.includes("Documentation And Wiki"),
+  "README should link to the professional wiki documentation"
+);
+assert(
+  readme.includes('import "layout-style-css/all-with-ui-kit.css";'),
+  "README should document the one-import UI Kit pairing"
+);
+assert(readme.includes(".ly-button-group"), "README should document the button group recipe");
+assert(readme.includes(".saas-card-grid"), "README should document UI-prefix recipe aliases");
+assert(readme.includes("F-Pattern"), "README should document the F-pattern layout style");
+assert(readme.includes("Z-Pattern"), "README should document the Z-pattern layout style");
+assert(readme.includes("Split-Screen"), "README should document the split-screen layout style");
+assert(readme.includes("Mondrian"), "README should document the Mondrian layout style");
+assert(readme.includes("Synthwave"), "README should document the Synthwave layout style");
+assert(
+  readme.includes(".ly-md-cols-{1,2,3,4,6,8,12,16}") &&
+    readme.includes(".ly-lg-cols-{1,2,3,4,6,8,12,16}"),
+  "README should document responsive column utility groups without implying bare numeric classes"
+);
+
+const readmeImports = extractPackageImports(readme);
+assert(readmeImports.length > 0, "README should include JavaScript import examples");
+
+for (const importPath of readmeImports.filter((path) => path === "layout-style-css" || path.startsWith("layout-style-css/"))) {
+  const subpath = importPath === "layout-style-css" ? "." : `./${importPath.slice("layout-style-css/".length)}`;
+  assert(packageJson.exports[subpath], `README import ${importPath} must be a package export`);
+}
+
+assert(
+  !readmeImports.includes("layout-style-css/layout-ui-style-kit-bridge.css"),
+  "README should use layout-style-css/bridge.css instead of the non-exported source filename"
+);
+assert(
+  !readmeImports.includes("interactive-surface-css"),
+  "README should import interactive-surface-css through its CSS entrypoint"
+);
+assert(
+  readmeImports.includes("interactive-surface-css/interactive-surface.css"),
+  "README should document the Interactive Surface CSS entrypoint"
+);
+
+for (const htmlBlock of extractFencedBlocks(readme, "html")) {
+  const stylesheetLinks = htmlBlock.match(/<link\s+rel="stylesheet"[^>]*>/g) ?? [];
+
+  for (const link of stylesheetLinks) {
+    assert(!link.includes("\n"), `README stylesheet link should be a single valid tag: ${link}`);
+    assert(/href="[^"]+"/.test(link), `README stylesheet link should include one quoted href: ${link}`);
+  }
+}
+
+assert(
+  readme.includes("https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css"),
+  "README CDN example should use the same UI Style Kit bridge filename as the demo"
+);
+assert(
+  readme.includes("https://unpkg.com/interactive-surface-css@1.2.5/dist/interactive-surface.min.css"),
+  "README CDN example should use the Interactive Surface CSS file"
+);
+
+const readmeLinks = extractMarkdownLinks(readme);
+for (const file of requiredDocumentationFiles) {
+  assert(
+    readmeLinks.includes(file),
+    `README should link to ${file}`
+  );
+}
+
+// Keep local documentation links reviewable before publishing a release tarball.
+for (const link of readmeLinks.filter(isLocalMarkdownLink)) {
+  assert(existsSync(join(root, link)), `README local documentation link is broken: ${link}`);
+}
+
+const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+assert(changelog.includes("# Changelog"), "CHANGELOG.md should use a standard changelog heading");
+assert(
+  changelog.includes("## [1.1.0] - 2026-07-05"),
+  "CHANGELOG.md should describe the 1.1.0 release candidate"
+);
+assert(changelog.includes("F-Pattern"), "CHANGELOG.md should mention the new F-Pattern layout");
+assert(changelog.includes("Synthwave"), "CHANGELOG.md should mention the new Synthwave layout");
+assert(changelog.includes("GitHub Pages"), "CHANGELOG.md should mention GitHub Pages readiness");
+assert(changelog.includes("wiki"), "CHANGELOG.md should mention the new wiki documentation");
+
+const wikiHome = readFileSync(join(root, "docs/wiki/Home.md"), "utf8");
+assert(wikiHome.includes("# Layout Style CSS Wiki"), "Wiki home should use a clear product heading");
+assert(wikiHome.includes("Version 1.1.0"), "Wiki home should identify the documented release");
+for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("docs/wiki/"))) {
+  const content = readFileSync(join(root, file), "utf8");
+  assert(content.includes("# "), `${file} should include a top-level heading`);
+  assert(!content.includes("TODO"), `${file} should not contain TODO placeholders`);
+
+  for (const link of extractMarkdownLinks(content).filter(isLocalMarkdownLink)) {
+    assert(
+      existsSync(join(dirname(join(root, file)), link)),
+      `${file} local documentation link is broken: ${link}`
+    );
+  }
+}
+
 const expectedPackFiles = [
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
   "LICENSE",
   "README.md",
+  "SECURITY.md",
+  "docs/wiki/Contributing.md",
+  "docs/wiki/Demo-And-GitHub-Pages.md",
+  "docs/wiki/Getting-Started.md",
+  "docs/wiki/Home.md",
+  "docs/wiki/Installation-And-CDN.md",
+  "docs/wiki/Layout-Primitives.md",
+  "docs/wiki/Layout-Recipes.md",
+  "docs/wiki/Layout-Styles.md",
+  "docs/wiki/Release-And-Publishing.md",
+  "docs/wiki/Security-And-Support.md",
+  "docs/wiki/UI-Style-Kit-Compatibility.md",
+  "docs/wiki/_Sidebar.md",
   "demo/assets/apple-touch-icon.svg",
   "demo/assets/favicon.svg",
   "demo/assets/social-card.png",
@@ -598,13 +940,18 @@ const expectedPackFiles = [
   "dist/layout-style-css.css",
   "dist/layout-style-css.min.css",
   "dist/layout-style-cyberpunk.css",
+  "dist/layout-style-f-pattern.css",
   "dist/layout-style-maximalist.css",
   "dist/layout-style-minimal-saas.css",
+  "dist/layout-style-mondrian.css",
   "dist/layout-style-neumorphism.css",
   "dist/layout-style-retrofuturism.css",
   "dist/layout-style-retro-glass.css",
+  "dist/layout-style-split-screen.css",
+  "dist/layout-style-synthwave.css",
   "dist/layout-style-tactile.css",
   "dist/layout-style-y2k.css",
+  "dist/layout-style-z-pattern.css",
   "dist/layout-ui-style-kit-bridge.css",
   "package.json",
   "styles/layout-base.css",
@@ -612,13 +959,18 @@ const expectedPackFiles = [
   "styles/layout-style-bento.css",
   "styles/layout-style-brutalism.css",
   "styles/layout-style-cyberpunk.css",
+  "styles/layout-style-f-pattern.css",
   "styles/layout-style-maximalist.css",
   "styles/layout-style-minimal-saas.css",
+  "styles/layout-style-mondrian.css",
   "styles/layout-style-neumorphism.css",
   "styles/layout-style-retrofuturism.css",
   "styles/layout-style-retro-glass.css",
+  "styles/layout-style-split-screen.css",
+  "styles/layout-style-synthwave.css",
   "styles/layout-style-tactile.css",
   "styles/layout-style-y2k.css",
+  "styles/layout-style-z-pattern.css",
   "styles/layout-ui-style-kit-bridge.css"
 ].sort();
 

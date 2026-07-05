@@ -4,6 +4,28 @@ Responsive CSS layout primitives for shell-first interfaces.
 
 `layout-style-css` gives applications a small, predictable composition layer: wrappers, app shells, grids, panes, sidebars, split sections, spacing utilities, and switchable layout personalities. It is designed to pair with `ui-style-kit-css@2.0.1`, while keeping layout decisions independent from visual theme decisions.
 
+## Documentation And Wiki
+
+The versioned wiki source lives in this repository so docs can be reviewed with code changes and shipped with the npm package:
+
+| Resource | Use it for |
+| --- | --- |
+| [Wiki home](docs/wiki/Home.md) | Release overview and navigation. |
+| [Getting started](docs/wiki/Getting-Started.md) | First install, first shell, and switching layouts. |
+| [Installation and CDN](docs/wiki/Installation-And-CDN.md) | npm, bundler, CDN, and package entrypoint guidance. |
+| [Layout primitives](docs/wiki/Layout-Primitives.md) | Wrapper, shell, grid, pane, frame, and utility contracts. |
+| [Layout recipes](docs/wiki/Layout-Recipes.md) | Copyable app shell, button group, card grid, gallery, and carousel patterns. |
+| [Layout styles](docs/wiki/Layout-Styles.md) | All layout personalities, including F-Pattern, Z-Pattern, Split-Screen, Mondrian, and Synthwave. |
+| [UI Style Kit compatibility](docs/wiki/UI-Style-Kit-Compatibility.md) | Prefix aliases and the boundary between structure and visual styling. |
+| [Demo and GitHub Pages](docs/wiki/Demo-And-GitHub-Pages.md) | Demo QA, Pages artifact behavior, and deployment setup. |
+| [Release and publishing](docs/wiki/Release-And-Publishing.md) | v1.1.0 release checklist, npm verification, and tag guidance. |
+| [Security and support](docs/wiki/Security-And-Support.md) | Security model, supported versions, and reporting path. |
+| [Contributing](docs/wiki/Contributing.md) | Local development, CSS rules, and review expectations. |
+| [Wiki sidebar source](docs/wiki/_Sidebar.md) | Navigation file for a GitHub Wiki mirror. |
+| [Changelog](CHANGELOG.md) | Version history. |
+| [Project contributing guide](CONTRIBUTING.md) | Repository-level contribution workflow. |
+| [Security policy](SECURITY.md) | Repository-level security policy. |
+
 ## Why It Exists
 
 Modern UI systems often mix two concerns:
@@ -51,6 +73,15 @@ import "ui-style-kit-css/with-bridge.css";
 import "layout-style-css/bridge.css";
 ```
 
+For a direct three-library setup, import each CSS entrypoint explicitly:
+
+```js
+import "ui-style-kit-css/with-bridge.css";
+import "interactive-surface-css/interactive-surface.css";
+import "layout-style-css/bridge.css";
+import "layout-style-css";
+```
+
 Use one root element for UI style, layout style, theme, and mode:
 
 ```html
@@ -90,7 +121,7 @@ Layout-only CDN entry:
 Recommended CDN pairing with UI Style Kit and Interactive Surface:
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/with-bridge.css">
+<link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css">
 <link rel="stylesheet" href="https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css">
 <link rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.2.5/dist/interactive-surface.min.css">
 ```
@@ -103,7 +134,7 @@ Recommended CDN pairing with UI Style Kit and Interactive Surface:
 | `import "layout-style-css/min.css";` | Minified layout-only CSS. |
 | `import "layout-style-css/all.css";` | Import-based bundle for all layout files. |
 | `import "layout-style-css/base.css";` | Base primitives only. |
-| `import "layout-style-css/minimal-saas.css";` | One layout personality. |
+| `import "layout-style-css/minimal-saas.css";` | One layout personality; the same pattern works for every layout style export. |
 | `import "layout-style-css/all-with-ui-kit.css";` | UI Style Kit plus all layouts. |
 | `import "layout-style-css/all-with-ui-kit-and-interactive-surface.css";` | UI Style Kit, Interactive Surface, and all layouts. |
 
@@ -113,6 +144,49 @@ The three-library aggregate imports in this order:
 @import url("ui-style-kit-css/with-bridge.css");
 @import url("interactive-surface-css/interactive-surface.css");
 @import url("./layout-all.css");
+```
+
+## UI Style Kit Naming Compatibility
+
+Use the aggregate import when a project wants UI Style Kit visuals and Layout Style CSS structure from one package entry:
+
+```js
+import "layout-style-css/all-with-ui-kit.css";
+```
+
+The bridge intentionally aliases structural classes and layout recipes only. UI Style Kit still owns component paint, typography, borders, shadows, native controls, focus states, themes, and modes.
+
+Supported UI-style prefixes are `saas`, `bento`, `max`, `bau`, `tactile`, `neo`, `retro`, `brutal`, `cyber`, `y2k`, and `rg`.
+
+| Alias pattern | Maps to |
+| --- | --- |
+| `<prefix>-container` | `.ly-wrapper` |
+| `<prefix>-section` | `.ly-section` |
+| `<prefix>-stack` | `.ly-stack` |
+| `<prefix>-cluster` | `.ly-cluster` |
+| `<prefix>-grid` | `.ly-grid` |
+| `<prefix>-split` | `.ly-split` |
+| `<prefix>-button-group` | `.ly-button-group` |
+| `<prefix>-card-grid` | `.ly-card-grid` |
+| `<prefix>-card-sm`, `<prefix>-card-md`, `<prefix>-card-lg` | `.ly-card-sm`, `.ly-card-md`, `.ly-card-lg` |
+| `<prefix>-gallery` | `.ly-gallery` |
+| `<prefix>-carousel` | `.ly-carousel` |
+
+Example:
+
+```html
+<section class="saas-container saas-section">
+  <div class="saas-card-grid">
+    <article class="saas-card ly-card-md">Metric</article>
+    <article class="saas-card ly-card-md">Metric</article>
+    <article class="saas-card ly-card-md">Metric</article>
+  </div>
+
+  <div class="saas-button-group">
+    <button class="saas-button">Save</button>
+    <button class="saas-button-secondary">Export</button>
+  </div>
+</section>
 ```
 
 ## Responsive Wrapper API
@@ -224,6 +298,82 @@ Use for inboxes, editors, queues, and preview workflows.
 </section>
 ```
 
+### Button Group
+
+Use for responsive action rows that should wrap without forcing buttons to full-width.
+
+```html
+<div class="ly-button-group">
+  <button class="saas-button">Save</button>
+  <button class="saas-button-secondary">Preview</button>
+  <button class="saas-button-secondary">Export</button>
+</div>
+```
+
+### Card Grid
+
+Use for repeated cards that need a resilient auto-fit layout.
+
+```html
+<div class="ly-card-grid">
+  <article class="saas-card ly-card-md">Plan</article>
+  <article class="saas-card ly-card-md">Plan</article>
+  <article class="saas-card ly-card-md">Plan</article>
+</div>
+```
+
+The same structure can use UI-prefix aliases such as `.saas-card-grid`:
+
+```html
+<div class="saas-card-grid">
+  <article class="saas-card saas-card-md">Plan</article>
+  <article class="saas-card saas-card-md">Plan</article>
+</div>
+```
+
+### Card Size
+
+Use card size helpers when a repeated surface needs consistent minimum block sizing.
+
+```html
+<article class="ly-surface ly-card-sm">Compact card</article>
+<article class="ly-surface ly-card-md">Standard card</article>
+<article class="ly-surface ly-card-lg">Feature card</article>
+```
+
+### Gallery
+
+Use for responsive media or object grids. Pair it with `.ly-frame` to keep ratios stable.
+
+```html
+<div class="ly-gallery">
+  <figure class="ly-frame ly-frame-4x3">Media</figure>
+  <figure class="ly-frame ly-frame-4x3">Media</figure>
+  <figure class="ly-frame ly-frame-4x3">Media</figure>
+</div>
+```
+
+### Carousel
+
+Use for horizontal groups that need scroll snapping without adding visual chrome.
+
+```html
+<div class="ly-carousel">
+  <article class="ly-surface ly-card-md">Step one</article>
+  <article class="ly-surface ly-card-md">Step two</article>
+  <article class="ly-surface ly-card-md">Step three</article>
+</div>
+```
+
+### Frame And Scroll
+
+Use frames for predictable media ratios and scroll areas for bounded panes.
+
+```html
+<div class="ly-frame ly-frame-16x9">Preview</div>
+<aside class="ly-scroll-area ly-overflow-auto">Scrollable content</aside>
+```
+
 ## Base Primitives
 
 | Class | Purpose |
@@ -237,6 +387,11 @@ Use for inboxes, editors, queues, and preview workflows.
 | `.ly-cluster` | Wrapping horizontal group. |
 | `.ly-grid` | CSS Grid foundation. |
 | `.ly-grid--auto` | Responsive auto-fit grid. |
+| `.ly-button-group` | Wrapping action group with stable child sizing. |
+| `.ly-card-grid` | Auto-fit card grid recipe. |
+| `.ly-card-sm`, `.ly-card-md`, `.ly-card-lg` | Consistent minimum card block sizes. |
+| `.ly-gallery` | Responsive gallery grid recipe. |
+| `.ly-carousel` | Horizontal scroll-snap recipe. |
 | `.ly-row`, `.ly-col`, `.ly-col-*` | Flex row and column utilities. |
 | `.ly-app-shell` | Header/sidebar/main shell. |
 | `.ly-app-header`, `.ly-app-sidebar`, `.ly-app-main` | App shell regions. |
@@ -255,8 +410,8 @@ Utilities are composition-only. They set layout variables, spacing, flow, visibi
 | Class group | Purpose |
 | --- | --- |
 | `.ly-cols-1` through `.ly-cols-12`, `.ly-cols-16` | Set the base grid column count. |
-| `.ly-md-cols-1`, `2`, `3`, `4`, `6`, `8`, `12`, `16` | Change grid column count from the tablet breakpoint up. |
-| `.ly-lg-cols-1`, `2`, `3`, `4`, `6`, `8`, `12`, `16` | Change grid column count from the desktop breakpoint up. |
+| `.ly-md-cols-{1,2,3,4,6,8,12,16}` | Change grid column count from the tablet breakpoint up. |
+| `.ly-lg-cols-{1,2,3,4,6,8,12,16}` | Change grid column count from the desktop breakpoint up. |
 | `.ly-span-1` through `.ly-span-16` | Span a grid item across a fixed number of tracks. |
 | `.ly-span-full` | Span a grid item across the full grid. |
 
@@ -316,6 +471,11 @@ Each layout style file targets layout selectors only. It does not key off `data-
 | `cyberpunk` | `layout-style-cyberpunk.css` | Narrow utility rail with dense command workspace, compact gutters, and clipped panels. |
 | `y2k` | `layout-style-y2k.css` | Centered hub shell with floating window rhythm and dock-like support regions. |
 | `retro-glass` | `layout-style-retro-glass.css` | Top-framed glass shell with a floating right utility rail and layered panes. |
+| `f-pattern` | `layout-style-f-pattern.css` | F-Pattern scan path with a top band, persistent left rail, and heavier early content rows. |
+| `z-pattern` | `layout-style-z-pattern.css` | Z-Pattern scan path that leads from a broad header into primary content and a right support rail. |
+| `split-screen` | `layout-style-split-screen.css` | Split-Screen shell that gives main and support regions equal competing weight. |
+| `mondrian` | `layout-style-mondrian.css` | Mondrian block composition with asymmetrical rectangular spans and compact gaps. |
+| `synthwave` | `layout-style-synthwave.css` | Synthwave stage composition with wide cinematic content, dock-like support areas, and horizontal preview rhythm. |
 
 ## Mix And Match Contract
 
@@ -332,6 +492,8 @@ data-ui="cyberpunk" data-layout="maximalist" data-theme="arctic-indigo" data-mod
 data-ui="bauhaus" data-layout="retro-glass" data-theme="graphite-cyan" data-mode="dark"
 data-ui="minimal-saas" data-layout="bento" data-theme="ocean-steel" data-mode="light"
 data-ui="brutalism" data-layout="cyberpunk" data-theme="midnight-gold" data-mode="contrast"
+data-ui="cyberpunk" data-layout="synthwave" data-theme="cyber-lime" data-mode="dark"
+data-ui="bauhaus" data-layout="mondrian" data-theme="graphite-cyan" data-mode="contrast"
 ```
 
 Supported layout selectors:
@@ -372,6 +534,8 @@ The artifact is written to `output/github-pages/` and contains:
 - generated `dist/` CSS
 - `.nojekyll`
 
+Before the workflow can deploy, enable GitHub Pages in repository Settings > Pages and set the source to GitHub Actions.
+
 The repository includes a GitHub Actions workflow that verifies the package, builds the artifact, uploads it, and deploys it to GitHub Pages from `main` or `workflow_dispatch`.
 
 ## Package Files
@@ -396,6 +560,12 @@ demo/
 scripts/
   build.mjs
   build-pages.mjs
+docs/wiki/
+  Home.md
+  *.md
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
 ```
 
 `styles/` is the authored source. `dist/` and `output/github-pages/` are generated.
@@ -422,8 +592,9 @@ The check command builds `dist/`, runs Stylelint, runs contract tests, runs resp
 Before publishing:
 
 ```bash
-npm view layout-style-css@1.0.0 version --json
+npm view layout-style-css@1.1.0 version --json
 npm run release:verify
+npm audit --audit-level=moderate
 ```
 
 Publish and verify:
@@ -431,7 +602,7 @@ Publish and verify:
 ```bash
 npm login
 npm publish --access public
-npm view layout-style-css@1.0.0
+npm view layout-style-css@1.1.0
 ```
 
 After publish, verify these CDN URLs:
@@ -441,7 +612,7 @@ https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css
 https://cdn.jsdelivr.net/npm/layout-style-css@1/dist/layout-style-css.min.css
 ```
 
-Tag the release as `v1.0.0` in `Foscat/layout-style-css`.
+Tag the release as `v1.1.0` in `Foscat/layout-style-css`.
 
 ## Compatibility
 

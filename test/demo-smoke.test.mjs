@@ -138,6 +138,101 @@ async function verifyDemoState(page, path, expectedState, viewport) {
   }
 }
 
+async function verifyMobileControlsDrawer(page, baseUrl, viewport) {
+  await page.setViewportSize(viewport);
+  await page.goto(baseUrl, { waitUntil: "networkidle" });
+
+  const closedState = await page.evaluate(() => ({
+    header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
+    toggle: document.querySelector("#demoControlsToggle")?.getBoundingClientRect().toJSON(),
+    toggleExpanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
+    drawerHidden: document.querySelector("#demoControlsDrawer")?.getAttribute("aria-hidden"),
+    horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth
+  }));
+
+  assert(closedState.header?.height <= 112, `Closed mobile header should stay compact; received ${closedState.header?.height}px`);
+  assert(closedState.toggle?.width > 0 && closedState.toggle.height > 0, "Mobile controls toggle should be visible");
+  assert.equal(closedState.toggleExpanded, "false", "Mobile controls toggle should start collapsed");
+  assert.equal(closedState.drawerHidden, "true", "Mobile controls drawer should start hidden");
+  assert(
+    closedState.horizontalOverflow <= 4,
+    `Closed mobile header should not create horizontal overflow; received ${closedState.horizontalOverflow}px`
+  );
+
+  const waitForDrawerOpen = () =>
+    page.waitForFunction((viewportWidth) => {
+      const toggle = document.querySelector("#demoControlsToggle");
+      const drawer = document.querySelector("#demoControlsDrawer");
+      if (!(toggle instanceof HTMLElement) || !(drawer instanceof HTMLElement)) {
+        return false;
+      }
+
+      if (toggle.getAttribute("aria-expanded") !== "true" || drawer.getAttribute("aria-hidden") !== "false") {
+        return false;
+      }
+
+      const { width, height, left, right } = drawer.getBoundingClientRect();
+      return width > 0 && height > 0 && left >= -1 && right <= viewportWidth + 1;
+    }, viewport.width);
+
+  await page.click("#demoControlsToggle");
+  await waitForDrawerOpen();
+  const openState = await page.evaluate(() => ({
+    toggleExpanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
+    drawerHidden: document.querySelector("#demoControlsDrawer")?.getAttribute("aria-hidden"),
+    drawer: document.querySelector("#demoControlsDrawer")?.getBoundingClientRect().toJSON(),
+    firstSelect: document.querySelector("#uiSelect")?.getBoundingClientRect().toJSON(),
+    horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth
+  }));
+
+  assert.equal(openState.toggleExpanded, "true", "Mobile controls toggle should expand the drawer");
+  assert.equal(openState.drawerHidden, "false", "Mobile controls drawer should be announced as visible");
+  assert(openState.drawer?.width > 0 && openState.drawer.height > 0, "Mobile controls drawer should be visible after opening");
+  assert(
+    openState.drawer.left >= -1 && openState.drawer.right <= viewport.width + 1,
+    `Open mobile controls drawer should fit the viewport; received left ${openState.drawer.left}px and right ${openState.drawer.right}px`
+  );
+  assert(openState.firstSelect?.width > 0 && openState.firstSelect.height > 0, "Mobile controls should remain usable in the drawer");
+  assert(
+    openState.firstSelect.left >= 0 && openState.firstSelect.right <= viewport.width,
+    `Mobile controls should be reachable inside the drawer; received left ${openState.firstSelect.left}px and right ${openState.firstSelect.right}px`
+  );
+  assert(
+    openState.horizontalOverflow <= 4,
+    `Open mobile drawer should not create horizontal overflow; received ${openState.horizontalOverflow}px`
+  );
+
+  await page.keyboard.press("Escape");
+  assert.equal(
+    await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
+    "false",
+    "Escape should close the mobile controls drawer"
+  );
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.id),
+    "demoControlsToggle",
+    "Closing the drawer should return focus to the toggle"
+  );
+
+  await page.click("#demoControlsToggle");
+  await waitForDrawerOpen();
+  await page.click("#demoControlsBackdrop", { position: { x: 8, y: 8 } });
+  assert.equal(
+    await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
+    "false",
+    "Backdrop click should close the mobile controls drawer"
+  );
+
+  await page.click("#demoControlsToggle");
+  await waitForDrawerOpen();
+  await page.click("#demoControlsClose");
+  assert.equal(
+    await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
+    "false",
+    "Close button should close the mobile controls drawer"
+  );
+}
+
 assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
 assert(existsSync(uiKitCssPath), "Demo smoke test requires ui-style-kit-css dev dependency");
 
@@ -283,6 +378,56 @@ try {
         mode: "light",
         uiPrefix: "max"
       }
+    },
+    {
+      path: `${baseUrl}?preset=fPattern`,
+      state: {
+        ui: "minimal-saas",
+        layout: "f-pattern",
+        theme: "arctic-indigo",
+        mode: "light",
+        uiPrefix: "saas"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=zPattern`,
+      state: {
+        ui: "bento",
+        layout: "z-pattern",
+        theme: "ocean-steel",
+        mode: "light",
+        uiPrefix: "bento"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=splitScreen`,
+      state: {
+        ui: "maximalist",
+        layout: "split-screen",
+        theme: "sunset-ember",
+        mode: "light",
+        uiPrefix: "max"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=mondrian`,
+      state: {
+        ui: "bauhaus",
+        layout: "mondrian",
+        theme: "graphite-cyan",
+        mode: "contrast",
+        uiPrefix: "bau"
+      }
+    },
+    {
+      path: `${baseUrl}?preset=synthwave`,
+      state: {
+        ui: "cyberpunk",
+        layout: "synthwave",
+        theme: "cyber-lime",
+        mode: "dark",
+        uiPrefix: "cyber"
+      }
     }
   ];
 
@@ -291,6 +436,11 @@ try {
       await verifyDemoState(page, preset.path, preset.state, viewport);
     }
   }
+
+  await verifyMobileControlsDrawer(page, baseUrl, { width: 375, height: 667 });
+  await verifyMobileControlsDrawer(page, baseUrl, { width: 667, height: 375 });
+  await verifyMobileControlsDrawer(page, baseUrl, { width: 768, height: 1024 });
+  await verifyMobileControlsDrawer(page, baseUrl, { width: 1100, height: 696 });
 } finally {
   await browser.close();
   server.close();
