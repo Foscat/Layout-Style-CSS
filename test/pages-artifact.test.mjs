@@ -27,7 +27,7 @@ const requiredArtifactFiles = [
   "site.webmanifest",
   "assets/favicon.svg",
   "assets/apple-touch-icon.svg",
-  "assets/social-card.svg",
+  "assets/social-card.png",
   "dist/layout-all.css",
   "dist/layout-style-css.css",
   "dist/layout-style-css.min.css"
