@@ -1,4 +1,4 @@
-import { createReadStream, existsSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +7,7 @@ import { chromium } from "@playwright/test";
 
 const root = normalize(fileURLToPath(new URL("..", import.meta.url))).replace(/[\\/]$/, "");
 const demoPath = join(root, "demo", "index.html");
+const testTempDir = join(root, ".tmp", "playwright");
 const uiKitCssPath = join(
   root,
   "node_modules",
@@ -14,6 +15,11 @@ const uiKitCssPath = join(
   "dist",
   "ui-style-kit.with-bridge.min.css"
 );
+
+// Keep Playwright artifacts inside the repository workspace for locked-down Windows runners.
+mkdirSync(testTempDir, { recursive: true });
+process.env.TEMP = testTempDir;
+process.env.TMP = testTempDir;
 
 const mimeTypes = new Map([
   [".css", "text/css; charset=utf-8"],
