@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const dist = join(root, "dist");
 const styles = join(root, "styles");
+const npmPublishWorkflowPath = join(root, ".github", "workflows", "npm-publish.yml");
 
 const requiredFiles = [
   "layout-base.css",
@@ -622,7 +623,7 @@ assert(!minified.includes("@import"), "Minified bundle must be layout-only and f
 
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 assert.equal(packageJson.name, "layout-style-css");
-assert.equal(packageJson.version, "1.1.0");
+assert.equal(packageJson.version, "1.1.1");
 assert.equal(packageJson.license, "MIT");
 assert.equal(packageJson.private, undefined);
 assert.equal(packageJson.description.includes("ui-style-kit-css@2.0.1"), true);
@@ -881,8 +882,8 @@ for (const link of readmeLinks.filter(isLocalMarkdownLink)) {
 const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
 assert(changelog.includes("# Changelog"), "CHANGELOG.md should use a standard changelog heading");
 assert(
-  changelog.includes("## [1.1.0] - 2026-07-05"),
-  "CHANGELOG.md should describe the 1.1.0 release candidate"
+  changelog.includes("## [1.1.1] - 2026-07-05"),
+  "CHANGELOG.md should describe the 1.1.1 release candidate"
 );
 assert(changelog.includes("F-Pattern"), "CHANGELOG.md should mention the new F-Pattern layout");
 assert(changelog.includes("Synthwave"), "CHANGELOG.md should mention the new Synthwave layout");
@@ -891,7 +892,7 @@ assert(changelog.includes("wiki"), "CHANGELOG.md should mention the new wiki doc
 
 const wikiHome = readFileSync(join(root, "docs/wiki/Home.md"), "utf8");
 assert(wikiHome.includes("# Layout Style CSS Wiki"), "Wiki home should use a clear product heading");
-assert(wikiHome.includes("Version 1.1.0"), "Wiki home should identify the documented release");
+assert(wikiHome.includes("Version 1.1.1"), "Wiki home should identify the documented release");
 for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("docs/wiki/"))) {
   const content = readFileSync(join(root, file), "utf8");
   assert(content.includes("# "), `${file} should include a top-level heading`);
@@ -904,6 +905,33 @@ for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("
     );
   }
 }
+
+const npmPublishWorkflow = readFileSync(npmPublishWorkflowPath, "utf8");
+assert(
+  npmPublishWorkflow.includes("types: [published]") && !npmPublishWorkflow.includes("types: [created]"),
+  "npm publish workflow should publish from public release events, not draft release creation"
+);
+assert(
+  npmPublishWorkflow.includes("workflow_dispatch:") &&
+    npmPublishWorkflow.includes("release_tag:") &&
+    npmPublishWorkflow.includes('description: "Release tag to publish, for example v1.1.1"'),
+  "npm publish workflow should expose a manual recovery dispatch with an explicit release tag"
+);
+assert(
+  npmPublishWorkflow.includes("ref: ${{ github.event.inputs.release_tag || github.event.release.tag_name }}"),
+  "npm publish workflow should check out the selected release tag"
+);
+assert(
+  npmPublishWorkflow.includes('node-version: 22') &&
+    npmPublishWorkflow.includes("npm run check") &&
+    npmPublishWorkflow.includes("npm publish --access public"),
+  "npm publish workflow should verify and publish with the supported Node runtime"
+);
+assert(
+  npmPublishWorkflow.includes('if [ "v${PACKAGE_VERSION}" != "$RELEASE_TAG" ]; then') &&
+    npmPublishWorkflow.includes("NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}"),
+  "npm publish workflow should verify tag/package alignment and use the standard npm token secret"
+);
 
 const expectedPackFiles = [
   "CHANGELOG.md",

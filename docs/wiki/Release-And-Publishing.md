@@ -1,12 +1,12 @@
 # Release And Publishing
 
-This page is the release checklist for `layout-style-css@1.1.0`.
+This page is the release checklist for `layout-style-css@1.1.1`.
 
 ## Version Contract
 
-- `package.json` version is `1.1.0`.
-- `package-lock.json` is synchronized with `1.1.0`.
-- `CHANGELOG.md` contains a `1.1.0` entry.
+- `package.json` version is `1.1.1`.
+- `package-lock.json` is synchronized with `1.1.1`.
+- `CHANGELOG.md` contains a `1.1.1` entry.
 - README and wiki docs link to the current public API.
 
 ## Verification
@@ -30,7 +30,7 @@ Expected result: every command exits with status `0`. `git diff --check` may pri
 Before publishing, confirm npm does not already have the target version:
 
 ```bash
-npm view layout-style-css@1.1.0 version --json
+npm view layout-style-css@1.1.1 version --json
 ```
 
 Publish:
@@ -43,7 +43,7 @@ npm publish --access public
 Verify:
 
 ```bash
-npm view layout-style-css@1.1.0
+npm view layout-style-css@1.1.1
 ```
 
 ## Tag
@@ -51,9 +51,11 @@ npm view layout-style-css@1.1.0
 Tag the release:
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.1.1
+git push origin v1.1.1
 ```
+
+The npm publish workflow runs when the `v1.1.1` GitHub release is published. If the release event needs to be replayed, run the `Node.js Package` workflow manually from the default branch with `release_tag` set to `v1.1.1`.
 
 ## GitHub Wiki Mirror
 

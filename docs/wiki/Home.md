@@ -1,6 +1,6 @@
 # Layout Style CSS Wiki
 
-Version 1.1.0 documents the professional library contract for `layout-style-css`: install paths, package exports, layout primitives, recipes, UI Style Kit compatibility, demo deployment, security, and release workflow.
+Version 1.1.1 documents the professional library contract for `layout-style-css`: install paths, package exports, layout primitives, recipes, UI Style Kit compatibility, demo deployment, security, and release workflow.
 
 ## Start Here
 
@@ -13,7 +13,7 @@ Version 1.1.0 documents the professional library contract for `layout-style-css`
 | [Layout Styles](Layout-Styles.md) | All layout personalities and when to use them. |
 | [UI Style Kit Compatibility](UI-Style-Kit-Compatibility.md) | Prefix aliases and ownership boundaries. |
 | [Demo And GitHub Pages](Demo-And-GitHub-Pages.md) | Demo QA and Pages deployment. |
-| [Release And Publishing](Release-And-Publishing.md) | npm v1.1.0 verification and publish checklist. |
+| [Release And Publishing](Release-And-Publishing.md) | npm v1.1.1 verification and publish checklist. |
 | [Security And Support](Security-And-Support.md) | Security model, supported versions, and reporting path. |
 | [Contributing](Contributing.md) | Contribution workflow and review expectations. |
 
