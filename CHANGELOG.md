@@ -2,7 +2,14 @@
 
 All notable changes to `layout-style-css` are documented here.
 
-This project follows semantic versioning. The `1.1.1` release is additive and keeps the existing `ly-*` public contract intact.
+This project follows semantic versioning. The `1.1.2` release is a patch recovery for the `1.1.1` package and keeps the existing `ly-*` public contract intact.
+
+## [1.1.2] - 2026-07-08
+
+### Fixed
+
+- Reissued the release metadata, package lock, README install examples, wiki checklist, and publish workflow recovery tag under `1.1.2`.
+- Kept the additive `1.1.1` CSS and documentation contract intact while moving the publish target to a clean patch version.
 
 ## [1.1.1] - 2026-07-05
 

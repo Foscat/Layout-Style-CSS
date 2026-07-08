@@ -623,7 +623,7 @@ assert(!minified.includes("@import"), "Minified bundle must be layout-only and f
 
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 assert.equal(packageJson.name, "layout-style-css");
-assert.equal(packageJson.version, "1.1.1");
+assert.equal(packageJson.version, "1.1.2");
 assert.equal(packageJson.license, "MIT");
 assert.equal(packageJson.private, undefined);
 assert.equal(packageJson.description.includes("ui-style-kit-css@2.0.1"), true);
@@ -882,8 +882,8 @@ for (const link of readmeLinks.filter(isLocalMarkdownLink)) {
 const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
 assert(changelog.includes("# Changelog"), "CHANGELOG.md should use a standard changelog heading");
 assert(
-  changelog.includes("## [1.1.1] - 2026-07-05"),
-  "CHANGELOG.md should describe the 1.1.1 release candidate"
+  changelog.includes("## [1.1.2] - 2026-07-08"),
+  "CHANGELOG.md should describe the 1.1.2 patch recovery"
 );
 assert(changelog.includes("F-Pattern"), "CHANGELOG.md should mention the new F-Pattern layout");
 assert(changelog.includes("Synthwave"), "CHANGELOG.md should mention the new Synthwave layout");
@@ -892,7 +892,14 @@ assert(changelog.includes("wiki"), "CHANGELOG.md should mention the new wiki doc
 
 const wikiHome = readFileSync(join(root, "docs/wiki/Home.md"), "utf8");
 assert(wikiHome.includes("# Layout Style CSS Wiki"), "Wiki home should use a clear product heading");
-assert(wikiHome.includes("Version 1.1.1"), "Wiki home should identify the documented release");
+assert(wikiHome.includes("Version 1.1.2"), "Wiki home should identify the documented release");
+const releaseChecklist = readFileSync(join(root, "docs/wiki/Release-And-Publishing.md"), "utf8");
+assert(
+  releaseChecklist.includes("layout-style-css@1.1.2") &&
+    releaseChecklist.includes("git tag v1.1.2") &&
+    releaseChecklist.includes("release_tag` set to `v1.1.2`"),
+  "Release checklist should identify the 1.1.2 package, tag, and workflow recovery path"
+);
 for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("docs/wiki/"))) {
   const content = readFileSync(join(root, file), "utf8");
   assert(content.includes("# "), `${file} should include a top-level heading`);
@@ -914,7 +921,7 @@ assert(
 assert(
   npmPublishWorkflow.includes("workflow_dispatch:") &&
     npmPublishWorkflow.includes("release_tag:") &&
-    npmPublishWorkflow.includes('description: "Release tag to publish, for example v1.1.1"'),
+    npmPublishWorkflow.includes('description: "Release tag to publish, for example v1.1.2"'),
   "npm publish workflow should expose a manual recovery dispatch with an explicit release tag"
 );
 assert(
