@@ -80,6 +80,15 @@ async function verifyDemoState(page, path, expectedState, viewport) {
   };
   const routeHandler = (route) => route.fulfill({ path: uiKitCssPath, contentType: "text/css" });
 
+  const assertBackgroundLayers = (value, expected, message) => {
+    const layers = value.split(",").map((layer) => layer.trim()).filter(Boolean);
+
+    assert(
+      layers.length > 0 && layers.every((layer) => layer === expected),
+      `${message}; received "${value}"`
+    );
+  };
+
   page.on("console", onConsole);
   page.on("pageerror", onPageError);
   await page.route(routeUrl, routeHandler);
@@ -103,6 +112,9 @@ async function verifyDemoState(page, path, expectedState, viewport) {
       wrappers: document.querySelectorAll(".ly-wrapper").length,
       recipes: document.querySelectorAll("#recipes article").length,
       surfaces: document.querySelectorAll(".ly-surface").length,
+      rootBackgroundAttachment: getComputedStyle(document.body).backgroundAttachment,
+      rootBackgroundRepeat: getComputedStyle(document.body).backgroundRepeat,
+      rootBackgroundSize: getComputedStyle(document.body).backgroundSize,
       uiButtonClasses: document.querySelector("[data-ui-kit~='button']")?.className,
       uiSurfaceClasses: document.querySelector("[data-ui-kit~='card'], [data-ui-kit~='panel']")?.className
     }));
@@ -134,6 +146,21 @@ async function verifyDemoState(page, path, expectedState, viewport) {
     assert(
       state.horizontalOverflow <= 4,
       `Demo should not create meaningful horizontal overflow; received ${state.horizontalOverflow}px`
+    );
+    assertBackgroundLayers(
+      state.rootBackgroundAttachment,
+      "fixed",
+      "Demo root backgrounds should stay anchored while scrolling"
+    );
+    assertBackgroundLayers(
+      state.rootBackgroundRepeat,
+      "no-repeat",
+      "Demo root backgrounds should not tile"
+    );
+    assertBackgroundLayers(
+      state.rootBackgroundSize,
+      "100% 100%",
+      "Demo root backgrounds should cover the viewport once"
     );
     assert.deepEqual(consoleErrors, [], "Demo should not log console errors");
     assert.deepEqual(pageErrors, [], "Demo should not throw page errors");
