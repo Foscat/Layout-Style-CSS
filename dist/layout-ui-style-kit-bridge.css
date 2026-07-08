@@ -7,6 +7,16 @@
 @layer ly.bridge {
   :where(.ly-root[data-ui][data-theme][data-mode], [data-ui][data-theme][data-mode] .ly-root) {
     --ly-ui-style-kit-bridge: 1;
+
+    /*
+      Normalize UI kit root background geometry without redefining its paint.
+      Patterned theme layers should fill the viewport once instead of tiling.
+    */
+    min-block-size: 100svh;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
   }
 
   :where(.ly-root[data-ui="minimal-saas"], [data-ui="minimal-saas"] .ly-root) {
