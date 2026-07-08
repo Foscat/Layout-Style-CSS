@@ -18,7 +18,7 @@ The versioned wiki source lives in this repository so docs can be reviewed with 
 | [Layout styles](docs/wiki/Layout-Styles.md) | All layout personalities, including F-Pattern, Z-Pattern, Split-Screen, Mondrian, and Synthwave. |
 | [UI Style Kit compatibility](docs/wiki/UI-Style-Kit-Compatibility.md) | Prefix aliases and the boundary between structure and visual styling. |
 | [Demo and GitHub Pages](docs/wiki/Demo-And-GitHub-Pages.md) | Demo QA, Pages artifact behavior, and deployment setup. |
-| [Release and publishing](docs/wiki/Release-And-Publishing.md) | v1.1.1 release checklist, npm verification, and tag guidance. |
+| [Release and publishing](docs/wiki/Release-And-Publishing.md) | v1.1.2 release checklist, npm verification, and tag guidance. |
 | [Security and support](docs/wiki/Security-And-Support.md) | Security model, supported versions, and reporting path. |
 | [Contributing](docs/wiki/Contributing.md) | Local development, CSS rules, and review expectations. |
 | [Wiki sidebar source](docs/wiki/_Sidebar.md) | Navigation file for a GitHub Wiki mirror. |
@@ -41,7 +41,7 @@ Use as a standalone layout system with all styles or just one layout personality
 
 ```bash
 # Install the full layout system
-npm install layout-style-css@1.1.1
+npm install layout-style-css@1.1.2
 ```
 
 Then import whichever CSS entrypoints you need:
@@ -54,13 +54,13 @@ import "layout-style-css/minimal-saas.css";
 Pair with UI Style Kit CSS for a complete layout and visual system. Themes and layouts can mix and match UI styles.  Set the vibe with color schemes that offer a range of moods, from minimal to maximal, from Bauhaus to Brutalism.
 
 ```bash
-npm install layout-style-css@1.1.1 ui-style-kit-css@2.0.1
+npm install layout-style-css@1.1.2 ui-style-kit-css@2.0.1
 ```
 
 Additionally installing Interactive Surface CSS sets you up with a complete reactive layout and surface system.
 
 ```bash
-npm install layout-style-css@1.1.1 ui-style-kit-css@2.0.1 interactive-surface-css@1.2.5
+npm install layout-style-css@1.1.2 ui-style-kit-css@2.0.1 interactive-surface-css@1.2.5
 ```
 
 ## Quick Start
@@ -592,7 +592,7 @@ The check command builds `dist/`, runs Stylelint, runs contract tests, runs resp
 Before publishing:
 
 ```bash
-npm view layout-style-css@1.1.1 version --json
+npm view layout-style-css@1.1.2 version --json
 npm run release:verify
 npm audit --audit-level=moderate
 ```
@@ -602,7 +602,7 @@ Publish and verify:
 ```bash
 npm login
 npm publish --access public
-npm view layout-style-css@1.1.1
+npm view layout-style-css@1.1.2
 ```
 
 After publish, verify these CDN URLs:
@@ -612,7 +612,7 @@ https://unpkg.com/layout-style-css@1/dist/layout-style-css.min.css
 https://cdn.jsdelivr.net/npm/layout-style-css@1/dist/layout-style-css.min.css
 ```
 
-Tag the release as `v1.1.1` in `Foscat/layout-style-css`. The npm publish workflow runs when that release is published and can be recovered manually from Actions with `release_tag` set to `v1.1.1`.
+Tag the release as `v1.1.2` in `Foscat/layout-style-css`. The npm publish workflow runs when that release is published and can be recovered manually from Actions with `release_tag` set to `v1.1.2`.
 
 ## Compatibility
 
