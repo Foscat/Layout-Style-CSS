@@ -81,4 +81,3 @@
 - Add standalone CI on Node.js 20 and 22. Quick validation uses Chromium; full CI/release validation covers Chromium, Firefox, and WebKit.
 - Update publish workflow examples and tag/version validation to 2.0.0 without publishing or tagging.
 - Run final build, lint, static/rendered/Page tests, pack dry-run, npm audit, release verification, and `git diff --check`.
-
