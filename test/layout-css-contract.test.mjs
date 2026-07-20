@@ -644,6 +644,39 @@ assert(
   legacy.includes('@import url("./layout-style-css.css");'),
   "legacy.css must import the default v2 bundle"
 );
+const legacyLayer = legacy.match(/@layer ly\.legacy\s*\{([\s\S]*)\}\s*$/)?.[1] ?? "";
+const legacyWrapperContracts = [
+  [
+    ".ly-container {",
+    [
+      "width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));",
+      "margin-inline: auto;"
+    ]
+  ],
+  [".ly-container--sm {", ["--ly-container-max: var(--ly-container-sm);"]],
+  [".ly-container--md {", ["--ly-container-max: var(--ly-container-md);"]],
+  [".ly-container--lg {", ["--ly-container-max: var(--ly-container-lg);"]],
+  [".ly-container--xl {", ["--ly-container-max: var(--ly-container-xl);"]],
+  [".ly-container--wide {", ["--ly-container-max: var(--ly-container-wide);"]],
+  [
+    ".ly-container--fluid {",
+    ["width: 100%;", "max-width: none;", "padding-inline: var(--ly-page-padding-inline);"]
+  ]
+];
+
+assert(legacyLayer, "legacy.css must define concrete rules inside @layer ly.legacy");
+for (const [selector, declarations] of legacyWrapperContracts) {
+  const ruleStart = legacyLayer.indexOf(selector);
+  const ruleEnd = legacyLayer.indexOf("}", ruleStart);
+
+  assert.notEqual(ruleStart, -1, `Legacy wrapper compatibility missing ${selector}`);
+  assert.notEqual(ruleEnd, -1, `Legacy wrapper compatibility rule is incomplete: ${selector}`);
+
+  const rule = legacyLayer.slice(ruleStart, ruleEnd);
+  for (const declaration of declarations) {
+    assert(rule.includes(declaration), `${selector} must preserve ${declaration}`);
+  }
+}
 
 for (const file of requiredFiles) {
   const css = readFileSync(join(dist, file), "utf8");

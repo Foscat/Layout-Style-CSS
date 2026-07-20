@@ -2,4 +2,36 @@
 
 @import url("./layout-style-css.css");
 
-@layer ly.legacy;
+@layer ly.legacy {
+  /* Preserve v1 container sizing while applications migrate to v2 wrapper names. */
+  .ly-container {
+    width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
+    margin-inline: auto;
+  }
+
+  .ly-container--sm {
+    --ly-container-max: var(--ly-container-sm);
+  }
+
+  .ly-container--md {
+    --ly-container-max: var(--ly-container-md);
+  }
+
+  .ly-container--lg {
+    --ly-container-max: var(--ly-container-lg);
+  }
+
+  .ly-container--xl {
+    --ly-container-max: var(--ly-container-xl);
+  }
+
+  .ly-container--wide {
+    --ly-container-max: var(--ly-container-wide);
+  }
+
+  .ly-container--fluid {
+    width: 100%;
+    max-width: none;
+    padding-inline: var(--ly-page-padding-inline);
+  }
+}
