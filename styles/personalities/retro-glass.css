@@ -1,0 +1,84 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/*
+  Layout style: retro-glass.
+  Top-framed content shell with a floating right utility rail. Visual identity
+  remains owned by ui-style-kit-css.
+*/
+
+@layer ly.personalities.retro_glass {
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) {
+    --ly-container-max: 96rem;
+    --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-section-padding-block: clamp(3rem, 8vw, 6rem);
+    --ly-sidebar-width: 18rem;
+    --ly-grid-min: 15rem;
+    --ly-gap: clamp(1rem, 2.6vw, 2rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(1rem, 2vw, 1.75rem);
+  }
+
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-main {
+    padding: clamp(1rem, 3vw, 2rem);
+  }
+
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-container,
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-wrapper {
+    width: min(100%, var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-section {
+    padding-block: clamp(2rem, 6vw, 5rem);
+  }
+
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
+    align-items: stretch;
+  }
+
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-grid--auto {
+    grid-auto-rows: minmax(9rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
+      /* Keep glass feature panels stacked until the floating rail has enough horizontal room. */
+      grid-template-columns: 1fr;
+    }
+
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--two {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.62fr);
+    }
+  }
+
+  @media (min-width: 56rem) {
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-shell {
+      grid-template-areas:
+        "header header"
+        "main sidebar";
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), var(--ly-sidebar-width));
+    }
+
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: var(--ly-space-4);
+      height: calc(100svh - (var(--ly-space-4) * 2));
+      margin: var(--ly-space-4) var(--ly-space-4) var(--ly-space-4) 0;
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-sidebar-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.48fr);
+    }
+
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
+      grid-template-columns: minmax(0, 1.1fr) minmax(min(100%, 18rem), 0.9fr);
+    }
+  }
+
+  @media (min-width: 78rem) {
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--three {
+      grid-template-columns: minmax(min(100%, 15rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.52fr);
+    }
+  }
+}

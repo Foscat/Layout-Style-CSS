@@ -1,6 +1,11 @@
-/* layout-style-css bundle. Generated from styles/ by scripts/build.mjs. */
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
 
-/* layout-base.css */
+/* layout-style-css bundle. Generated from focused styles/ modules by scripts/build.mjs. */
+
+/* wrappers.css */
+@layer ly.wrappers;
+
+/* primitives.css */
 /*
   Layout Style Library base primitives.
   This file owns spatial composition only. Visual paint, typography, borders,
@@ -79,7 +84,7 @@
   }
 }
 
-@layer ly.layout {
+@layer ly.primitives {
   .ly-page {
     min-height: 100svh;
   }
@@ -364,7 +369,7 @@
   }
 }
 
-@layer ly.responsive {
+@layer ly.primitives {
   @media (min-width: 48rem) {
     /*
       Fixed support tracks are capped against their container so nested layouts
@@ -541,186 +546,20 @@
   }
 }
 
-/* layout-ui-style-kit-bridge.css */
-/*
-  Compatibility bridge for ui-style-kit-css.
-  This bridge intentionally does not map color, type, border, or shadow tokens.
-  ui-style-kit-css owns those visuals; layout-style-library owns structure.
-*/
+/* recipes.css */
+@layer ly.recipes;
 
-@layer ly.bridge {
-  :where(.ly-root[data-ui][data-theme][data-mode], [data-ui][data-theme][data-mode] .ly-root) {
-    --ly-ui-style-kit-bridge: 1;
+/* utilities.css */
+@layer ly.utilities;
 
-    /*
-      Normalize UI kit root background geometry without redefining its paint.
-      Patterned theme layers should fill the viewport once instead of tiling.
-    */
-    min-block-size: 100svh;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-  }
-
-  :where(.ly-root[data-ui="minimal-saas"], [data-ui="minimal-saas"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: minimal-saas;
-  }
-
-  :where(.ly-root[data-ui="bento"], [data-ui="bento"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: bento;
-  }
-
-  :where(.ly-root[data-ui="maximalist"], [data-ui="maximalist"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: maximalist;
-  }
-
-  :where(.ly-root[data-ui="bauhaus"], [data-ui="bauhaus"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: bauhaus;
-  }
-
-  :where(.ly-root[data-ui="tactile"], [data-ui="tactile"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: tactile;
-  }
-
-  :where(.ly-root[data-ui="neumorphism"], [data-ui="neumorphism"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: neumorphism;
-  }
-
-  :where(.ly-root[data-ui="retrofuturism"], [data-ui="retrofuturism"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: retrofuturism;
-  }
-
-  :where(.ly-root[data-ui="brutalism"], [data-ui="brutalism"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: brutalism;
-  }
-
-  :where(.ly-root[data-ui="cyberpunk"], [data-ui="cyberpunk"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: cyberpunk;
-  }
-
-  :where(.ly-root[data-ui="y2k"], [data-ui="y2k"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: y2k;
-  }
-
-  :where(.ly-root[data-ui="retro-glass"], [data-ui="retro-glass"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: retro-glass;
-  }
-
-  :where(.saas-container, .bento-container, .max-container, .bau-container, .tactile-container, .neo-container, .retro-container, .brutal-container, .cyber-container, .y2k-container, .rg-container) {
-    /* UI Style Kit naming can opt into layout sizing without taking over visual paint. */
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-    margin-inline: auto;
-  }
-
-  :where(.saas-section, .bento-section, .max-section, .bau-section, .tactile-section, .neo-section, .retro-section, .brutal-section, .cyber-section, .y2k-section, .rg-section) {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.saas-stack, .bento-stack, .max-stack, .bau-stack, .tactile-stack, .neo-stack, .retro-stack, .brutal-stack, .cyber-stack, .y2k-stack, .rg-stack) {
-    display: flex;
-    flex-direction: column;
-    gap: var(--ly-stack-gap);
-  }
-
-  :where(.saas-cluster, .bento-cluster, .max-cluster, .bau-cluster, .tactile-cluster, .neo-cluster, .retro-cluster, .brutal-cluster, .cyber-cluster, .y2k-cluster, .rg-cluster) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--ly-cluster-gap);
-  }
-
-  :where(.saas-grid, .bento-grid, .max-grid, .bau-grid, .tactile-grid, .neo-grid, .retro-grid, .brutal-grid, .cyber-grid, .y2k-grid, .rg-grid) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--ly-gap);
-    align-items: var(--ly-split-align, center);
-  }
-
-  :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) > * {
-    min-width: 0;
-  }
-
-  :where(.saas-button-group, .bento-button-group, .max-button-group, .bau-button-group, .tactile-button-group, .neo-button-group, .retro-button-group, .brutal-button-group, .cyber-button-group, .y2k-button-group, .rg-button-group) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--ly-cluster-gap);
-  }
-
-  :where(.saas-button-group, .bento-button-group, .max-button-group, .bau-button-group, .tactile-button-group, .neo-button-group, .retro-button-group, .brutal-button-group, .cyber-button-group, .y2k-button-group, .rg-button-group) > * {
-    flex: 0 1 auto;
-    min-width: min(100%, var(--ly-button-min, 8rem));
-  }
-
-  :where(.saas-card-grid, .bento-card-grid, .max-card-grid, .bau-card-grid, .tactile-card-grid, .neo-card-grid, .retro-card-grid, .brutal-card-grid, .cyber-card-grid, .y2k-card-grid, .rg-card-grid) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  :where(.saas-card-grid, .bento-card-grid, .max-card-grid, .bau-card-grid, .tactile-card-grid, .neo-card-grid, .retro-card-grid, .brutal-card-grid, .cyber-card-grid, .y2k-card-grid, .rg-card-grid) > * {
-    min-width: 0;
-  }
-
-  :where(.saas-card-sm, .bento-card-sm, .max-card-sm, .bau-card-sm, .tactile-card-sm, .neo-card-sm, .retro-card-sm, .brutal-card-sm, .cyber-card-sm, .y2k-card-sm, .rg-card-sm) {
-    min-block-size: var(--ly-card-size-sm);
-  }
-
-  :where(.saas-card-md, .bento-card-md, .max-card-md, .bau-card-md, .tactile-card-md, .neo-card-md, .retro-card-md, .brutal-card-md, .cyber-card-md, .y2k-card-md, .rg-card-md) {
-    min-block-size: var(--ly-card-size-md);
-  }
-
-  :where(.saas-card-lg, .bento-card-lg, .max-card-lg, .bau-card-lg, .tactile-card-lg, .neo-card-lg, .retro-card-lg, .brutal-card-lg, .cyber-card-lg, .y2k-card-lg, .rg-card-lg) {
-    min-block-size: var(--ly-card-size-lg);
-  }
-
-  :where(.saas-gallery, .bento-gallery, .max-gallery, .bau-gallery, .tactile-gallery, .neo-gallery, .retro-gallery, .brutal-gallery, .cyber-gallery, .y2k-gallery, .rg-gallery) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  :where(.saas-gallery, .bento-gallery, .max-gallery, .bau-gallery, .tactile-gallery, .neo-gallery, .retro-gallery, .brutal-gallery, .cyber-gallery, .y2k-gallery, .rg-gallery) > * {
-    min-width: 0;
-  }
-
-  :where(.saas-carousel, .bento-carousel, .max-carousel, .bau-carousel, .tactile-carousel, .neo-carousel, .retro-carousel, .brutal-carousel, .cyber-carousel, .y2k-carousel, .rg-carousel) {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(min(100%, var(--ly-carousel-item-min)), var(--ly-carousel-item-max));
-    gap: var(--ly-grid-gap);
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-  }
-
-  :where(.saas-carousel, .bento-carousel, .max-carousel, .bau-carousel, .tactile-carousel, .neo-carousel, .retro-carousel, .brutal-carousel, .cyber-carousel, .y2k-carousel, .rg-carousel) > * {
-    min-width: 0;
-    scroll-snap-align: start;
-  }
-
-  @media (min-width: 48rem) {
-    :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
-      grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
-    }
-  }
-}
-
-/* layout-style-minimal-saas.css */
+/* personalities/minimal-saas.css */
 /*
   Layout style: minimal-saas.
   Steady left-rail SaaS shell with conservative content widths and predictable
   workspace rhythm. Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.minimal_saas {
+@layer ly.personalities.minimal_saas {
   :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) {
     --ly-container-max: 88rem;
     --ly-page-padding-inline: clamp(1rem, 3vw, 2.5rem);
@@ -782,14 +621,14 @@
   }
 }
 
-/* layout-style-bento.css */
+/* personalities/bento.css */
 /*
   Layout style: bento.
   Modular dashboard shell with staged mosaic zones. Visual identity remains
   owned by ui-style-kit-css.
 */
 
-@layer ly.styles.bento {
+@layer ly.personalities.bento {
   :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) {
     --ly-container-max: 104rem;
     --ly-page-padding-inline: clamp(1rem, 3.5vw, 3rem);
@@ -860,14 +699,14 @@
   }
 }
 
-/* layout-style-maximalist.css */
+/* personalities/maximalist.css */
 /*
   Layout style: maximalist.
   Editorial shell with oversized hero splits and staggered supporting regions.
   Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.maximalist {
+@layer ly.personalities.maximalist {
   :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) {
     --ly-container-max: 102rem;
     --ly-page-padding-inline: clamp(1rem, 6vw, 5.5rem);
@@ -955,14 +794,14 @@
   }
 }
 
-/* layout-style-bauhaus.css */
+/* personalities/bauhaus.css */
 /*
   Layout style: bauhaus.
   Strict framed column shell with structural rails and measured offsets. Visual
   identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.bauhaus {
+@layer ly.personalities.bauhaus {
   :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) {
     --ly-container-max: 92rem;
     --ly-page-padding-inline: clamp(1rem, 2vw, 2rem);
@@ -1027,14 +866,14 @@
   }
 }
 
-/* layout-style-tactile.css */
+/* personalities/tactile.css */
 /*
   Layout style: tactile.
   Instrument-panel shell with a heavier support dock and dense controls. Visual
   identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.tactile {
+@layer ly.personalities.tactile {
   :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) {
     --ly-container-max: 98rem;
     --ly-page-padding-inline: clamp(1rem, 3vw, 2.75rem);
@@ -1099,14 +938,14 @@
   }
 }
 
-/* layout-style-neumorphism.css */
+/* personalities/neumorphism.css */
 /*
   Layout style: neumorphism.
   Centered island shell with detached support regions. Visual identity remains
   owned by ui-style-kit-css.
 */
 
-@layer ly.styles.neumorphism {
+@layer ly.personalities.neumorphism {
   :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) {
     --ly-container-max: 86rem;
     --ly-page-padding-inline: clamp(1.25rem, 5vw, 4rem);
@@ -1173,14 +1012,14 @@
   }
 }
 
-/* layout-style-retrofuturism.css */
+/* personalities/retrofuturism.css */
 /*
   Layout style: retrofuturism.
   Panoramic bridge shell with symmetric pods and a wide central stage. Visual
   identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.retrofuturism {
+@layer ly.personalities.retrofuturism {
   :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) {
     --ly-container-max: 110rem;
     --ly-page-padding-inline: clamp(1rem, 4vw, 4rem);
@@ -1246,14 +1085,14 @@
   }
 }
 
-/* layout-style-brutalism.css */
+/* personalities/brutalism.css */
 /*
   Layout style: brutalism.
   Full-bleed slab shell with abrupt section breaks and compressed rails. Visual
   identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.brutalism {
+@layer ly.personalities.brutalism {
   :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) {
     --ly-container-max: 100vw;
     --ly-page-padding-inline: clamp(0.75rem, 3vw, 3rem);
@@ -1318,14 +1157,14 @@
   }
 }
 
-/* layout-style-cyberpunk.css */
+/* personalities/cyberpunk.css */
 /*
   Layout style: cyberpunk.
   Narrow utility rail with dense command workspace and compact gutters. Visual
   identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.cyberpunk {
+@layer ly.personalities.cyberpunk {
   :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) {
     --ly-container-max: 104rem;
     --ly-page-padding-inline: clamp(0.75rem, 2vw, 2rem);
@@ -1390,14 +1229,14 @@
   }
 }
 
-/* layout-style-y2k.css */
+/* personalities/y2k.css */
 /*
   Layout style: y2k.
   Centered hub shell with floating-window rhythm and in-flow support regions.
   Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.y2k {
+@layer ly.personalities.y2k {
   :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) {
     --ly-container-max: 84rem;
     --ly-page-padding-inline: clamp(1rem, 5vw, 4rem);
@@ -1464,14 +1303,14 @@
   }
 }
 
-/* layout-style-retro-glass.css */
+/* personalities/retro-glass.css */
 /*
   Layout style: retro-glass.
   Top-framed content shell with a floating right utility rail. Visual identity
   remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.retro_glass {
+@layer ly.personalities.retro_glass {
   :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) {
     --ly-container-max: 96rem;
     --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
@@ -1548,14 +1387,14 @@
   }
 }
 
-/* layout-style-f-pattern.css */
+/* personalities/f-pattern.css */
 /*
   Layout style: f-pattern.
   Top-led scan path with a persistent left rail and heavier early content rows.
   Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.f_pattern {
+@layer ly.personalities.f_pattern {
   :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) {
     --ly-container-max: 94rem;
     --ly-page-padding-inline: clamp(1rem, 3vw, 2.75rem);
@@ -1626,14 +1465,14 @@
   }
 }
 
-/* layout-style-z-pattern.css */
+/* personalities/z-pattern.css */
 /*
   Layout style: z-pattern.
   Header-first scan path that moves from broad lead content to a right-side
   support rail. Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.z_pattern {
+@layer ly.personalities.z_pattern {
   :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) {
     --ly-container-max: 100rem;
     --ly-page-padding-inline: clamp(1rem, 3.4vw, 3rem);
@@ -1704,14 +1543,14 @@
   }
 }
 
-/* layout-style-split-screen.css */
+/* personalities/split-screen.css */
 /*
   Layout style: split-screen.
   Equal-weight shell columns for contrasting focal points or side-by-side
   choices. Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.split_screen {
+@layer ly.personalities.split_screen {
   :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) {
     --ly-container-max: 100vw;
     --ly-page-padding-inline: clamp(0.875rem, 2.5vw, 2rem);
@@ -1768,14 +1607,14 @@
   }
 }
 
-/* layout-style-mondrian.css */
+/* personalities/mondrian.css */
 /*
   Layout style: mondrian.
   Asymmetrical rectangular blocks with staggered spans inspired by Mondrian
   composition. Visual identity remains owned by ui-style-kit-css.
 */
 
-@layer ly.styles.mondrian {
+@layer ly.personalities.mondrian {
   :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) {
     --ly-container-max: 108rem;
     --ly-page-padding-inline: clamp(0.75rem, 2.5vw, 2rem);
@@ -1847,7 +1686,7 @@
   }
 }
 
-/* layout-style-synthwave.css */
+/* personalities/synthwave.css */
 /*
   Layout style: synthwave.
   Wide stage, dock-like support areas, and cinematic horizontal flow inspired
@@ -1855,7 +1694,7 @@
   ui-style-kit-css.
 */
 
-@layer ly.styles.synthwave {
+@layer ly.personalities.synthwave {
   :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) {
     --ly-container-max: 112rem;
     --ly-page-padding-inline: clamp(1rem, 4vw, 3.5rem);

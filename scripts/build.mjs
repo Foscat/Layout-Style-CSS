@@ -5,62 +5,38 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const sourceDir = join(root, "styles");
 const distDir = join(root, "dist");
+const cascadeLayerPrelude =
+  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;";
 
-const sourceFiles = [
-  "layout-base.css",
-  "layout-ui-style-kit-bridge.css",
-  "layout-style-minimal-saas.css",
-  "layout-style-bento.css",
-  "layout-style-maximalist.css",
-  "layout-style-bauhaus.css",
-  "layout-style-tactile.css",
-  "layout-style-neumorphism.css",
-  "layout-style-retrofuturism.css",
-  "layout-style-brutalism.css",
-  "layout-style-cyberpunk.css",
-  "layout-style-y2k.css",
-  "layout-style-retro-glass.css",
-  "layout-style-f-pattern.css",
-  "layout-style-z-pattern.css",
-  "layout-style-split-screen.css",
-  "layout-style-mondrian.css",
-  "layout-style-synthwave.css"
+const coreModuleFiles = ["wrappers.css", "primitives.css", "recipes.css", "utilities.css"];
+const personalityNames = [
+  "minimal-saas",
+  "bento",
+  "maximalist",
+  "bauhaus",
+  "tactile",
+  "neumorphism",
+  "retrofuturism",
+  "brutalism",
+  "cyberpunk",
+  "y2k",
+  "retro-glass",
+  "f-pattern",
+  "z-pattern",
+  "split-screen",
+  "mondrian",
+  "synthwave"
 ];
-
-const generatedFiles = new Map([
-  [
-    "layout-all.css",
-    [
-      "./layout-base.css",
-      "./layout-ui-style-kit-bridge.css",
-      "./layout-style-minimal-saas.css",
-      "./layout-style-bento.css",
-      "./layout-style-maximalist.css",
-      "./layout-style-bauhaus.css",
-      "./layout-style-tactile.css",
-      "./layout-style-neumorphism.css",
-      "./layout-style-retrofuturism.css",
-      "./layout-style-brutalism.css",
-      "./layout-style-cyberpunk.css",
-      "./layout-style-y2k.css",
-      "./layout-style-retro-glass.css",
-      "./layout-style-f-pattern.css",
-      "./layout-style-z-pattern.css",
-      "./layout-style-split-screen.css",
-      "./layout-style-mondrian.css",
-      "./layout-style-synthwave.css"
-    ]
-  ],
-  ["layout-all-with-ui-kit.css", ["ui-style-kit-css/dist/ui-style-kit.css", "./layout-all.css"]],
-  [
-    "layout-all-with-ui-kit-and-interactive-surface.css",
-    [
-      "ui-style-kit-css/with-bridge.css",
-      "interactive-surface-css/interactive-surface.css",
-      "./layout-all.css"
-    ]
-  ]
-]);
+const personalityFiles = personalityNames.map((name) => `personalities/${name}.css`);
+const authoredEntryFiles = [
+  "core.css",
+  ...coreModuleFiles,
+  "personalities.css",
+  ...personalityFiles,
+  "integrations/ui-style-kit.css",
+  "legacy.css"
+];
+const flattenedSourceFiles = [...coreModuleFiles, ...personalityFiles];
 
 function assertInsideRoot(path) {
   const relativePath = relative(root, path);
@@ -79,12 +55,23 @@ function minifyCss(css) {
     .trim();
 }
 
-function importBundle(paths) {
-  return `${paths.map((path) => `@import url("${path}");`).join("\n")}\n`;
+function withoutSharedPrelude(css, file) {
+  if (!css.startsWith(cascadeLayerPrelude)) {
+    throw new Error(`${file} must begin with the shared cascade-layer prelude.`);
+  }
+
+  return css.slice(cascadeLayerPrelude.length).trim();
 }
 
 async function readSource(file) {
   return readFile(join(sourceDir, file), "utf8");
+}
+
+async function writeDist(file, css) {
+  const destination = join(distDir, file);
+  assertInsideRoot(destination);
+  await mkdir(dirname(destination), { recursive: true });
+  await writeFile(destination, css);
 }
 
 assertInsideRoot(sourceDir);
@@ -93,22 +80,22 @@ assertInsideRoot(distDir);
 await rm(distDir, { recursive: true, force: true });
 await mkdir(distDir, { recursive: true });
 
-const flattenedParts = [
-  "/* layout-style-css bundle. Generated from styles/ by scripts/build.mjs. */"
-];
-
-for (const file of sourceFiles) {
-  const css = await readSource(file);
-  await writeFile(join(distDir, file), css);
-  flattenedParts.push(`/* ${file} */\n${css.trim()}`);
+for (const file of authoredEntryFiles) {
+  await writeDist(file, await readSource(file));
 }
 
-for (const [file, imports] of generatedFiles) {
-  await writeFile(join(distDir, file), importBundle(imports));
+const flattenedParts = [
+  cascadeLayerPrelude,
+  "/* layout-style-css bundle. Generated from focused styles/ modules by scripts/build.mjs. */"
+];
+
+for (const file of flattenedSourceFiles) {
+  const css = await readSource(file);
+  flattenedParts.push(`/* ${file} */\n${withoutSharedPrelude(css, file)}`);
 }
 
 const flattened = `${flattenedParts.join("\n\n")}\n`;
-await writeFile(join(distDir, "layout-style-css.css"), flattened);
-await writeFile(join(distDir, "layout-style-css.min.css"), `${minifyCss(flattened)}\n`);
+await writeDist("layout-style-css.css", flattened);
+await writeDist("layout-style-css.min.css", `${minifyCss(flattened)}\n`);
 
-console.log(`Built ${sourceFiles.length + generatedFiles.size + 2} CSS files in ${relative(root, distDir)}.`);
+console.log(`Built ${authoredEntryFiles.length + 2} CSS files in ${relative(root, distDir)}.`);

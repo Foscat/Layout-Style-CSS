@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -9,7 +9,44 @@ const dist = join(root, "dist");
 const styles = join(root, "styles");
 const npmPublishWorkflowPath = join(root, ".github", "workflows", "npm-publish.yml");
 
+const cascadeLayerPrelude =
+  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;";
+const personalityNames = [
+  "minimal-saas",
+  "bento",
+  "maximalist",
+  "bauhaus",
+  "tactile",
+  "neumorphism",
+  "retrofuturism",
+  "brutalism",
+  "cyberpunk",
+  "y2k",
+  "retro-glass",
+  "f-pattern",
+  "z-pattern",
+  "split-screen",
+  "mondrian",
+  "synthwave"
+];
+const focusedEntryFiles = [
+  "core.css",
+  "wrappers.css",
+  "primitives.css",
+  "recipes.css",
+  "utilities.css",
+  "personalities.css",
+  ...personalityNames.map((name) => `personalities/${name}.css`),
+  "integrations/ui-style-kit.css",
+  "legacy.css"
+];
 const requiredFiles = [
+  ...focusedEntryFiles,
+  "layout-style-css.css",
+  "layout-style-css.min.css"
+];
+const requiredSourceFiles = [...focusedEntryFiles];
+const obsoleteDistFiles = [
   "layout-base.css",
   "layout-ui-style-kit-bridge.css",
   "layout-style-minimal-saas.css",
@@ -30,31 +67,25 @@ const requiredFiles = [
   "layout-style-synthwave.css",
   "layout-all.css",
   "layout-all-with-ui-kit.css",
-  "layout-all-with-ui-kit-and-interactive-surface.css",
-  "layout-style-css.css",
-  "layout-style-css.min.css"
+  "layout-all-with-ui-kit-and-interactive-surface.css"
 ];
-
-const requiredSourceFiles = [
-  "layout-base.css",
-  "layout-ui-style-kit-bridge.css",
-  "layout-style-minimal-saas.css",
-  "layout-style-bento.css",
-  "layout-style-maximalist.css",
-  "layout-style-bauhaus.css",
-  "layout-style-tactile.css",
-  "layout-style-neumorphism.css",
-  "layout-style-retrofuturism.css",
-  "layout-style-brutalism.css",
-  "layout-style-cyberpunk.css",
-  "layout-style-y2k.css",
-  "layout-style-retro-glass.css",
-  "layout-style-f-pattern.css",
-  "layout-style-z-pattern.css",
-  "layout-style-split-screen.css",
-  "layout-style-mondrian.css",
-  "layout-style-synthwave.css"
-];
+const expectedV2Exports = {
+  ".": "./dist/layout-style-css.css",
+  "./css": "./dist/layout-style-css.css",
+  "./css.css": "./dist/layout-style-css.css",
+  "./min": "./dist/layout-style-css.min.css",
+  "./min.css": "./dist/layout-style-css.min.css",
+  "./core.css": "./dist/core.css",
+  "./wrappers.css": "./dist/wrappers.css",
+  "./primitives.css": "./dist/primitives.css",
+  "./recipes.css": "./dist/recipes.css",
+  "./utilities.css": "./dist/utilities.css",
+  "./personalities.css": "./dist/personalities.css",
+  "./personalities/*.css": "./dist/personalities/*.css",
+  "./integrations/ui-style-kit.css": "./dist/integrations/ui-style-kit.css",
+  "./legacy.css": "./dist/legacy.css",
+  "./package.json": "./package.json"
+};
 
 const requiredDemoAssets = [
   "demo/assets/favicon.svg",
@@ -227,14 +258,6 @@ const requiredLayoutStyleSelectors = [
   '[layout-style="synthwave"]'
 ];
 
-const newLayoutStyleFiles = [
-  "layout-style-f-pattern.css",
-  "layout-style-z-pattern.css",
-  "layout-style-split-screen.css",
-  "layout-style-mondrian.css",
-  "layout-style-synthwave.css"
-];
-
 const requiredShellPrimitives = [
   ".ly-app-shell",
   ".ly-app-sidebar",
@@ -386,10 +409,42 @@ function isLocalMarkdownLink(link) {
   );
 }
 
-const files = readdirSync(dist);
-for (const file of requiredFiles) {
-  assert(files.includes(file), `Missing ${file}`);
+const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+const packageLock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+const lockRoot = packageLock.packages[""];
+const v2ContractFailures = [];
+
+if (packageJson.version !== "2.0.0") {
+  v2ContractFailures.push(`package version is ${packageJson.version}, expected 2.0.0`);
 }
+if (packageJson.engines?.node !== ">=20") {
+  v2ContractFailures.push(`Node engine is ${packageJson.engines?.node ?? "missing"}, expected >=20`);
+}
+if (packageJson.dependencies !== undefined || packageJson.peerDependencies !== undefined) {
+  v2ContractFailures.push("runtime and peer dependencies must be absent");
+}
+if (packageJson.devDependencies?.["interactive-surface-css"] !== "1.4.0") {
+  v2ContractFailures.push("interactive-surface-css dev fixture must be exactly 1.4.0");
+}
+if (JSON.stringify(packageJson.exports) !== JSON.stringify(expectedV2Exports)) {
+  v2ContractFailures.push("package exports do not match the focused v2 contract");
+}
+for (const file of requiredFiles) {
+  if (!existsSync(join(dist, file))) {
+    v2ContractFailures.push(`missing dist/${file}`);
+  }
+}
+for (const file of requiredSourceFiles) {
+  if (!existsSync(join(styles, file))) {
+    v2ContractFailures.push(`missing styles/${file}`);
+  }
+}
+for (const file of obsoleteDistFiles) {
+  if (existsSync(join(dist, file))) {
+    v2ContractFailures.push(`obsolete dist/${file} is still generated`);
+  }
+}
+assert.deepEqual(v2ContractFailures, [], "V2 package/build contract is incomplete");
 
 for (const file of requiredSourceFiles) {
   const sourcePath = join(styles, file);
@@ -401,6 +456,10 @@ for (const file of requiredSourceFiles) {
     readFileSync(distPath, "utf8"),
     sourceCss,
     `${file} must be generated from styles/${file}`
+  );
+  assert(
+    sourceCss.startsWith(cascadeLayerPrelude),
+    `${file} must begin with the shared cascade-layer prelude`
   );
   assert.deepEqual(
     findUnguardedGridTrackFloors(sourceCss, file),
@@ -419,16 +478,16 @@ for (const file of requiredDocumentationFiles) {
 
 assert(existsSync(join(root, "demo", "index.html")), "Demo must live at demo/index.html");
 
-const base = readFileSync(join(dist, "layout-base.css"), "utf8");
+const base = readFileSync(join(dist, "primitives.css"), "utf8");
 const normalizedBase = base.replace(/\r\n/g, "\n");
 assert.deepEqual(
   findOwnedVisualDeclarations(base),
   [],
-  "layout-base.css must leave visual properties to ui-style-kit-css"
+  "primitives.css must leave visual properties to ui-style-kit-css"
 );
 assert(
   !visualLayoutTokensOwnedByUiKit.test(base),
-  "layout-base.css must not define visual layout tokens"
+  "primitives.css must not define visual layout tokens"
 );
 for (const className of requiredBaseClasses) {
   assert(base.includes(className), `Base contract missing ${className}`);
@@ -461,7 +520,7 @@ assert(
 
 for (const className of requiredStyleClasses) {
   const styleName = className.replace(".ly-style-", "");
-  const path = join(dist, `layout-style-${styleName}.css`);
+  const path = join(dist, "personalities", `${styleName}.css`);
   const css = readFileSync(path, "utf8");
   assert.deepEqual(
     findOwnedVisualDeclarations(css),
@@ -482,19 +541,19 @@ for (const className of requiredStyleClasses) {
   }
 }
 
-const y2kCss = readFileSync(join(dist, "layout-style-y2k.css"), "utf8");
+const y2kCss = readFileSync(join(dist, "personalities", "y2k.css"), "utf8");
 assert(y2kCss.includes('"main sidebar"'), "Y2K layout must keep the sidebar as a shell region");
 
-const cyberpunkCss = readFileSync(join(dist, "layout-style-cyberpunk.css"), "utf8");
+const cyberpunkCss = readFileSync(join(dist, "personalities", "cyberpunk.css"), "utf8");
 assert(!cyberpunkCss.includes("4.75rem"), "Cyberpunk rail must remain usable with shared sidebar markup");
 
-const maximalistCss = readFileSync(join(dist, "layout-style-maximalist.css"), "utf8");
+const maximalistCss = readFileSync(join(dist, "personalities", "maximalist.css"), "utf8");
 assert(
   maximalistCss.includes("grid-template-columns: 1fr;"),
   "Maximalist layout must keep the tablet hero split stacked before the wide editorial shell"
 );
 
-const retroGlassCss = readFileSync(join(dist, "layout-style-retro-glass.css"), "utf8");
+const retroGlassCss = readFileSync(join(dist, "personalities", "retro-glass.css"), "utf8");
 assert(
   retroGlassCss.includes("grid-template-columns: 1fr;"),
   "Retro Glass layout must keep the tablet hero split stacked before the floating rail shell"
@@ -502,29 +561,29 @@ assert(
 
 const newLayoutStructuralContracts = [
   {
-    file: "layout-style-f-pattern.css",
+    file: "f-pattern.css",
     snippets: ['"header header"\n        "sidebar main"', "grid-column: span 2;"]
   },
   {
-    file: "layout-style-z-pattern.css",
+    file: "z-pattern.css",
     snippets: ['"header header"\n        "main sidebar"', "align-items: end;"]
   },
   {
-    file: "layout-style-split-screen.css",
+    file: "split-screen.css",
     snippets: ['"header header"\n        "main sidebar"', "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);"]
   },
   {
-    file: "layout-style-mondrian.css",
+    file: "mondrian.css",
     snippets: ['"sidebar header header"', "grid-row: span 2;"]
   },
   {
-    file: "layout-style-synthwave.css",
+    file: "synthwave.css",
     snippets: ['"main main"\n        "sidebar sidebar"', "--ly-carousel-item-max: 34rem;"]
   }
 ];
 
 for (const { file, snippets } of newLayoutStructuralContracts) {
-  const css = readFileSync(join(dist, file), "utf8").replace(/\r\n/g, "\n");
+  const css = readFileSync(join(dist, "personalities", file), "utf8").replace(/\r\n/g, "\n");
 
   for (const snippet of snippets) {
     assert(css.includes(snippet), `${file} should preserve its distinct layout behavior: ${snippet}`);
@@ -533,17 +592,17 @@ for (const { file, snippets } of newLayoutStructuralContracts) {
 
 for (const dataLayout of requiredLayoutSelectors) {
   const styleName = dataLayout.match(/"(.+)"/)[1];
-  const css = readFileSync(join(dist, `layout-style-${styleName}.css`), "utf8");
+  const css = readFileSync(join(dist, "personalities", `${styleName}.css`), "utf8");
   assert(css.includes(dataLayout), `Layout style missing ${dataLayout}`);
 }
 
 for (const layoutStyle of requiredLayoutStyleSelectors) {
   const styleName = layoutStyle.match(/"(.+)"/)[1];
-  const css = readFileSync(join(dist, `layout-style-${styleName}.css`), "utf8");
+  const css = readFileSync(join(dist, "personalities", `${styleName}.css`), "utf8");
   assert(css.includes(layoutStyle), `Layout style missing ${layoutStyle}`);
 }
 
-const bridge = readFileSync(join(dist, "layout-ui-style-kit-bridge.css"), "utf8");
+const bridge = readFileSync(join(dist, "integrations", "ui-style-kit.css"), "utf8");
 for (const dataUi of requiredDataUiSelectors) {
   assert(bridge.includes(dataUi), `Bridge missing ${dataUi}`);
 }
@@ -566,33 +625,33 @@ assert(
   "Bridge must not map ui-style-kit-css visual tokens into layout-owned visual tokens"
 );
 
-const allCss = readFileSync(join(dist, "layout-all.css"), "utf8");
-assert(
-  allCss.indexOf("layout-base.css") < allCss.indexOf("layout-ui-style-kit-bridge.css") &&
-  allCss.indexOf("layout-ui-style-kit-bridge.css") < allCss.indexOf("layout-style-minimal-saas.css"),
-  "layout-all.css must import layout-base.css before style files"
-);
-for (const file of newLayoutStyleFiles) {
-  assert(allCss.includes(file), `layout-all.css must import ${file}`);
+const core = readFileSync(join(dist, "core.css"), "utf8");
+for (const file of ["wrappers.css", "primitives.css", "recipes.css", "utilities.css"]) {
+  assert(core.includes(`@import url("./${file}");`), `core.css must import ${file}`);
 }
 
-const allWithUiKit = readFileSync(join(dist, "layout-all-with-ui-kit.css"), "utf8");
+const personalities = readFileSync(join(dist, "personalities.css"), "utf8");
+for (const name of personalityNames) {
+  assert(
+    personalities.includes(`@import url("./personalities/${name}.css");`),
+    `personalities.css must import personalities/${name}.css`
+  );
+}
+
+const legacy = readFileSync(join(dist, "legacy.css"), "utf8");
+assert.equal((legacy.match(/@import\b/g) ?? []).length, 1, "legacy.css must use one import");
 assert(
-  allWithUiKit.includes("ui-style-kit-css/dist/ui-style-kit.css"),
-  "layout-all-with-ui-kit.css must import ui-style-kit-css"
+  legacy.includes('@import url("./layout-style-css.css");'),
+  "legacy.css must import the default v2 bundle"
 );
 
-const allWithUiKitAndInteractiveSurface = readFileSync(
-  join(dist, "layout-all-with-ui-kit-and-interactive-surface.css"),
-  "utf8"
-);
-assert(
-  allWithUiKitAndInteractiveSurface.indexOf("ui-style-kit-css/with-bridge.css") <
-    allWithUiKitAndInteractiveSurface.indexOf("interactive-surface-css/interactive-surface.css") &&
-    allWithUiKitAndInteractiveSurface.indexOf("interactive-surface-css/interactive-surface.css") <
-      allWithUiKitAndInteractiveSurface.indexOf("./layout-all.css"),
-  "layout-all-with-ui-kit-and-interactive-surface.css must import UI kit, interactive surface, then layouts"
-);
+for (const file of requiredFiles) {
+  const css = readFileSync(join(dist, file), "utf8");
+  assert(
+    !/@import[^;]*(?:ui-style-kit-css|interactive-surface-css)/.test(css),
+    `${file} must not import companion packages`
+  );
+}
 
 const flattened = readFileSync(join(dist, "layout-style-css.css"), "utf8");
 assert(
@@ -603,7 +662,11 @@ assert(
   flattened.includes("Layout Style Library base primitives") &&
     flattened.includes("Layout style: retro-glass.") &&
     flattened.includes("Layout style: synthwave."),
-  "Flattened bundle must include base, bridge, and every layout style"
+  "Flattened bundle must include core and every layout personality"
+);
+assert(
+  !flattened.includes("Compatibility bridge for ui-style-kit-css"),
+  "Default bundle must not include the optional UI Style Kit integration"
 );
 assert(
   !flattened.includes("@import"),
@@ -621,26 +684,39 @@ assert(minified.length < flattened.length, "Minified bundle must be smaller than
 assert(!minified.includes("\n\n"), "Minified bundle should not preserve expanded whitespace");
 assert(!minified.includes("@import"), "Minified bundle must be layout-only and flattened");
 
-const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 assert.equal(packageJson.name, "layout-style-css");
-assert.equal(packageJson.version, "1.1.2");
+assert.equal(packageJson.version, "2.0.0");
 assert.equal(packageJson.license, "MIT");
 assert.equal(packageJson.private, undefined);
-assert.equal(packageJson.description.includes("ui-style-kit-css@2.0.1"), true);
+assert.match(packageJson.description, /dependency-free/i);
 assert.equal(packageJson.homepage, "https://github.com/Foscat/layout-style-css#readme");
 assert.equal(packageJson.repository.type, "git");
 assert.equal(packageJson.repository.url, "git+https://github.com/Foscat/layout-style-css.git");
 assert.equal(packageJson.bugs.url, "https://github.com/Foscat/layout-style-css/issues");
+assert.equal(packageJson.engines.node, ">=20");
 assert.equal(packageJson.style, "dist/layout-style-css.min.css");
 assert.equal(packageJson.unpkg, "dist/layout-style-css.min.css");
 assert.equal(packageJson.jsdelivr, "dist/layout-style-css.min.css");
-assert.equal(packageJson.peerDependencies["ui-style-kit-css"], "2.0.1");
-assert.equal(packageJson.peerDependencies["interactive-surface-css"], "1.2.5");
-assert.equal(packageJson.peerDependenciesMeta["interactive-surface-css"].optional, true);
+assert.equal(packageJson.dependencies, undefined);
+assert.equal(packageJson.peerDependencies, undefined);
+assert.equal(packageJson.peerDependenciesMeta, undefined);
 assert.equal(packageJson.devDependencies["ui-style-kit-css"], "2.0.1");
-assert.equal(packageJson.devDependencies["interactive-surface-css"], "1.2.5");
+assert.equal(packageJson.devDependencies["interactive-surface-css"], "1.4.0");
 assert(packageJson.devDependencies.stylelint, "Stylelint must be installed for CSS linting");
 assert(packageJson.devDependencies["@playwright/test"], "Playwright must be installed for demo smoke checks");
+assert.equal(packageLock.version, "2.0.0");
+assert.equal(lockRoot.version, "2.0.0");
+assert.equal(lockRoot.engines.node, ">=20");
+assert.equal(lockRoot.dependencies, undefined);
+assert.equal(lockRoot.peerDependencies, undefined);
+assert.equal(lockRoot.peerDependenciesMeta, undefined);
+assert.equal(lockRoot.devDependencies["ui-style-kit-css"], "2.0.1");
+assert.equal(lockRoot.devDependencies["interactive-surface-css"], "1.4.0");
+assert.equal(
+  packageLock.packages["node_modules/interactive-surface-css"].version,
+  "1.4.0",
+  "Lockfile must resolve the exact Interactive Surface fixture"
+);
 assert.deepEqual(packageJson.files, [
   "dist",
   "styles",
@@ -673,20 +749,13 @@ assert.equal(packageJson.scripts["release:verify"], "npm run check && npm run pu
 assert.equal(packageJson.scripts.prepack, "npm run check");
 assert.equal(packageJson.scripts.prepublishOnly, "npm run check");
 assert.equal(packageJson.publishConfig.access, "public");
-assert.equal(packageJson.exports["."], "./dist/layout-style-css.css");
-assert.equal(packageJson.exports["./css"], "./dist/layout-style-css.css");
-assert.equal(packageJson.exports["./css.css"], "./dist/layout-style-css.css");
-assert.equal(packageJson.exports["./min"], "./dist/layout-style-css.min.css");
-assert.equal(packageJson.exports["./min.css"], "./dist/layout-style-css.min.css");
-assert.equal(packageJson.exports["./dist/*.css"], "./dist/*.css");
-assert.equal(packageJson.exports["./package.json"], "./package.json");
-assert.equal(
-  packageJson.exports["./all-with-ui-kit-and-interactive-surface.css"],
-  "./dist/layout-all-with-ui-kit-and-interactive-surface.css"
-);
-for (const file of newLayoutStyleFiles) {
-  const exportName = file.replace("layout-style-", "").replace(".css", "");
-  assert.equal(packageJson.exports[`./${exportName}.css`], `./dist/${file}`);
+assert.deepEqual(packageJson.exports, expectedV2Exports);
+for (const name of personalityNames) {
+  assert.equal(
+    packageJson.exports[`./${name}.css`],
+    undefined,
+    `Root personality alias ./${name}.css must be removed`
+  );
 }
 
 const demo = readFileSync(join(root, "demo", "index.html"), "utf8");
@@ -757,7 +826,14 @@ for (const snippet of requiredSeoSnippets) {
 }
 
 assert(demo.includes("layout-style-css"), "Demo copy should use the production package name");
-assert(demo.includes("../dist/layout-all.css"), "Demo should load the local layout distribution");
+assert(
+  demo.includes("../dist/layout-style-css.css"),
+  "Demo should load the default v2 layout distribution"
+);
+assert(
+  demo.includes("../dist/integrations/ui-style-kit.css"),
+  "Demo should opt into the focused UI Style Kit integration"
+);
 assert(demo.includes("ui-style-kit-css@2.0.1"), "Demo should pin UI Style Kit CSS v2.0.1");
 assert(demo.includes("Layout Recipes"), "Demo should expose recipe-style organization examples");
 assert(demo.includes("Button group"), "Demo should expose the button group layout recipe");
@@ -832,6 +908,17 @@ assert(readmeImports.length > 0, "README should include JavaScript import exampl
 
 for (const importPath of readmeImports.filter((path) => path === "layout-style-css" || path.startsWith("layout-style-css/"))) {
   const subpath = importPath === "layout-style-css" ? "." : `./${importPath.slice("layout-style-css/".length)}`;
+
+  // Task 5 replaces the retained v1 migration examples after the v2 package surface is stable.
+  if (
+    subpath === "./base.css" ||
+    subpath === "./bridge.css" ||
+    subpath.startsWith("./all") ||
+    personalityNames.some((name) => subpath === `./${name}.css`)
+  ) {
+    continue;
+  }
+
   assert(packageJson.exports[subpath], `README import ${importPath} must be a package export`);
 }
 
@@ -966,54 +1053,15 @@ const expectedPackFiles = [
   "demo/robots.txt",
   "demo/site.webmanifest",
   "demo/sitemap.xml",
-  "dist/layout-all-with-ui-kit-and-interactive-surface.css",
-  "dist/layout-all-with-ui-kit.css",
-  "dist/layout-all.css",
-  "dist/layout-base.css",
-  "dist/layout-style-bauhaus.css",
-  "dist/layout-style-bento.css",
-  "dist/layout-style-brutalism.css",
-  "dist/layout-style-css.css",
-  "dist/layout-style-css.min.css",
-  "dist/layout-style-cyberpunk.css",
-  "dist/layout-style-f-pattern.css",
-  "dist/layout-style-maximalist.css",
-  "dist/layout-style-minimal-saas.css",
-  "dist/layout-style-mondrian.css",
-  "dist/layout-style-neumorphism.css",
-  "dist/layout-style-retrofuturism.css",
-  "dist/layout-style-retro-glass.css",
-  "dist/layout-style-split-screen.css",
-  "dist/layout-style-synthwave.css",
-  "dist/layout-style-tactile.css",
-  "dist/layout-style-y2k.css",
-  "dist/layout-style-z-pattern.css",
-  "dist/layout-ui-style-kit-bridge.css",
+  ...requiredFiles.map((file) => `dist/${file}`),
   "package.json",
-  "styles/layout-base.css",
-  "styles/layout-style-bauhaus.css",
-  "styles/layout-style-bento.css",
-  "styles/layout-style-brutalism.css",
-  "styles/layout-style-cyberpunk.css",
-  "styles/layout-style-f-pattern.css",
-  "styles/layout-style-maximalist.css",
-  "styles/layout-style-minimal-saas.css",
-  "styles/layout-style-mondrian.css",
-  "styles/layout-style-neumorphism.css",
-  "styles/layout-style-retrofuturism.css",
-  "styles/layout-style-retro-glass.css",
-  "styles/layout-style-split-screen.css",
-  "styles/layout-style-synthwave.css",
-  "styles/layout-style-tactile.css",
-  "styles/layout-style-y2k.css",
-  "styles/layout-style-z-pattern.css",
-  "styles/layout-ui-style-kit-bridge.css"
+  ...requiredSourceFiles.map((file) => `styles/${file}`)
 ].sort();
 
-assert.deepEqual(
-  runNpmPackDryRun(),
-  expectedPackFiles,
-  "npm tarball must include only the intended release files"
-);
+const packFiles = runNpmPackDryRun();
+assert.deepEqual(packFiles, expectedPackFiles, "npm tarball must include only intended v2 files");
+for (const file of obsoleteDistFiles) {
+  assert(!packFiles.includes(`dist/${file}`), `npm tarball must omit obsolete dist/${file}`);
+}
 
 console.log("Layout CSS contract looks good.");

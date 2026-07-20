@@ -1,0 +1,72 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/*
+  Layout style: bauhaus.
+  Strict framed column shell with structural rails and measured offsets. Visual
+  identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.personalities.bauhaus {
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) {
+    --ly-container-max: 92rem;
+    --ly-page-padding-inline: clamp(1rem, 2vw, 2rem);
+    --ly-section-padding-block: clamp(2.5rem, 5vw, 4.5rem);
+    --ly-sidebar-width: clamp(8rem, 12vw, 12rem);
+    --ly-grid-min: 13rem;
+    --ly-gap: clamp(0.75rem, 1.6vw, 1.25rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  }
+
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-main {
+    padding-block: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-container,
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-wrapper {
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-grid--auto {
+    grid-auto-rows: minmax(7rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+      grid-template-columns: minmax(min(100%, 7rem), 0.18fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-sidebar-layout {
+      grid-template-columns: minmax(min(100%, 8rem), 0.22fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-split {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--two {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 12rem), 0.5fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--three {
+      grid-template-columns: minmax(min(100%, 10rem), 0.25fr) minmax(0, 1fr) minmax(min(100%, 10rem), 0.25fr);
+    }
+  }
+}

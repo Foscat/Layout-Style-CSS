@@ -1,0 +1,78 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/*
+  Layout style: f-pattern.
+  Top-led scan path with a persistent left rail and heavier early content rows.
+  Visual identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.personalities.f_pattern {
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) {
+    --ly-container-max: 94rem;
+    --ly-page-padding-inline: clamp(1rem, 3vw, 2.75rem);
+    --ly-section-padding-block: clamp(2rem, 5vw, 4.5rem);
+    --ly-sidebar-width: clamp(13rem, 19vw, 20rem);
+    --ly-grid-min: 15rem;
+    --ly-gap: clamp(1rem, 2.25vw, 1.85rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(0.875rem, 1.8vw, 1.45rem);
+  }
+
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-main {
+    padding-block: clamp(0.75rem, 2vw, 2rem);
+  }
+
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-container,
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-wrapper {
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-grid--auto {
+    grid-auto-rows: minmax(8rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-shell {
+      grid-template-areas:
+        "header header"
+        "sidebar main";
+      grid-template-columns: minmax(min(100%, 13rem), 0.3fr) minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-grid--auto > :nth-child(3n + 1) {
+      grid-column: span 2;
+      min-height: 13rem;
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-sidebar-layout {
+      grid-template-columns: minmax(min(100%, 14rem), 0.34fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-split {
+      grid-template-columns: minmax(0, 1.35fr) minmax(min(100%, 18rem), 0.65fr);
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-panes--two {
+      grid-template-columns: minmax(min(100%, 15rem), 0.38fr) minmax(0, 1fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-panes--three {
+      grid-template-columns: minmax(min(100%, 13rem), 0.28fr) minmax(0, 1.28fr) minmax(min(100%, 16rem), 0.44fr);
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "layout-style-css",
-  "version": "1.1.2",
-  "description": "Shell-first CSS layout primitives that complement ui-style-kit-css@2.0.1.",
+  "version": "2.0.0",
+  "description": "Dependency-free structural CSS for responsive wrappers, composition primitives, recipes, utilities, and layout personalities.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/Foscat/layout-style-css#readme",
@@ -11,6 +11,9 @@
   },
   "bugs": {
     "url": "https://github.com/Foscat/layout-style-css/issues"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "keywords": [
     "css",
@@ -39,18 +42,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "interactive-surface-css": "1.2.5",
-    "ui-style-kit-css": "2.0.1"
-  },
-  "peerDependenciesMeta": {
-    "interactive-surface-css": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@playwright/test": "1.61.1",
-    "interactive-surface-css": "1.2.5",
+    "interactive-surface-css": "1.4.0",
     "stylelint": "17.14.0",
     "ui-style-kit-css": "2.0.1"
   },
@@ -60,30 +54,15 @@
     "./css.css": "./dist/layout-style-css.css",
     "./min": "./dist/layout-style-css.min.css",
     "./min.css": "./dist/layout-style-css.min.css",
-    "./dist/*.css": "./dist/*.css",
-    "./dist/layout-style-css.css": "./dist/layout-style-css.css",
-    "./dist/layout-style-css.min.css": "./dist/layout-style-css.min.css",
-    "./base.css": "./dist/layout-base.css",
-    "./bridge.css": "./dist/layout-ui-style-kit-bridge.css",
-    "./all.css": "./dist/layout-all.css",
-    "./all-with-ui-kit.css": "./dist/layout-all-with-ui-kit.css",
-    "./all-with-ui-kit-and-interactive-surface.css": "./dist/layout-all-with-ui-kit-and-interactive-surface.css",
-    "./minimal-saas.css": "./dist/layout-style-minimal-saas.css",
-    "./bento.css": "./dist/layout-style-bento.css",
-    "./maximalist.css": "./dist/layout-style-maximalist.css",
-    "./bauhaus.css": "./dist/layout-style-bauhaus.css",
-    "./tactile.css": "./dist/layout-style-tactile.css",
-    "./neumorphism.css": "./dist/layout-style-neumorphism.css",
-    "./retrofuturism.css": "./dist/layout-style-retrofuturism.css",
-    "./brutalism.css": "./dist/layout-style-brutalism.css",
-    "./cyberpunk.css": "./dist/layout-style-cyberpunk.css",
-    "./y2k.css": "./dist/layout-style-y2k.css",
-    "./retro-glass.css": "./dist/layout-style-retro-glass.css",
-    "./f-pattern.css": "./dist/layout-style-f-pattern.css",
-    "./z-pattern.css": "./dist/layout-style-z-pattern.css",
-    "./split-screen.css": "./dist/layout-style-split-screen.css",
-    "./mondrian.css": "./dist/layout-style-mondrian.css",
-    "./synthwave.css": "./dist/layout-style-synthwave.css",
+    "./core.css": "./dist/core.css",
+    "./wrappers.css": "./dist/wrappers.css",
+    "./primitives.css": "./dist/primitives.css",
+    "./recipes.css": "./dist/recipes.css",
+    "./utilities.css": "./dist/utilities.css",
+    "./personalities.css": "./dist/personalities.css",
+    "./personalities/*.css": "./dist/personalities/*.css",
+    "./integrations/ui-style-kit.css": "./dist/integrations/ui-style-kit.css",
+    "./legacy.css": "./dist/legacy.css",
     "./package.json": "./package.json"
   },
   "files": [

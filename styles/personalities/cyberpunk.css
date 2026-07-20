@@ -1,0 +1,72 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/*
+  Layout style: cyberpunk.
+  Narrow utility rail with dense command workspace and compact gutters. Visual
+  identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.personalities.cyberpunk {
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) {
+    --ly-container-max: 104rem;
+    --ly-page-padding-inline: clamp(0.75rem, 2vw, 2rem);
+    --ly-section-padding-block: clamp(2rem, 5vw, 4rem);
+    --ly-sidebar-width: clamp(10rem, 12vw, 12.5rem);
+    --ly-grid-min: 12rem;
+    --ly-gap: clamp(0.75rem, 1.8vw, 1.25rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  }
+
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-main {
+    padding-block: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-container,
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-wrapper {
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-grid--auto {
+    grid-auto-rows: minmax(7rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-width)), var(--ly-sidebar-width)) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-sidebar-layout {
+      grid-template-columns: minmax(min(100%, 10rem), 0.24fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-split {
+      grid-template-columns: minmax(0, 1.2fr) minmax(min(100%, 16rem), 0.8fr);
+    }
+
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-panes--two {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 15rem), 0.38fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-panes--three {
+      grid-template-columns: minmax(min(100%, 10rem), 0.24fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.38fr);
+    }
+  }
+}

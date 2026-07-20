@@ -1,0 +1,79 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/*
+  Layout style: mondrian.
+  Asymmetrical rectangular blocks with staggered spans inspired by Mondrian
+  composition. Visual identity remains owned by ui-style-kit-css.
+*/
+
+@layer ly.personalities.mondrian {
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) {
+    --ly-container-max: 108rem;
+    --ly-page-padding-inline: clamp(0.75rem, 2.5vw, 2rem);
+    --ly-section-padding-block: clamp(1.75rem, 4.5vw, 4rem);
+    --ly-sidebar-width: clamp(11rem, 16vw, 17rem);
+    --ly-grid-min: 11rem;
+    --ly-gap: clamp(0.75rem, 1.6vw, 1.25rem);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: clamp(0.75rem, 1.5vw, 1.2rem);
+  }
+
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-main {
+    padding-block: clamp(0.75rem, 1.8vw, 1.5rem);
+  }
+
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-container,
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-wrapper {
+    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  }
+
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-grid--auto {
+    grid-auto-rows: minmax(7rem, auto);
+  }
+
+  @media (min-width: 48rem) {
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main main";
+      grid-template-columns: minmax(min(100%, 11rem), 0.28fr) minmax(0, 0.86fr) minmax(0, 1.14fr);
+      grid-template-rows: auto 1fr;
+    }
+
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-sidebar {
+      display: block;
+      position: sticky;
+      top: var(--ly-space-3);
+      height: calc(100svh - (var(--ly-space-3) * 2));
+      overflow: auto;
+    }
+
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-grid--auto > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+      min-height: 15rem;
+    }
+
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-sidebar-layout {
+      grid-template-columns: minmax(min(100%, 11rem), 0.25fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-split {
+      grid-template-columns: minmax(0, 0.7fr) minmax(min(100%, 20rem), 1.3fr);
+    }
+
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-panes--two {
+      grid-template-columns: minmax(min(100%, 13rem), 0.46fr) minmax(0, 1.54fr);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-panes--three {
+      grid-template-columns: minmax(min(100%, 11rem), 0.28fr) minmax(0, 1.44fr) minmax(min(100%, 13rem), 0.28fr);
+    }
+  }
+}

@@ -1,0 +1,18 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+@import url("./personalities/minimal-saas.css");
+@import url("./personalities/bento.css");
+@import url("./personalities/maximalist.css");
+@import url("./personalities/bauhaus.css");
+@import url("./personalities/tactile.css");
+@import url("./personalities/neumorphism.css");
+@import url("./personalities/retrofuturism.css");
+@import url("./personalities/brutalism.css");
+@import url("./personalities/cyberpunk.css");
+@import url("./personalities/y2k.css");
+@import url("./personalities/retro-glass.css");
+@import url("./personalities/f-pattern.css");
+@import url("./personalities/z-pattern.css");
+@import url("./personalities/split-screen.css");
+@import url("./personalities/mondrian.css");
+@import url("./personalities/synthwave.css");

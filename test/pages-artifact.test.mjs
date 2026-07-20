@@ -29,7 +29,6 @@ const requiredArtifactFiles = [
   "assets/favicon.svg",
   "assets/apple-touch-icon.svg",
   "assets/social-card.png",
-  "dist/layout-all.css",
   "dist/layout-style-css.css",
   "dist/layout-style-css.min.css"
 ];
@@ -44,8 +43,22 @@ const canonicalHrefMatch = sourceDemo.match(/<link\s+rel=["']canonical["']\s+hre
 
 assert(canonicalHrefMatch, "Source demo should declare a canonical URL");
 
-assert(index.includes('href="./dist/layout-all.css"'), "Pages root demo should load dist from ./dist");
-assert(!index.includes("../dist/layout-all.css"), "Pages root demo should not reference parent dist paths");
+assert(
+  index.includes('href="./dist/layout-style-css.css"'),
+  "Pages root demo should load the default v2 bundle from ./dist"
+);
+assert(
+  index.includes('href="./dist/integrations/ui-style-kit.css"'),
+  "Pages root demo should load the focused UI Style Kit integration from ./dist"
+);
+assert(
+  !index.includes("../dist/layout-style-css.css"),
+  "Pages root demo should not reference parent dist paths"
+);
+assert(
+  !index.includes("../dist/integrations/ui-style-kit.css"),
+  "Pages root demo should not reference the parent integration path"
+);
 assert(
   index.includes(`href="${canonicalHrefMatch[1]}"`) || index.includes(`href='${canonicalHrefMatch[1]}'`),
   "Pages demo should preserve the source demo canonical URL"
