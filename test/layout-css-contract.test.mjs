@@ -886,13 +886,17 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
     !extractStyleRuleSelectors(css).some((selector) => selector.includes(".ly-wrapper")),
     `${path} must not override explicit semantic wrapper variants from a later cascade layer`
   );
-  for (const selector of extractStyleRuleSelectors(css).filter((candidate) =>
-    candidate.includes(".ly-app-shell")
-  )) {
-    assert(
-      selector.includes('[data-ly-recipe="app-shell"]'),
-      `${path} must apply personality shell geometry to attribute-only app-shell recipes`
-    );
+  for (const selector of extractStyleRuleSelectors(css)) {
+    for (const [recipe, classSelector] of recipeRootContracts) {
+      if (!selector.includes(classSelector)) {
+        continue;
+      }
+
+      assert(
+        selector.includes(`[data-ly-recipe="${recipe}"]`),
+        `${path} has a class-only ${recipe} personality selector: ${selector}`
+      );
+    }
   }
   assert(
     normalizedCss.includes(normalizeCssWhitespace(`grid-template-areas: ${contract.areas};`)),

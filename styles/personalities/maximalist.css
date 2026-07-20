@@ -41,7 +41,9 @@
       grid-row: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="maximalist"]) .ly-gallery > :nth-child(5n + 1) {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-gallery, [data-ly-recipe="gallery"])
+      > :nth-child(5n + 1) {
       grid-column: span 2;
       grid-row: span 2;
     }

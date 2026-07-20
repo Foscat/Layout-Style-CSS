@@ -899,7 +899,9 @@
       grid-row: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="bento"]) .ly-card-grid > :nth-child(6n + 1) {
+    :where(.ly-root[data-ly-layout="bento"])
+      :where(.ly-card-grid, [data-ly-recipe="card-grid"])
+      > :nth-child(6n + 1) {
       grid-column: span 2;
     }
   }
@@ -947,7 +949,9 @@
       grid-row: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="maximalist"]) .ly-gallery > :nth-child(5n + 1) {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-gallery, [data-ly-recipe="gallery"])
+      > :nth-child(5n + 1) {
       grid-column: span 2;
       grid-row: span 2;
     }
@@ -1032,7 +1036,8 @@
       grid-column: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="tactile"]) .ly-list-detail {
+    :where(.ly-root[data-ly-layout="tactile"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
       grid-template-columns: minmax(min(100%, 20rem), 0.42fr) minmax(0, 0.58fr);
     }
   }
@@ -1077,7 +1082,8 @@
       grid-column: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="neumorphism"]) .ly-list-detail {
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
       grid-template-columns: minmax(0, 0.58fr) minmax(min(100%, 19rem), 0.42fr);
     }
   }
@@ -1312,7 +1318,8 @@
       grid-column: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="f-pattern"]) .ly-split-hero {
+    :where(.ly-root[data-ly-layout="f-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
       grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
     }
   }
@@ -1360,7 +1367,8 @@
       align-self: end;
     }
 
-    :where(.ly-root[data-ly-layout="z-pattern"]) .ly-split-hero {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
       grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.5fr);
     }
   }
@@ -1394,7 +1402,14 @@
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
-    :where(.ly-root[data-ly-layout="split-screen"]) :where(.ly-split, .ly-split-hero, .ly-list-detail) {
+    :where(.ly-root[data-ly-layout="split-screen"])
+      :where(
+        .ly-split,
+        .ly-split-hero,
+        [data-ly-recipe="split-hero"],
+        .ly-list-detail,
+        [data-ly-recipe="list-detail"]
+      ) {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
   }

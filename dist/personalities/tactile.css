@@ -31,7 +31,8 @@
       grid-column: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="tactile"]) .ly-list-detail {
+    :where(.ly-root[data-ly-layout="tactile"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
       grid-template-columns: minmax(min(100%, 20rem), 0.42fr) minmax(0, 0.58fr);
     }
   }

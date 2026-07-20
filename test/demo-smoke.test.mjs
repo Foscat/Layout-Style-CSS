@@ -210,6 +210,16 @@ const wrapperMeasureTokens = {
   wide: "112rem",
   full: "100%"
 };
+const personalityRecipeParityCases = [
+  { personality: "tactile", recipe: "list-detail", ratio: [0.5, 0.9] },
+  { personality: "neumorphism", recipe: "list-detail", ratio: [1.1, 1.7] },
+  { personality: "f-pattern", recipe: "split-hero", ratio: [1.7, 2.4] },
+  { personality: "z-pattern", recipe: "split-hero", ratio: [2.4, 3.6] },
+  { personality: "bento", recipe: "card-grid", columnSpan: true },
+  { personality: "maximalist", recipe: "gallery", columnSpan: true, rowSpan: true },
+  { personality: "split-screen", recipe: "split-hero", ratio: [0.9, 1.1] },
+  { personality: "split-screen", recipe: "list-detail", ratio: [0.9, 1.1] }
+];
 const viewports = [
   { width: 375, height: 667 },
   { width: 768, height: 1024 },
@@ -421,6 +431,12 @@ function expectedCoreAreas(recipe, inlineSize) {
   const threshold = sizeInRem < 48 ? "mobile" : sizeInRem < 64 ? "medium" : "large";
 
   return coreRecipeAreas[recipe][threshold];
+}
+
+function gridTrackRatio(columns) {
+  const tracks = [...columns.matchAll(/([\d.]+)px/g)].map((match) => Number.parseFloat(match[1]));
+
+  return tracks.length >= 2 ? tracks[0] / tracks[1] : null;
 }
 
 async function verifyQueryAndEcosystem(page, baseUrl) {
@@ -862,6 +878,107 @@ async function verifyAttributeOnlyRecipeMatrix(page, baseUrl) {
   }
 }
 
+async function verifyPersonalityRecipeSelectorParity(page, baseUrl) {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&container=47rem&recipe=list-detail&personality=tactile`,
+    { waitUntil: "networkidle" }
+  );
+  await waitForReady(page);
+
+  for (const parityCase of personalityRecipeParityCases) {
+    await selectDemoOption(page, "personalitySelect", parityCase.personality);
+    await selectDemoOption(page, "recipeSelect", parityCase.recipe);
+
+    for (const width of ["47rem", "65rem"]) {
+      await selectDemoOption(page, "containerSelect", width);
+      const snapshot = await page.evaluate((className) => {
+        const recipeRoot = document.querySelector("#recipePreview");
+        const wrapper = document.querySelector("#previewWrapper");
+        const previewRoot = document.querySelector("#previewRoot");
+        const frame = document.querySelector("#previewFrame");
+        const captureGeometry = () => {
+          const style = getComputedStyle(recipeRoot);
+          const firstChildStyle = getComputedStyle(recipeRoot.firstElementChild);
+
+          return {
+            display: style.display,
+            containerType: style.containerType,
+            areas: style.gridTemplateAreas,
+            columns: style.gridTemplateColumns,
+            rows: style.gridTemplateRows,
+            firstChild: {
+              columnStart: firstChildStyle.gridColumnStart,
+              columnEnd: firstChildStyle.gridColumnEnd,
+              rowStart: firstChildStyle.gridRowStart,
+              rowEnd: firstChildStyle.gridRowEnd
+            },
+            overflow: {
+              recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
+              wrapper: wrapper.scrollWidth - wrapper.clientWidth,
+              previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
+              frame: frame.scrollWidth - frame.clientWidth
+            }
+          };
+        };
+        const classGeometry = captureGeometry();
+
+        recipeRoot.classList.remove(className);
+
+        return {
+          classPresent: recipeRoot.classList.contains(className),
+          classGeometry,
+          attributeGeometry: captureGeometry()
+        };
+      }, recipeClasses[parityCase.recipe]);
+      const context = `${parityCase.personality} ${parityCase.recipe} selector parity at ${width}`;
+
+      assert.equal(snapshot.classPresent, false, `${context} must exercise an attribute-only root`);
+      assert.deepEqual(
+        snapshot.attributeGeometry,
+        snapshot.classGeometry,
+        `${context} must preserve the exact personality geometry without its class`
+      );
+
+      for (const [scope, overflow] of Object.entries(snapshot.attributeGeometry.overflow)) {
+        assert(overflow <= 4, `${context} ${scope} overflowed by ${overflow}px`);
+      }
+
+      if (width !== "65rem") {
+        continue;
+      }
+
+      if (parityCase.ratio) {
+        const ratio = gridTrackRatio(snapshot.classGeometry.columns);
+        const [minimum, maximum] = parityCase.ratio;
+
+        assert(
+          ratio !== null && ratio >= minimum && ratio <= maximum,
+          `${context} must retain its personality track ratio; received ${snapshot.classGeometry.columns}`
+        );
+      }
+
+      if (parityCase.columnSpan) {
+        assert(
+          `${snapshot.classGeometry.firstChild.columnStart} ${snapshot.classGeometry.firstChild.columnEnd}`.includes(
+            "span 2"
+          ),
+          `${context} must retain its first-child two-column mosaic span`
+        );
+      }
+
+      if (parityCase.rowSpan) {
+        assert(
+          `${snapshot.classGeometry.firstChild.rowStart} ${snapshot.classGeometry.firstChild.rowEnd}`.includes(
+            "span 2"
+          ),
+          `${context} must retain its first-child two-row mosaic span`
+        );
+      }
+    }
+  }
+}
+
 async function verifyWrapperMeasureMatrix(page, baseUrl) {
   await page.setViewportSize({ width: 2400, height: 1000 });
   await page.goto(
@@ -1188,6 +1305,7 @@ try {
   await verifyMobileDrawer(page, baseUrl, { width: 768, height: 1024 });
   await verifyRecipeAndPersonalityMatrix(page, baseUrl);
   await verifyAttributeOnlyRecipeMatrix(page, baseUrl);
+  await verifyPersonalityRecipeSelectorParity(page, baseUrl);
   await verifyWrapperMeasureMatrix(page, baseUrl);
   await verifyNestedThresholdsAndFocus(page, baseUrl);
   assert.deepEqual(consoleErrors, [], `Demo should not log console errors: ${consoleErrors.join(" | ")}`);

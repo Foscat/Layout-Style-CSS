@@ -337,12 +337,12 @@ body[data-ecosystem="all-three"] .demo-status {
   gap: var(--demo-density-gap);
 }
 
-.demo-recipe.ly-gallery,
-.demo-recipe.ly-card-grid {
+.demo-recipe:is(.ly-gallery, [data-ly-recipe="gallery"]),
+.demo-recipe:is(.ly-card-grid, [data-ly-recipe="card-grid"]) {
   min-block-size: auto;
 }
 
-.demo-recipe.ly-app-shell {
+.demo-recipe:is(.ly-app-shell, [data-ly-recipe="app-shell"]) {
   min-block-size: 32rem;
 }
 

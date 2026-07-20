@@ -27,7 +27,14 @@
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
-    :where(.ly-root[data-ly-layout="split-screen"]) :where(.ly-split, .ly-split-hero, .ly-list-detail) {
+    :where(.ly-root[data-ly-layout="split-screen"])
+      :where(
+        .ly-split,
+        .ly-split-hero,
+        [data-ly-recipe="split-hero"],
+        .ly-list-detail,
+        [data-ly-recipe="list-detail"]
+      ) {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
   }

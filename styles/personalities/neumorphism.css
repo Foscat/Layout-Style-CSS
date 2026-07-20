@@ -38,7 +38,8 @@
       grid-column: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="neumorphism"]) .ly-list-detail {
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
       grid-template-columns: minmax(0, 0.58fr) minmax(min(100%, 19rem), 0.42fr);
     }
   }

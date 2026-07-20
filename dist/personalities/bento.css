@@ -34,7 +34,9 @@
       grid-row: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="bento"]) .ly-card-grid > :nth-child(6n + 1) {
+    :where(.ly-root[data-ly-layout="bento"])
+      :where(.ly-card-grid, [data-ly-recipe="card-grid"])
+      > :nth-child(6n + 1) {
       grid-column: span 2;
     }
   }

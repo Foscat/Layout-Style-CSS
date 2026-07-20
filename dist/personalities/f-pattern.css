@@ -40,7 +40,8 @@
       grid-column: span 2;
     }
 
-    :where(.ly-root[data-ly-layout="f-pattern"]) .ly-split-hero {
+    :where(.ly-root[data-ly-layout="f-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
       grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
     }
   }

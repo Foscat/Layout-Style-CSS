@@ -41,7 +41,8 @@
       align-self: end;
     }
 
-    :where(.ly-root[data-ly-layout="z-pattern"]) .ly-split-hero {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
       grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.5fr);
     }
   }
