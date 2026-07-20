@@ -193,7 +193,7 @@ npm run test:demo:quick
 npm test
 ```
 
-`npm test` is the local Chromium gate. `npm run test:demo:all` runs Chromium, Firefox, and WebKit. `npm run release:verify` runs the full build, lint, static, Pages, cross-browser, tarball, and publish-dry-run checks. It does not publish.
+`npm test` is the local Chromium gate. `npm run test:demo:all` runs Chromium, Firefox, and WebKit. `npm run release:verify` runs the full build, lint, static, Pages, cross-browser, tarball, `npm audit --audit-level=moderate`, and publish-dry-run checks. It does not publish.
 
 ## Documentation And Wiki
 

@@ -29,12 +29,11 @@ npm run test:demo:quick
 npm run test:demo:all
 npm run test:pages
 npm run pack:dry-run
-npm audit --audit-level=moderate
 npm run release:verify
 git diff --check
 ```
 
-`release:verify` runs build, lint, JavaScript syntax, static contracts, the Pages artifact, Chromium, Firefox, WebKit, the intentional tarball listing, and an npm publish dry run. It does not publish.
+`release:verify` runs build, lint, JavaScript syntax, static contracts, the Pages artifact, Chromium, Firefox, WebKit, the intentional tarball listing, `npm audit --audit-level=moderate`, and an npm publish dry run. It does not publish.
 
 ## Tag And Version Validation
 
@@ -62,4 +61,3 @@ The workflow installs Chromium, Firefox, and WebKit before full release verifica
 ## Wiki Mirror
 
 The versioned `docs/wiki/` source is authoritative. If GitHub Wiki is enabled, mirror these Markdown files only after the release documentation has passed the local contract suite.
-

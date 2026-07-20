@@ -140,6 +140,19 @@ assert(
   packageJson.scripts["release:verify"].includes("npm audit --audit-level=moderate"),
   "Release verification must enforce the documented moderate audit before publish"
 );
+for (const [name, document] of [
+  ["README", readme],
+  ["release guide", release]
+]) {
+  assert(
+    /release:verify[^\n]*`npm audit --audit-level=moderate`/.test(document),
+    `${name} must state that release:verify includes the exact moderate audit command`
+  );
+}
+assert(
+  !release.includes("npm audit --audit-level=moderate\nnpm run release:verify"),
+  "Release checklist must not ask operators to run the audit redundantly before release:verify"
+);
 assert(
   docsCorpus.includes("core thresholds") && docsCorpus.includes("personality-specific"),
   "Responsive documentation must distinguish core thresholds from personality overrides"
