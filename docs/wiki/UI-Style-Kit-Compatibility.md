@@ -1,6 +1,6 @@
 # UI Style Kit Compatibility
 
-Layout Style CSS is dependency-free. `ui-style-kit-css@2.1.0` is the visual fixture for 2.1 ecosystem verification; it is resolved from the sibling staged checkout until its approved publication and is not a runtime or peer dependency.
+Layout Style CSS is dependency-free. `ui-style-kit-css@2.1.0` is the visual fixture for 2.1 ecosystem verification; it is resolved from the pushed staged `2.1.0` GitHub branch until its approved publication and is not a runtime or peer dependency.
 
 ## Ownership Boundary
 

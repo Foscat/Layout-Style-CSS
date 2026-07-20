@@ -602,6 +602,8 @@ function isLocalMarkdownLink(link) {
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
 const lockRoot = packageLock.packages[""];
+const uiKitFixtureSpec = "git+https://github.com/Foscat/ui-style-kit-css.git#2.1.0";
+const uiKitFixtureCommit = "53ea12d62c871ad1269502cd2c11ce97dc5e06a8";
 const uiKitFixturePackage = JSON.parse(
   readFileSync(join(root, "node_modules", "ui-style-kit-css", "package.json"), "utf8")
 );
@@ -1223,7 +1225,7 @@ assert.equal(packageJson.jsdelivr, "dist/layout-style-css.min.css");
 assert.equal(packageJson.dependencies, undefined);
 assert.equal(packageJson.peerDependencies, undefined);
 assert.equal(packageJson.peerDependenciesMeta, undefined);
-assert.equal(packageJson.devDependencies["ui-style-kit-css"], "file:../ui-style-kit-css");
+assert.equal(packageJson.devDependencies["ui-style-kit-css"], uiKitFixtureSpec);
 assert.equal(packageJson.devDependencies["interactive-surface-css"], "1.5.0");
 assert(packageJson.devDependencies.stylelint, "Stylelint must be installed for CSS linting");
 assert(packageJson.devDependencies["@playwright/test"], "Playwright must be installed for demo smoke checks");
@@ -1233,18 +1235,13 @@ assert.equal(lockRoot.engines.node, ">=20");
 assert.equal(lockRoot.dependencies, undefined);
 assert.equal(lockRoot.peerDependencies, undefined);
 assert.equal(lockRoot.peerDependenciesMeta, undefined);
-assert.equal(lockRoot.devDependencies["ui-style-kit-css"], "file:../ui-style-kit-css");
+assert.equal(lockRoot.devDependencies["ui-style-kit-css"], uiKitFixtureSpec);
 assert.equal(lockRoot.devDependencies["interactive-surface-css"], "1.5.0");
-assert.equal(uiKitFixturePackage.version, "2.1.0", "Local UI Style Kit fixture must be the staged 2.1.0 line");
+assert.equal(uiKitFixturePackage.version, "2.1.0", "UI Style Kit fixture must be the staged 2.1.0 line");
 assert.equal(
   packageLock.packages["node_modules/ui-style-kit-css"].resolved,
-  "../ui-style-kit-css",
-  "Lockfile must resolve the staged local UI Style Kit fixture until 2.1.0 is published"
-);
-assert.equal(
-  packageLock.packages["node_modules/ui-style-kit-css"].link,
-  true,
-  "Lockfile must represent UI Style Kit as a local staged fixture"
+  `git+https://github.com/Foscat/ui-style-kit-css.git#${uiKitFixtureCommit}`,
+  "Lockfile must resolve the pushed staged UI Style Kit fixture until 2.1.0 is published"
 );
 assert.equal(
   packageLock.packages["node_modules/interactive-surface-css"].version,
