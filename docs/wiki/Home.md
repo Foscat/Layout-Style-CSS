@@ -22,7 +22,7 @@ Version 2.1.0 is a container-first, dependency-free layout library. It ships sem
 
 Layout Style CSS owns spatial behavior: containment, wrappers, flow, grids, areas, spans, sizing, and responsive arrangement. UI Style Kit owns visual paint. Interactive Surface owns interaction-state styling.
 
-The package has no runtime or peer dependencies. `ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are development fixtures used to prove optional integration; UI Style Kit is resolved from the pushed staged `2.1.0` GitHub branch until its approved 2.1.0 publication.
+The package has no runtime or peer dependencies. `ui-style-kit-css@2.1.0` is a staged development fixture used to prove optional integration until its approved 2.1.0 publication. Interactive Surface 1.5.0 is the released registry fixture.
 
 ## Supported Baseline
 

@@ -145,6 +145,15 @@ assert(
   migration.includes("ui-style-kit-css@2.1.0") && migration.includes("interactive-surface-css@1.5.0"),
   "Migration guide must identify the 2.1 companion fixtures"
 );
+assert.doesNotMatch(
+  currentGuidanceCorpus,
+  /interactive-surface-css@1\.5\.0[^.\n]*(?:development fixture|development and integration fixture)/i,
+  "Current docs must not classify the released Interactive Surface 1.5.0 package as a development fixture"
+);
+assert(
+  currentGuidanceCorpus.includes("Interactive Surface 1.5.0 is the released registry fixture"),
+  "Current docs must identify Interactive Surface 1.5.0 as the released registry fixture"
+);
 assert(
   recipesGuide.includes("complete recipe API") && recipesGuide.includes("only `data-ly-recipe"),
   "Recipe documentation must explain that canonical data hooks work without companion classes"
