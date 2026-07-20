@@ -6,6 +6,7 @@
   :where(.ly-root[data-ly-layout="maximalist"]) {
     --ly-grid-columns: 12;
     --ly-grid-min: 10rem;
+    --ly-personality-wrapper-max: 100%;
     --ly-card-grid-min: 12rem;
 
     container-name: ly-personality;
@@ -13,18 +14,16 @@
     min-inline-size: 0;
   }
 
-  :where(.ly-root[data-ly-layout="maximalist"]) :where(.ly-wrapper) {
-    --ly-wrapper-max: 100%;
-  }
-
   @container ly-personality (min-width: 48rem) {
-    :where(.ly-root[data-ly-layout="maximalist"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
   @container ly-personality (min-width: 56rem) {
-    :where(.ly-root[data-ly-layout="maximalist"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "header header header header"
         "main main sidebar aside"

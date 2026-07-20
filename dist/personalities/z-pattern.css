@@ -8,24 +8,23 @@
     --ly-recipe-aside: 19rem;
     --ly-grid-columns: 8;
     --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 108rem;
 
     container-name: ly-personality;
     container-type: inline-size;
     min-inline-size: 0;
   }
 
-  :where(.ly-root[data-ly-layout="z-pattern"]) :where(.ly-wrapper) {
-    --ly-wrapper-max: 108rem;
-  }
-
   @container ly-personality (min-width: 48rem) {
-    :where(.ly-root[data-ly-layout="z-pattern"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
   @container ly-personality (min-width: 60rem) {
-    :where(.ly-root[data-ly-layout="z-pattern"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "header header sidebar"
         "main aside sidebar"

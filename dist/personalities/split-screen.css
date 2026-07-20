@@ -6,6 +6,7 @@
   :where(.ly-root[data-ly-layout="split-screen"]) {
     --ly-grid-columns: 2;
     --ly-grid-min: 20rem;
+    --ly-personality-wrapper-max: 100%;
     --ly-split-primary: 1fr;
     --ly-split-secondary: 1fr;
 
@@ -14,12 +15,9 @@
     min-inline-size: 0;
   }
 
-  :where(.ly-root[data-ly-layout="split-screen"]) :where(.ly-wrapper) {
-    --ly-wrapper-max: 100%;
-  }
-
   @container ly-personality (min-width: 48rem) {
-    :where(.ly-root[data-ly-layout="split-screen"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="split-screen"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "header header"
         "main sidebar"

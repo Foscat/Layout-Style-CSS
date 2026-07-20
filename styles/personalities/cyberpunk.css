@@ -8,18 +8,16 @@
     --ly-recipe-aside: 19rem;
     --ly-grid-columns: 8;
     --ly-grid-min: 12rem;
+    --ly-personality-wrapper-max: 112rem;
 
     container-name: ly-personality;
     container-type: inline-size;
     min-inline-size: 0;
   }
 
-  :where(.ly-root[data-ly-layout="cyberpunk"]) :where(.ly-wrapper) {
-    --ly-wrapper-max: 112rem;
-  }
-
   @container ly-personality (min-width: 44rem) {
-    :where(.ly-root[data-ly-layout="cyberpunk"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="cyberpunk"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "sidebar header aside"
         "sidebar main aside"

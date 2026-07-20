@@ -15,6 +15,7 @@ const changelog = read("CHANGELOG.md");
 const migration = read("docs", "wiki", "Migrating-To-2.0.md");
 const installation = read("docs", "wiki", "Installation-And-CDN.md");
 const compatibility = read("docs", "wiki", "UI-Style-Kit-Compatibility.md");
+const recipesGuide = read("docs", "wiki", "Layout-Recipes.md");
 const release = read("docs", "wiki", "Release-And-Publishing.md");
 const support = read("docs", "wiki", "Security-And-Support.md");
 const docsCorpus = [readme, migration, installation, compatibility].join("\n");
@@ -96,6 +97,29 @@ for (const staleGuidance of [
 }
 
 assert(migration.includes(".ly-container"), "Migration guide must map the old container API");
+const v1BaseMigrationContracts = [
+  [".ly-content", ["min-inline-size", "structural"]],
+  [".ly-divider", ["spacing", "visual divider"]],
+  [".ly-surface--raised", ["removed", "UI Style Kit"]]
+];
+
+/* These selectors came from the v1 base bundle and require an explicit v2 disposition. */
+for (const [selector, requiredTerms] of v1BaseMigrationContracts) {
+  assert(migration.includes(selector), `Migration guide must map the v1 base API ${selector}`);
+
+  for (const term of requiredTerms) {
+    assert(
+      migration.toLowerCase().includes(term.toLowerCase()),
+      `${selector} migration guidance must explain ${term}`
+    );
+  }
+}
+assert(
+  readme.includes(".ly-content") &&
+    readme.includes(".ly-divider") &&
+    readme.includes(".ly-surface--raised"),
+  "README legacy guidance must cover every audited v1 base selector disposition"
+);
 for (const wrapper of ["compact", "prose", "content", "wide", "full", "breakout"]) {
   assert(migration.includes(`ly-wrapper--${wrapper}`), `Migration guide must document ${wrapper}`);
 }
@@ -116,6 +140,10 @@ for (const warning of [
 assert(
   migration.includes("follow-up") && migration.includes("UI Style Kit"),
   "Migration guide must keep the UI Style Kit revision as a follow-up"
+);
+assert(
+  recipesGuide.includes("complete recipe API") && recipesGuide.includes("only `data-ly-recipe"),
+  "Recipe documentation must explain that canonical data hooks work without companion classes"
 );
 
 assert(

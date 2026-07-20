@@ -7,18 +7,16 @@
     --ly-grid-columns: 6;
     --ly-grid-min: 12rem;
     --ly-card-grid-min: 13rem;
+    --ly-personality-wrapper-max: 112rem;
 
     container-name: ly-personality;
     container-type: inline-size;
     min-inline-size: 0;
   }
 
-  :where(.ly-root[data-ly-layout="bento"]) :where(.ly-wrapper) {
-    --ly-wrapper-max: 112rem;
-  }
-
   @container ly-personality (min-width: 48rem) {
-    :where(.ly-root[data-ly-layout="bento"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="bento"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "header header header"
         "sidebar main main"

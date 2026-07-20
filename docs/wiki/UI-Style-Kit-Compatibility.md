@@ -37,6 +37,8 @@ The bridge supports the `saas`, `bento`, `max`, `bau`, `tactile`, `neo`, `retro`
 
 Visual component names remain owned by UI Style Kit. The bridge does not map color, typography, border, shadow, theme, or interaction tokens.
 
+The removed v1 `.ly-surface--raised` selector is not restored by `legacy.css`; its radius and raised paint belong to UI Style Kit or application theme styling. Likewise, the legacy `.ly-divider` alias supplies structural size and spacing only, leaving the visible separator to the UI layer.
+
 ## Compatibility Baseline
 
 | Library | Verified fixture | Consumer requirement |

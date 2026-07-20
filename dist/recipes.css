@@ -6,29 +6,29 @@
 */
 
 @layer ly.recipes {
-  .ly-app-shell,
-  .ly-dashboard,
-  .ly-docs,
-  .ly-list-detail,
-  .ly-split-hero,
-  .ly-gallery,
-  .ly-card-grid {
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"]),
+  :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
+  :where(.ly-docs, [data-ly-recipe="docs"]),
+  :where(.ly-list-detail, [data-ly-recipe="list-detail"]),
+  :where(.ly-split-hero, [data-ly-recipe="split-hero"]),
+  :where(.ly-gallery, [data-ly-recipe="gallery"]),
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
     container-name: ly-recipe;
     container-type: inline-size;
     min-inline-size: 0;
   }
 
-  .ly-app-shell,
-  .ly-dashboard,
-  .ly-docs,
-  .ly-list-detail,
-  .ly-split-hero {
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"]),
+  :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
+  :where(.ly-docs, [data-ly-recipe="docs"]),
+  :where(.ly-list-detail, [data-ly-recipe="list-detail"]),
+  :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--ly-gap);
   }
 
-  .ly-app-shell {
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
     min-block-size: 100svh;
     grid-template-areas:
       "header"
@@ -39,7 +39,7 @@
     grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   }
 
-  .ly-dashboard {
+  :where(.ly-dashboard, [data-ly-recipe="dashboard"]) {
     grid-template-areas:
       "header"
       "nav"
@@ -48,7 +48,7 @@
       "footer";
   }
 
-  .ly-docs {
+  :where(.ly-docs, [data-ly-recipe="docs"]) {
     grid-template-areas:
       "header"
       "nav"
@@ -57,14 +57,14 @@
       "footer";
   }
 
-  .ly-list-detail {
+  :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
     grid-template-areas:
       "primary"
       "secondary"
       "actions";
   }
 
-  .ly-split-hero {
+  :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
     grid-template-areas:
       "content"
       "media"
@@ -72,22 +72,22 @@
     align-items: var(--ly-split-hero-align, center);
   }
 
-  .ly-gallery,
-  .ly-card-grid {
+  :where(.ly-gallery, [data-ly-recipe="gallery"]),
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
     display: grid;
     gap: var(--ly-grid-gap);
   }
 
-  .ly-gallery {
+  :where(.ly-gallery, [data-ly-recipe="gallery"]) {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
   }
 
-  .ly-card-grid {
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
   }
 
-  .ly-gallery > *,
-  .ly-card-grid > * {
+  :where(.ly-gallery, [data-ly-recipe="gallery"]) > *,
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) > * {
     min-inline-size: 0;
   }
 
@@ -166,7 +166,8 @@
     min-inline-size: 0;
   }
 
-  .ly-app-shell > :where(.ly-area--nav, [data-ly-area="nav"]) {
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"])
+    > :where(.ly-area--nav, [data-ly-area="nav"]) {
     grid-area: sidebar;
   }
 
@@ -176,7 +177,7 @@
     mobile template when no ancestor container is present.
   */
   @container (min-width: 48rem) {
-    .ly-app-shell {
+    :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "header header"
         "sidebar main"
@@ -185,7 +186,7 @@
       grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
     }
 
-    .ly-dashboard {
+    :where(.ly-dashboard, [data-ly-recipe="dashboard"]) {
       grid-template-areas:
         "header header"
         "nav nav"
@@ -194,7 +195,7 @@
       grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
     }
 
-    .ly-docs {
+    :where(.ly-docs, [data-ly-recipe="docs"]) {
       grid-template-areas:
         "header header"
         "nav main"
@@ -203,31 +204,31 @@
       grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
     }
 
-    .ly-list-detail {
+    :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
       grid-template-areas:
         "primary secondary"
         "actions actions";
       grid-template-columns: minmax(min(100%, var(--ly-pane-size)), 0.7fr) minmax(0, 1fr);
     }
 
-    .ly-split-hero {
+    :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
       grid-template-areas:
         "content media"
         "actions media";
       grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
     }
 
-    .ly-gallery {
+    :where(.ly-gallery, [data-ly-recipe="gallery"]) {
       --ly-gallery-min: 14rem;
     }
 
-    .ly-card-grid {
+    :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
       --ly-card-grid-min: 18rem;
     }
   }
 
   @container (min-width: 64rem) {
-    .ly-app-shell {
+    :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "sidebar header header"
         "sidebar main aside"
@@ -238,8 +239,8 @@
         minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
     }
 
-    .ly-dashboard,
-    .ly-docs {
+    :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
+    :where(.ly-docs, [data-ly-recipe="docs"]) {
       grid-template-areas:
         "nav header header"
         "nav main aside"
@@ -250,19 +251,19 @@
         minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
     }
 
-    .ly-list-detail {
+    :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
       grid-template-columns: minmax(min(100%, var(--ly-pane-size)), 0.45fr) minmax(0, 1fr);
     }
 
-    .ly-split-hero {
+    :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
       grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     }
 
-    .ly-gallery {
+    :where(.ly-gallery, [data-ly-recipe="gallery"]) {
       --ly-gallery-min: 16rem;
     }
 
-    .ly-card-grid {
+    :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
       --ly-card-grid-min: 20rem;
     }
   }

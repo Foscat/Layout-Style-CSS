@@ -8,25 +8,24 @@
     --ly-recipe-aside: 18rem;
     --ly-grid-columns: 6;
     --ly-grid-min: 13rem;
+    --ly-personality-wrapper-max: 96rem;
 
     container-name: ly-personality;
     container-type: inline-size;
     min-inline-size: 0;
   }
 
-  :where(.ly-root[data-ly-layout="bauhaus"]) :where(.ly-wrapper) {
-    --ly-wrapper-max: 96rem;
-  }
-
   /* Cap the fallback rail until the wider personality template is eligible. */
   @container ly-personality (min-width: 48rem) {
-    :where(.ly-root[data-ly-layout="bauhaus"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="bauhaus"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-columns: minmax(min(100%, 14rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
   @container ly-personality (min-width: 52rem) {
-    :where(.ly-root[data-ly-layout="bauhaus"]) .ly-app-shell {
+    :where(.ly-root[data-ly-layout="bauhaus"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "sidebar header header aside"
         "sidebar main main aside"

@@ -117,6 +117,16 @@
     min-inline-size: 0;
   }
 
+  .ly-content {
+    min-inline-size: 0;
+  }
+
+  .ly-divider {
+    /* V2 preserves separator geometry here; themes remain responsible for visible paint. */
+    min-block-size: 1px;
+    margin-block: var(--ly-space-5);
+  }
+
   .ly-card-sm { min-block-size: var(--ly-card-size-sm); }
   .ly-card-md { min-block-size: var(--ly-card-size-md); }
   .ly-card-lg { min-block-size: var(--ly-card-size-lg); }

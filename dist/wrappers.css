@@ -97,7 +97,8 @@
 
 @layer ly.wrappers {
   .ly-wrapper {
-    --ly-wrapper-max: var(--ly-wrapper-content);
+    /* Personalities provide only the plain-wrapper default; explicit variants stay authoritative. */
+    --ly-wrapper-max: var(--ly-personality-wrapper-max, var(--ly-wrapper-content));
 
     /* Symmetric safe-area compensation keeps logical gutters stable in either direction. */
     container-name: ly-wrapper;

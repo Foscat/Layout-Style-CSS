@@ -16,6 +16,7 @@ All notable changes to `layout-style-css` are documented here. This project foll
 
 - Added stack, cluster, center, cover, switcher, sidebar, grid, split, panes, media, reel, frame, and bounded-scroll primitives.
 - Added seven functional recipes that preserve mobile DOM, reading, and focus order while rearranging named areas at `48rem` and `64rem` container thresholds.
+- Made every `data-ly-recipe` value a complete alternative to its matching class and kept explicit wrapper measures authoritative under all personalities.
 - Added sixteen spatially distinct personalities across left-rail, right-rail, three-zone, mosaic, and equal-split families.
 - Added explicit base, medium-container, and large-container order escape hatches with accessibility guidance.
 - Added a maintainable interactive layout lab with allowlisted query state, copyable snippets, ecosystem modes, and rendered coverage at 375px, 768px, 1280px, and 1440px.
@@ -26,6 +27,7 @@ All notable changes to `layout-style-css` are documented here. This project foll
 - Pinned `ui-style-kit-css@2.0.1` and `interactive-surface-css@1.4.0` as development fixtures only; the default package has no companion imports, peer dependencies, or runtime dependencies.
 - Documented the all-three import order as UI Style Kit bridge, Interactive Surface `state-core.css`, Layout integration bridge, then Layout core.
 - Kept the upcoming UI Style Kit revision as a follow-up outside this release.
+- Preserved structural v1 `.ly-content` and `.ly-divider` compatibility while leaving the removed paint-owned `.ly-surface--raised` selector to UI Style Kit or application themes.
 
 ## [1.1.2] - 2026-07-08
 

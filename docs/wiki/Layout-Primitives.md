@@ -6,6 +6,8 @@ V2 primitives are structural, mobile-first, and safe to use without a visual des
 
 `.ly-wrapper` defaults to the `72rem` content measure and establishes an inline-size container. Fluid logical gutters include safe-area insets.
 
+Layout personalities can provide a distinct measure for the plain `.ly-wrapper`. Explicit semantic wrapper variants always keep the measures below, so changing the demo wrapper control produces a real structural change under every personality.
+
 | Selector | Measure or behavior |
 | --- | --- |
 | `.ly-wrapper--compact` | `40rem` |
@@ -36,6 +38,8 @@ Breakout children use `.ly-lane--content`, `.ly-lane--feature`, `.ly-lane--full`
 | `.ly-scroll` | Bounded scrolling with overscroll containment. |
 
 Primitives respond to their nearest wrapper or recipe container at the `48rem` and `64rem` core thresholds. They do not set color, typography, borders, shadows, or interaction states.
+
+For v1 migrations, `legacy.css` keeps `.ly-content` as `min-inline-size: 0` and preserves only the minimum block size and spacing of `.ly-divider`. A visible divider is paint and must come from UI Style Kit or the application theme; `.ly-surface--raised` is removed for the same ownership reason.
 
 ## Structural Utilities
 

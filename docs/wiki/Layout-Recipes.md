@@ -14,6 +14,8 @@ Use `data-ly-recipe` with one of:
 - `gallery`
 - `card-grid`
 
+The attribute is the complete recipe API, not metadata for a class. A root with only `data-ly-recipe="docs"` receives the same mobile fallback, containment, named areas, and responsive geometry as `.ly-docs`; the class form remains available as an equivalent option.
+
 Use `data-ly-area` with `header`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, or `secondary`.
 
 ## Application Recipe

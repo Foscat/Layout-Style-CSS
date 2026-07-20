@@ -8,6 +8,9 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const dist = join(root, "dist");
 const styles = join(root, "styles");
 const npmPublishWorkflowPath = join(root, ".github", "workflows", "npm-publish.yml");
+const v1BaseApiSnapshot = JSON.parse(
+  readFileSync(join(root, "test", "fixtures", "v1-base-public-api.json"), "utf8")
+);
 
 const cascadeLayerPrelude =
   "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;";
@@ -316,6 +319,16 @@ const task2RecipeRoots = [
   ".ly-card-grid"
 ];
 
+const recipeRootContracts = [
+  ["app-shell", ".ly-app-shell"],
+  ["dashboard", ".ly-dashboard"],
+  ["docs", ".ly-docs"],
+  ["list-detail", ".ly-list-detail"],
+  ["split-hero", ".ly-split-hero"],
+  ["gallery", ".ly-gallery"],
+  ["card-grid", ".ly-card-grid"]
+];
+
 const task2AreaNames = [
   "header",
   "nav",
@@ -399,6 +412,33 @@ function findUnguardedGridTrackFloors(css, file) {
 
 function normalizeCssWhitespace(css) {
   return css.replace(/\s+/g, " ").trim();
+}
+
+function extractStyleRuleSelectors(css) {
+  const selectors = [];
+  let buffer = "";
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  for (const character of withoutComments) {
+    if (character === "{") {
+      const prelude = buffer.trim();
+      const isAtRule = prelude.startsWith("@");
+
+      if (prelude && !isAtRule) {
+        selectors.push(prelude);
+      }
+
+      buffer = "";
+    } else if (character === "}") {
+      buffer = "";
+    } else if (character === ";") {
+      buffer = "";
+    } else {
+      buffer += character;
+    }
+  }
+
+  return selectors;
 }
 
 function hasRectangularNamedAreas(template) {
@@ -644,6 +684,12 @@ assert(
     wrappers.includes("env(safe-area-inset-right, 0px)"),
   "All wrappers must use logical sizing with fluid, safe-area-aware inline gutters"
 );
+assert(
+  wrappers.includes(
+    "--ly-wrapper-max: var(--ly-personality-wrapper-max, var(--ly-wrapper-content));"
+  ),
+  "The plain wrapper must consume the inherited personality default without overriding semantic variants"
+);
 for (const [selector, declaration] of task2WrapperVariants) {
   assert(wrappers.includes(selector), `wrappers.css missing ${selector}`);
   assert(wrappers.includes(declaration), `${selector} must preserve ${declaration}`);
@@ -680,6 +726,26 @@ for (const selector of task2RecipeRoots) {
     recipeMobileFallback.includes(selector),
     `${selector} must define its DOM-order mobile fallback before container enhancements`
   );
+}
+const recipeStyleRuleSelectors = extractStyleRuleSelectors(recipes);
+for (const [recipe, classSelector] of recipeRootContracts) {
+  const dataSelector = `[data-ly-recipe="${recipe}"]`;
+  const selectorsUsingClass = recipeStyleRuleSelectors.filter((selector) =>
+    selector.includes(classSelector)
+  );
+
+  assert(
+    recipeMobileFallback.includes(dataSelector),
+    `${dataSelector} must define an independent mobile-first recipe fallback`
+  );
+  assert(selectorsUsingClass.length > 0, `${classSelector} must own at least one recipe rule`);
+
+  for (const selector of selectorsUsingClass) {
+    assert(
+      selector.includes(dataSelector),
+      `${classSelector} rule must include its independent ${dataSelector} alternative: ${selector}`
+    );
+  }
 }
 assert(
   recipes.includes("container-type: inline-size;") && recipes.includes("container-name: ly-recipe;"),
@@ -811,9 +877,23 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
     `${path} must enhance at its ${contract.threshold} personality threshold`
   );
   assert(
-    normalizedCss.includes(normalizeCssWhitespace(`--ly-wrapper-max: ${contract.measure};`)),
-    `${path} must own its ${contract.measure} wrapper measure signature`
+    normalizedCss.includes(
+      normalizeCssWhitespace(`--ly-personality-wrapper-max: ${contract.measure};`)
+    ),
+    `${path} must own its inherited ${contract.measure} default wrapper measure signature`
   );
+  assert(
+    !extractStyleRuleSelectors(css).some((selector) => selector.includes(".ly-wrapper")),
+    `${path} must not override explicit semantic wrapper variants from a later cascade layer`
+  );
+  for (const selector of extractStyleRuleSelectors(css).filter((candidate) =>
+    candidate.includes(".ly-app-shell")
+  )) {
+    assert(
+      selector.includes('[data-ly-recipe="app-shell"]'),
+      `${path} must apply personality shell geometry to attribute-only app-shell recipes`
+    );
+  }
   assert(
     normalizedCss.includes(normalizeCssWhitespace(`grid-template-areas: ${contract.areas};`)),
     `${path} must implement its ${contract.family} named-area signature`
@@ -978,16 +1058,16 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
   assert(
     normalizedLegacy.includes(
       normalizeCssWhitespace(
-        `${legacyRoot} .ly-app-shell { grid-template-areas: ${contract.areas}; grid-template-rows: ${expectedPersonalityRows(contract.areas)};`
+        `${legacyRoot} :where(.ly-app-shell, [data-ly-recipe="app-shell"]) { grid-template-areas: ${contract.areas}; grid-template-rows: ${expectedPersonalityRows(contract.areas)};`
       )
     ),
     `legacy.css must give ${name} root hooks the same named-area and row-track behavior as data-ly-layout`
   );
   assert(
-    normalizedLegacy.includes(
-      normalizeCssWhitespace(`${legacyRoot} :where(.ly-wrapper) { --ly-wrapper-max: ${contract.measure};`)
+    extractRuleBody(legacyLayer, legacyRoot).includes(
+      `--ly-personality-wrapper-max: ${contract.measure};`
     ),
-    `legacy.css must give ${name} root hooks the same wrapper measure as data-ly-layout`
+    `legacy.css must give ${name} root hooks the same inherited wrapper default as data-ly-layout`
   );
 }
 assert(
@@ -1037,6 +1117,21 @@ assert(
   "Legacy app-sidebar alias must preserve the v1 named sidebar area"
 );
 assert(
+  extractRuleBody(legacyLayer, ".ly-content").includes("min-inline-size: 0;"),
+  "Legacy compatibility must preserve the v1 content shrink-safety contract"
+);
+const legacyDivider = extractRuleBody(legacyLayer, ".ly-divider");
+assert(
+  legacyDivider.includes("min-block-size: 1px;") &&
+    legacyDivider.includes("margin-block: var(--ly-space-5);") &&
+    findOwnedVisualDeclarations(`.ly-divider { ${legacyDivider} }`).length === 0,
+  "Legacy divider compatibility must preserve structural geometry without reclaiming paint"
+);
+assert(
+  !legacyLayer.includes(".ly-surface--raised"),
+  "Legacy compatibility must not restore the paint-owned v1 raised-surface selector"
+);
+assert(
   !/@import[^;]*(?:ui-style-kit-css|interactive-surface-css)/.test(legacy),
   "legacy.css must not restore removed companion imports"
 );
@@ -1050,6 +1145,27 @@ for (const file of requiredFiles) {
 }
 
 const flattened = readFileSync(join(dist, "layout-style-css.css"), "utf8");
+const migrationGuide = readFileSync(join(root, "docs", "wiki", "Migrating-To-2.0.md"), "utf8");
+const documentedV1Removals = new Set([".ly-surface--raised"]);
+
+assert.equal(
+  v1BaseApiSnapshot.source,
+  "styles/layout-base.css from the final 1.x source line",
+  "The v1 migration audit must identify its frozen public-source baseline"
+);
+for (const selector of v1BaseApiSnapshot.selectors) {
+  if (documentedV1Removals.has(selector)) {
+    assert(
+      migrationGuide.includes(selector) && migrationGuide.includes("Removed"),
+      `${selector} must retain an explicit documented removal disposition`
+    );
+  } else {
+    assert(
+      flattened.includes(selector) || legacy.includes(selector),
+      `${selector} from the v1 base API needs a v2 or legacy compatibility disposition`
+    );
+  }
+}
 assert(
   flattened.includes("layout-style-css bundle"),
   "Flattened bundle must include a generated bundle header"

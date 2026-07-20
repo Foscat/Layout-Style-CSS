@@ -69,7 +69,7 @@ The old root-level personality files and `all-with-ui-kit*` aggregates were remo
 
 ## Container-First Wrappers
 
-Every `.ly-wrapper` has fluid logical gutters, safe-area compensation, and `container-type: inline-size`. The default is the `72rem` content measure.
+Every `.ly-wrapper` has fluid logical gutters, safe-area compensation, and `container-type: inline-size`. The default is the `72rem` content measure. Personalities may change only the plain-wrapper default; an explicit semantic wrapper variant always retains its documented measure.
 
 | Wrapper | Measure |
 | --- | --- |
@@ -92,7 +92,7 @@ Wrappers and recipe roots respond to the nearest container. The mobile single-co
 
 ## Recipes And Areas
 
-Use `data-ly-recipe` as the semantic public hook. Matching classes are provided for direct composition.
+Use `data-ly-recipe` as the semantic public hook. Each value is independently functional without a matching class; matching classes remain available as an equivalent direct-composition API.
 
 - `app-shell`
 - `dashboard`
@@ -171,7 +171,9 @@ Applications that cannot migrate all selectors at once may temporarily use:
 import "layout-style-css/legacy.css";
 ```
 
-This one import includes the full v2 bundle and aliases for v1 containers, size names, root personality hooks, columns, carousel, button group, sidebar, pane, card, and scroll recipes. It is supported for the v2 line only, with removal in v3. New code should use canonical v2 exports and hooks.
+This one import includes the full v2 bundle and aliases for v1 containers, size names, root personality hooks, columns, carousel, button group, sidebar, pane, card, scroll recipes, `.ly-content` shrink safety, and structural `.ly-divider` spacing. It is supported for the v2 line only, with removal in v3. New code should use canonical v2 exports and hooks.
+
+The v1 `.ly-surface--raised` selector is intentionally removed, including from `legacy.css`: raised radius, border, background, and shadow treatment belongs to UI Style Kit or application theme styling. See [Migrating To 2.0](docs/wiki/Migrating-To-2.0.md) for the complete selector mapping.
 
 ## CDN
 

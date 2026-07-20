@@ -78,7 +78,7 @@ The first layer supplies UI paint, the second interaction states, the third stru
 
 ## Wrapper Mapping
 
-V2 wrapper names communicate intent rather than a generic size tier. `.ly-wrapper` now defaults to the `72rem` content measure and establishes an inline-size container.
+V2 wrapper names communicate intent rather than a generic size tier. `.ly-wrapper` now defaults to the `72rem` content measure and establishes an inline-size container. A personality may change that plain-wrapper default, but an explicit compact, prose, content, wide, full, or breakout variant always wins.
 
 | 1.x selector | V2 selector | V2 measure or behavior |
 | --- | --- | --- |
@@ -114,6 +114,8 @@ V2 standardizes three attributes:
 - `data-ly-recipe` identifies `app-shell`, `dashboard`, `docs`, `list-detail`, `split-hero`, `gallery`, or `card-grid`.
 - `data-ly-area` identifies `header`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, or `secondary`.
 
+Every `data-ly-recipe` value is a complete alternative to its matching recipe class. For example, `data-ly-recipe="dashboard"` works without `.ly-dashboard`; applications may keep the class API, use the attribute API, or include both during migration.
+
 ```html
 <body class="ly-root" data-ly-layout="minimal-saas">
   <div class="ly-dashboard" data-ly-recipe="dashboard">
@@ -144,8 +146,11 @@ The v2 composition set is stack, cluster, center, cover, switcher, sidebar, grid
 | `.ly-button-group` | `.ly-cluster` |
 | `.ly-card-grid` | `data-ly-recipe="card-grid"` or `.ly-card-grid` |
 | `.ly-gallery` | `data-ly-recipe="gallery"` or `.ly-gallery` |
+| `.ly-content` | V2 primitives and recipe areas already apply shrink safety; `legacy.css` preserves the structural `min-inline-size: 0` alias for ad hoc v1 content regions. |
+| `.ly-divider` | Replace spacing with a stack gap or spacing utility and source the visual divider from UI Style Kit or the application theme. `legacy.css` preserves only its `1px` minimum block geometry and block spacing, never paint. |
+| `.ly-surface--raised` | Removed. Raised radius, border, background, and shadow treatment belongs to UI Style Kit or application theme styling, so `legacy.css` intentionally does not restore this selector. |
 
-The v1 column, carousel, button-group, sidebar, pane, card-size, app-area, and scroll aliases remain functional only through `legacy.css`.
+The v1 column, carousel, button-group, sidebar, pane, card-size, app-area, scroll, content, and structural divider aliases remain functional only through `legacy.css`. The paint-owned `.ly-surface--raised` API is removed rather than aliased.
 
 ## Mobile Order And Accessibility
 
@@ -163,7 +168,7 @@ Use one import during an incremental migration:
 import "layout-style-css/legacy.css";
 ```
 
-`legacy.css` imports the full v2 bundle and adds functional aliases for old wrapper names, root hooks, layout aliases, 12-column utilities, carousel, button groups, sidebar layouts, pane names, card sizing, app regions, and scroll areas. It does not restore companion imports or removed package exports.
+`legacy.css` imports the full v2 bundle and adds functional aliases for old wrapper names, root hooks, layout aliases, 12-column utilities, carousel, button groups, sidebar layouts, pane names, card sizing, app regions, scroll areas, `.ly-content`, and structural `.ly-divider` geometry. It does not restore `.ly-surface--raised`, companion imports, or removed package exports.
 
 Legacy compatibility is supported for the v2 line only and is scheduled for removal in v3. Treat it as a transition tool: migrate markup and imports before upgrading to the next major version.
 
