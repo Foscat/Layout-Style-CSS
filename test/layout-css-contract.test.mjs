@@ -349,6 +349,16 @@ function findUnguardedGridTrackFloors(css, file) {
   return matches;
 }
 
+function extractRuleBody(css, selector) {
+  const ruleStart = css.indexOf(`${selector} {`);
+  assert.notEqual(ruleStart, -1, `Missing rule ${selector}`);
+  const declarationStart = css.indexOf("{", ruleStart);
+  const ruleEnd = css.indexOf("}", declarationStart);
+  assert.notEqual(ruleEnd, -1, `Incomplete rule ${selector}`);
+
+  return css.slice(declarationStart + 1, ruleEnd);
+}
+
 function runNpmPackDryRun() {
   const command = "npm pack --dry-run --json --ignore-scripts";
   const result = spawnSync(command, {
@@ -828,6 +838,41 @@ for (const name of personalityNames) {
 }
 for (let column = 1; column <= 12; column += 1) {
   assert(legacyLayer.includes(`.ly-col-${column}`), `legacy.css missing .ly-col-${column}`);
+}
+const legacyHalfGutter = "calc(var(--ly-gutter, var(--ly-gap)) * 0.5)";
+const legacyRowRule = extractRuleBody(legacyLayer, ".ly-row");
+assert(
+  legacyRowRule.includes(`margin-inline: calc(var(--ly-gutter, var(--ly-gap)) * -0.5);`) &&
+    !legacyRowRule.includes("gap:"),
+  "Legacy rows must compensate column padding without adding width between percentage columns"
+);
+assert(
+  extractRuleBody(legacyLayer, ".ly-col").includes(`padding-inline: ${legacyHalfGutter};`),
+  "Legacy flexible columns must retain half-gutter padding"
+);
+const legacyColumnWidths = [
+  "8.333333%",
+  "16.666667%",
+  "25%",
+  "33.333333%",
+  "41.666667%",
+  "50%",
+  "58.333333%",
+  "66.666667%",
+  "75%",
+  "83.333333%",
+  "91.666667%",
+  "100%"
+];
+for (const [index, width] of legacyColumnWidths.entries()) {
+  const selector = `.ly-col-${index + 1}`;
+  const rule = extractRuleBody(legacyLayer, selector);
+  assert(
+    rule.includes("flex: 0 0 auto;") &&
+      rule.includes(`width: ${width};`) &&
+      rule.includes(`padding-inline: ${legacyHalfGutter};`),
+    `${selector} must preserve its v1 border-box percentage and half-gutter geometry`
+  );
 }
 assert(
   legacyLayer.includes(".ly-app-sidebar { grid-area: sidebar;"),
