@@ -111,6 +111,7 @@ const requiredDocumentationFiles = [
   "docs/wiki/Layout-Primitives.md",
   "docs/wiki/Layout-Recipes.md",
   "docs/wiki/Layout-Styles.md",
+  "docs/wiki/Migrating-To-2.0.md",
   "docs/wiki/UI-Style-Kit-Compatibility.md",
   "docs/wiki/Demo-And-GitHub-Pages.md",
   "docs/wiki/Release-And-Publishing.md",
@@ -1139,10 +1140,23 @@ assert.deepEqual(packageJson.files, [
 assert.equal(packageJson.scripts.build, "node scripts/build.mjs");
 assert.equal(packageJson.scripts.lint, "stylelint \"styles/**/*.css\" \"demo/**/*.css\"");
 assert.equal(packageJson.scripts["check:demo-js"], "node --check demo/demo.js");
-assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick");
+assert.equal(
+  packageJson.scripts["test:demo:quick"],
+  "node test/demo-smoke.test.mjs --quick --browser=chromium"
+);
+assert.equal(
+  packageJson.scripts["test:static"],
+  "node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs"
+);
+for (const browser of ["chromium", "firefox", "webkit"]) {
+  assert.equal(
+    packageJson.scripts[`test:demo:${browser}`],
+    `node test/demo-smoke.test.mjs --browser=${browser}`
+  );
+}
 assert.equal(
   packageJson.scripts.test,
-  "node test/layout-css-contract.test.mjs && node test/demo-smoke.test.mjs && node test/pages-artifact.test.mjs"
+  "npm run test:static && npm run test:demo:quick && npm run test:pages"
 );
 assert.equal(packageJson.scripts["pages:build"], "node scripts/build-pages.mjs");
 assert.equal(
@@ -1150,10 +1164,16 @@ assert.equal(
   "npm run build && npm run lint && npm run check:demo-js && npm test && npm run pack:dry-run"
 );
 assert.equal(packageJson.scripts["pack:dry-run"], "npm pack --dry-run --ignore-scripts");
-assert.equal(packageJson.scripts["publish:dry-run"], "npm publish --dry-run --access public");
-assert.equal(packageJson.scripts["release:verify"], "npm run check && npm run publish:dry-run");
-assert.equal(packageJson.scripts.prepack, "npm run check");
-assert.equal(packageJson.scripts.prepublishOnly, "npm run check");
+assert.equal(
+  packageJson.scripts["publish:dry-run"],
+  "npm publish --dry-run --access public --ignore-scripts"
+);
+assert.equal(
+  packageJson.scripts["release:verify"],
+  "npm run check:full && npm audit --audit-level=moderate && npm run publish:dry-run"
+);
+assert.equal(packageJson.scripts.prepack, "npm run build && npm run test:static");
+assert.equal(packageJson.scripts.prepublishOnly, "npm run check:full");
 assert.equal(packageJson.publishConfig.access, "public");
 assert.deepEqual(packageJson.exports, expectedV2Exports);
 for (const name of personalityNames) {
@@ -1295,20 +1315,19 @@ assert(
   "README should link to the professional wiki documentation"
 );
 assert(
-  readme.includes('import "layout-style-css/all-with-ui-kit.css";'),
-  "README should document the one-import UI Kit pairing"
+  readme.includes('import "layout-style-css/integrations/ui-style-kit.css";'),
+  "README should document the focused UI Kit integration"
 );
-assert(readme.includes(".ly-button-group"), "README should document the button group recipe");
-assert(readme.includes(".saas-card-grid"), "README should document UI-prefix recipe aliases");
+assert(readme.includes(".ly-wrapper--breakout"), "README should document the breakout wrapper");
+assert(readme.includes(".saas-container"), "README should document UI-prefix structural aliases");
 assert(readme.includes("F-Pattern"), "README should document the F-pattern layout style");
 assert(readme.includes("Z-Pattern"), "README should document the Z-pattern layout style");
-assert(readme.includes("Split-Screen"), "README should document the split-screen layout style");
+assert(readme.includes("Split Screen"), "README should document the split-screen layout style");
 assert(readme.includes("Mondrian"), "README should document the Mondrian layout style");
 assert(readme.includes("Synthwave"), "README should document the Synthwave layout style");
 assert(
-  readme.includes(".ly-md-cols-{1,2,3,4,6,8,12,16}") &&
-    readme.includes(".ly-lg-cols-{1,2,3,4,6,8,12,16}"),
-  "README should document responsive column utility groups without implying bare numeric classes"
+  readme.includes(".ly-md-order-3") && readme.includes(".ly-lg-order-last"),
+  "README should document responsive order utilities with an accessibility warning"
 );
 
 const readmeImports = extractPackageImports(readme);
@@ -1317,30 +1336,29 @@ assert(readmeImports.length > 0, "README should include JavaScript import exampl
 for (const importPath of readmeImports.filter((path) => path === "layout-style-css" || path.startsWith("layout-style-css/"))) {
   const subpath = importPath === "layout-style-css" ? "." : `./${importPath.slice("layout-style-css/".length)}`;
 
-  // Task 5 replaces the retained v1 migration examples after the v2 package surface is stable.
-  if (
-    subpath === "./base.css" ||
-    subpath === "./bridge.css" ||
-    subpath.startsWith("./all") ||
-    personalityNames.some((name) => subpath === `./${name}.css`)
-  ) {
-    continue;
-  }
-
-  assert(packageJson.exports[subpath], `README import ${importPath} must be a package export`);
+  const isPersonalityExport = subpath.startsWith("./personalities/") && subpath.endsWith(".css");
+  assert(
+    packageJson.exports[subpath] || (isPersonalityExport && packageJson.exports["./personalities/*.css"]),
+    `README import ${importPath} must be a package export`
+  );
 }
 
-assert(
-  !readmeImports.includes("layout-style-css/layout-ui-style-kit-bridge.css"),
-  "README should use layout-style-css/bridge.css instead of the non-exported source filename"
-);
+for (const removedImport of [
+  "layout-style-css/base.css",
+  "layout-style-css/bridge.css",
+  "layout-style-css/all.css",
+  "layout-style-css/all-with-ui-kit.css",
+  "layout-style-css/all-with-ui-kit-and-interactive-surface.css"
+]) {
+  assert(!readmeImports.includes(removedImport), `README must omit removed import ${removedImport}`);
+}
 assert(
   !readmeImports.includes("interactive-surface-css"),
   "README should import interactive-surface-css through its CSS entrypoint"
 );
 assert(
-  readmeImports.includes("interactive-surface-css/interactive-surface.css"),
-  "README should document the Interactive Surface CSS entrypoint"
+  readmeImports.includes("interactive-surface-css/state-core.css"),
+  "README should document the Interactive Surface 1.4 state-core entrypoint"
 );
 
 for (const htmlBlock of extractFencedBlocks(readme, "html")) {
@@ -1353,12 +1371,9 @@ for (const htmlBlock of extractFencedBlocks(readme, "html")) {
 }
 
 assert(
-  readme.includes("https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css"),
-  "README CDN example should use the same UI Style Kit bridge filename as the demo"
-);
-assert(
-  readme.includes("https://unpkg.com/interactive-surface-css@1.2.5/dist/interactive-surface.min.css"),
-  "README CDN example should use the Interactive Surface CSS file"
+  readme.includes("https://unpkg.com/layout-style-css@2.0.0/dist/layout-style-css.min.css") &&
+    readme.includes("https://cdn.jsdelivr.net/npm/layout-style-css@2.0.0/dist/layout-style-css.min.css"),
+  "README CDN examples should pin the v2 package"
 );
 
 const readmeLinks = extractMarkdownLinks(readme);
@@ -1377,8 +1392,8 @@ for (const link of readmeLinks.filter(isLocalMarkdownLink)) {
 const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
 assert(changelog.includes("# Changelog"), "CHANGELOG.md should use a standard changelog heading");
 assert(
-  changelog.includes("## [1.1.2] - 2026-07-08"),
-  "CHANGELOG.md should describe the 1.1.2 patch recovery"
+  changelog.includes("## [2.0.0] - 2026-07-19"),
+  "CHANGELOG.md should describe the dated 2.0.0 breaking release"
 );
 assert(changelog.includes("F-Pattern"), "CHANGELOG.md should mention the new F-Pattern layout");
 assert(changelog.includes("Synthwave"), "CHANGELOG.md should mention the new Synthwave layout");
@@ -1387,13 +1402,13 @@ assert(changelog.includes("wiki"), "CHANGELOG.md should mention the new wiki doc
 
 const wikiHome = readFileSync(join(root, "docs/wiki/Home.md"), "utf8");
 assert(wikiHome.includes("# Layout Style CSS Wiki"), "Wiki home should use a clear product heading");
-assert(wikiHome.includes("Version 1.1.2"), "Wiki home should identify the documented release");
+assert(wikiHome.includes("Version 2.0.0"), "Wiki home should identify the documented release");
 const releaseChecklist = readFileSync(join(root, "docs/wiki/Release-And-Publishing.md"), "utf8");
 assert(
-  releaseChecklist.includes("layout-style-css@1.1.2") &&
-    releaseChecklist.includes("git tag v1.1.2") &&
-    releaseChecklist.includes("release_tag` set to `v1.1.2`"),
-  "Release checklist should identify the 1.1.2 package, tag, and workflow recovery path"
+  releaseChecklist.includes("layout-style-css@2.0.0") &&
+    releaseChecklist.includes("git tag v2.0.0") &&
+    releaseChecklist.includes("release_tag` set to `v2.0.0`"),
+  "Release checklist should identify the 2.0.0 package, tag, and workflow recovery path"
 );
 for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("docs/wiki/"))) {
   const content = readFileSync(join(root, file), "utf8");
@@ -1416,7 +1431,7 @@ assert(
 assert(
   npmPublishWorkflow.includes("workflow_dispatch:") &&
     npmPublishWorkflow.includes("release_tag:") &&
-    npmPublishWorkflow.includes('description: "Release tag to publish, for example v1.1.2"'),
+    npmPublishWorkflow.includes('description: "Release tag to publish, for example v2.0.0"'),
   "npm publish workflow should expose a manual recovery dispatch with an explicit release tag"
 );
 assert(
@@ -1425,9 +1440,10 @@ assert(
 );
 assert(
   npmPublishWorkflow.includes('node-version: 22') &&
-    npmPublishWorkflow.includes("npm run check") &&
+    npmPublishWorkflow.includes("npm run release:verify") &&
+    npmPublishWorkflow.includes("playwright install --with-deps chromium firefox webkit") &&
     npmPublishWorkflow.includes("npm publish --access public"),
-  "npm publish workflow should verify and publish with the supported Node runtime"
+  "npm publish workflow should verify all engines and publish with the supported Node runtime"
 );
 assert(
   npmPublishWorkflow.includes('if [ "v${PACKAGE_VERSION}" != "$RELEASE_TAG" ]; then') &&
@@ -1449,6 +1465,7 @@ const expectedPackFiles = [
   "docs/wiki/Layout-Primitives.md",
   "docs/wiki/Layout-Recipes.md",
   "docs/wiki/Layout-Styles.md",
+  "docs/wiki/Migrating-To-2.0.md",
   "docs/wiki/Release-And-Publishing.md",
   "docs/wiki/Security-And-Support.md",
   "docs/wiki/UI-Style-Kit-Compatibility.md",

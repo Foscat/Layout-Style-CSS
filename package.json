@@ -32,14 +32,22 @@
     "pages:build": "node scripts/build-pages.mjs",
     "lint": "stylelint \"styles/**/*.css\" \"demo/**/*.css\"",
     "check:demo-js": "node --check demo/demo.js",
-    "test:demo:quick": "node test/demo-smoke.test.mjs --quick",
-    "test": "node test/layout-css-contract.test.mjs && node test/demo-smoke.test.mjs && node test/pages-artifact.test.mjs",
+    "test:static": "node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
+    "test:demo:quick": "node test/demo-smoke.test.mjs --quick --browser=chromium",
+    "test:demo:chromium": "node test/demo-smoke.test.mjs --browser=chromium",
+    "test:demo:firefox": "node test/demo-smoke.test.mjs --browser=firefox",
+    "test:demo:webkit": "node test/demo-smoke.test.mjs --browser=webkit",
+    "test:demo:all": "npm run test:demo:chromium && npm run test:demo:firefox && npm run test:demo:webkit",
+    "test:pages": "node test/pages-artifact.test.mjs",
+    "test": "npm run test:static && npm run test:demo:quick && npm run test:pages",
+    "test:full": "npm run test:static && npm run test:demo:all && npm run test:pages",
     "check": "npm run build && npm run lint && npm run check:demo-js && npm test && npm run pack:dry-run",
+    "check:full": "npm run build && npm run lint && npm run check:demo-js && npm run test:full && npm run pack:dry-run",
     "pack:dry-run": "npm pack --dry-run --ignore-scripts",
-    "publish:dry-run": "npm publish --dry-run --access public",
-    "release:verify": "npm run check && npm run publish:dry-run",
-    "prepack": "npm run check",
-    "prepublishOnly": "npm run check"
+    "publish:dry-run": "npm publish --dry-run --access public --ignore-scripts",
+    "release:verify": "npm run check:full && npm audit --audit-level=moderate && npm run publish:dry-run",
+    "prepack": "npm run build && npm run test:static",
+    "prepublishOnly": "npm run check:full"
   },
   "publishConfig": {
     "access": "public"

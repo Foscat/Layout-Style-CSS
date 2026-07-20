@@ -1,0 +1,163 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = fileURLToPath(new URL("..", import.meta.url));
+const read = (...parts) => readFileSync(join(root, ...parts), "utf8");
+const packageJson = JSON.parse(read("package.json"));
+const migrationPath = join(root, "docs", "wiki", "Migrating-To-2.0.md");
+
+assert(existsSync(migrationPath), "The v2 package must ship a complete 1.x migration guide");
+
+const readme = read("README.md");
+const changelog = read("CHANGELOG.md");
+const migration = read("docs", "wiki", "Migrating-To-2.0.md");
+const installation = read("docs", "wiki", "Installation-And-CDN.md");
+const compatibility = read("docs", "wiki", "UI-Style-Kit-Compatibility.md");
+const release = read("docs", "wiki", "Release-And-Publishing.md");
+const support = read("docs", "wiki", "Security-And-Support.md");
+const docsCorpus = [readme, migration, installation, compatibility].join("\n");
+const currentGuidanceCorpus = [
+  readme,
+  ...[
+    "Contributing.md",
+    "Demo-And-GitHub-Pages.md",
+    "Getting-Started.md",
+    "Home.md",
+    "Installation-And-CDN.md",
+    "Layout-Primitives.md",
+    "Layout-Recipes.md",
+    "Layout-Styles.md",
+    "Release-And-Publishing.md",
+    "Security-And-Support.md",
+    "UI-Style-Kit-Compatibility.md"
+  ].map((file) => read("docs", "wiki", file))
+].join("\n");
+
+for (const requiredText of [
+  "Node.js 20",
+  "dependency-free",
+  "48rem",
+  "64rem",
+  "Chromium",
+  "Firefox",
+  "WebKit",
+  "data-ly-layout",
+  "data-ly-recipe",
+  "data-ly-area",
+  "legacy.css",
+  "removal in v3",
+  "ui-style-kit-css@2.0.1",
+  "interactive-surface-css@1.4.0"
+]) {
+  assert(docsCorpus.includes(requiredText), `V2 documentation must explain ${requiredText}`);
+}
+
+for (const exportPath of [
+  "layout-style-css",
+  "layout-style-css/min.css",
+  "layout-style-css/core.css",
+  "layout-style-css/wrappers.css",
+  "layout-style-css/primitives.css",
+  "layout-style-css/recipes.css",
+  "layout-style-css/utilities.css",
+  "layout-style-css/personalities.css",
+  "layout-style-css/personalities/minimal-saas.css",
+  "layout-style-css/integrations/ui-style-kit.css",
+  "layout-style-css/legacy.css"
+]) {
+  assert(docsCorpus.includes(exportPath), `V2 documentation must include ${exportPath}`);
+}
+
+const allThreeOrder = [
+  'import "ui-style-kit-css/with-bridge.css";',
+  'import "interactive-surface-css/state-core.css";',
+  'import "layout-style-css/integrations/ui-style-kit.css";',
+  'import "layout-style-css";'
+].join("\n");
+assert(
+  docsCorpus.includes(allThreeOrder),
+  "All-three documentation must preserve the supported four-layer import order"
+);
+
+for (const staleGuidance of [
+  'import "layout-style-css/all-with-ui-kit.css";',
+  'import "layout-style-css/all-with-ui-kit-and-interactive-surface.css";',
+  'import "layout-style-css/base.css";',
+  'import "layout-style-css/bridge.css";',
+  'import "interactive-surface-css/interactive-surface.css";',
+  "layout-style-css@1.1.2"
+]) {
+  assert(
+    !currentGuidanceCorpus.includes(staleGuidance),
+    `Current documentation must remove stale guidance: ${staleGuidance}`
+  );
+}
+
+assert(migration.includes(".ly-container"), "Migration guide must map the old container API");
+for (const wrapper of ["compact", "prose", "content", "wide", "full", "breakout"]) {
+  assert(migration.includes(`ly-wrapper--${wrapper}`), `Migration guide must document ${wrapper}`);
+}
+for (const lane of ["content", "feature", "full"]) {
+  assert(migration.includes(`data-ly-lane=\"${lane}\"`), `Migration guide must document ${lane} lane`);
+}
+for (const warning of [
+  "DOM order",
+  "reading order",
+  "focus order",
+  "ly-order-first",
+  "ly-md-order",
+  "ly-lg-order",
+  "Built-in recipes never use"
+]) {
+  assert(migration.includes(warning), `Migration guide must include accessibility guidance: ${warning}`);
+}
+assert(
+  migration.includes("follow-up") && migration.includes("UI Style Kit"),
+  "Migration guide must keep the UI Style Kit revision as a follow-up"
+);
+
+assert(
+  changelog.includes("## [2.0.0] - 2026-07-19") && changelog.includes("Breaking"),
+  "Changelog must identify the dated 2.0.0 breaking release"
+);
+assert(release.includes("layout-style-css@2.0.0") && release.includes("v2.0.0"));
+assert(support.includes("`2.x` | Yes"), "Support table must identify the supported v2 line");
+
+assert(packageJson.files.includes("docs/wiki"), "The package must ship the migration guide with the wiki");
+assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick --browser=chromium");
+for (const browser of ["chromium", "firefox", "webkit"]) {
+  assert.equal(
+    packageJson.scripts[`test:demo:${browser}`],
+    `node test/demo-smoke.test.mjs --browser=${browser}`
+  );
+}
+assert(packageJson.scripts["test:demo:all"].includes("test:demo:firefox"));
+assert(packageJson.scripts["test:demo:all"].includes("test:demo:webkit"));
+assert(packageJson.scripts["release:verify"].includes("check:full"));
+assert(
+  packageJson.scripts["release:verify"].includes("npm audit --audit-level=moderate"),
+  "Release verification must enforce the documented moderate audit before publish"
+);
+assert(
+  docsCorpus.includes("core thresholds") && docsCorpus.includes("personality-specific"),
+  "Responsive documentation must distinguish core thresholds from personality overrides"
+);
+
+const ci = read(".github", "workflows", "ci.yml");
+assert(ci.includes("node-version: [20, 22]"), "CI must validate Node.js 20 and 22");
+for (const browser of ["chromium", "firefox", "webkit"]) {
+  assert(ci.includes(browser), `CI must exercise ${browser}`);
+}
+
+const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
+assert(publishWorkflow.includes("for example v2.0.0"));
+assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
+assert(publishWorkflow.includes("npm run release:verify"));
+
+const pagesWorkflow = read(".github", "workflows", "pages.yml");
+assert(pagesWorkflow.includes("playwright install --with-deps chromium"));
+assert(pagesWorkflow.includes("npm run check"));
+
+console.log("V2 documentation and release workflow contracts look good.");

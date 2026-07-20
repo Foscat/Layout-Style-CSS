@@ -32,7 +32,8 @@ const requiredArtifactFiles = [
   "assets/apple-touch-icon.svg",
   "assets/social-card.png",
   "dist/layout-style-css.css",
-  "dist/layout-style-css.min.css"
+  "dist/layout-style-css.min.css",
+  "dist/integrations/ui-style-kit.css"
 ];
 
 for (const file of requiredArtifactFiles) {
@@ -40,6 +41,8 @@ for (const file of requiredArtifactFiles) {
 }
 
 const index = readFileSync(join(outputDir, "index.html"), "utf8");
+const manifest = JSON.parse(readFileSync(join(outputDir, "site.webmanifest"), "utf8"));
+const sitemap = readFileSync(join(outputDir, "sitemap.xml"), "utf8");
 const sourceDemo = readFileSync(sourceDemoPath, "utf8");
 const canonicalHrefMatch = sourceDemo.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
 
@@ -65,6 +68,15 @@ assert(
   index.includes(`href="${canonicalHrefMatch[1]}"`) || index.includes(`href='${canonicalHrefMatch[1]}'`),
   "Pages demo should preserve the source demo canonical URL"
 );
+assert(
+  index.includes('"version": "2.0.0"') && index.includes("layout-style-css 2.0 Interactive Layout Lab"),
+  "Pages metadata should identify the v2 interactive layout lab"
+);
+assert(
+  manifest.description.includes("Container-first layout-style-css 2.0"),
+  "Pages manifest should describe the v2 container-first demo"
+);
+assert(sitemap.includes("<lastmod>2026-07-20</lastmod>"), "Pages sitemap should carry current v2 metadata");
 
 const pagesWorkflow = readFileSync(pagesWorkflowPath, "utf8");
 const pagesPreflightStep = pagesWorkflow.indexOf("- name: Verify Pages configuration");

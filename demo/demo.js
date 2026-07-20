@@ -164,6 +164,8 @@ const mobileControlsQuery = window.matchMedia("(max-width: 63.999rem)");
 
 let state = readStateFromQuery();
 let drawerReturnFocus = null;
+let querySyncTimer = null;
+let hasSynchronizedQuery = false;
 
 function readStateFromQuery() {
   const query = new URLSearchParams(window.location.search);
@@ -177,14 +179,27 @@ function readStateFromQuery() {
 }
 
 function syncQuery() {
-  const url = new URL(window.location.href);
-  url.search = "";
+  const writeQuery = () => {
+    const url = new URL(window.location.href);
+    url.search = "";
 
-  for (const key of Object.keys(ALLOWLISTS)) {
-    url.searchParams.set(key, state[key]);
+    for (const key of Object.keys(ALLOWLISTS)) {
+      url.searchParams.set(key, state[key]);
+    }
+
+    window.history.replaceState(null, "", url);
+    hasSynchronizedQuery = true;
+    querySyncTimer = null;
+  };
+
+  if (!hasSynchronizedQuery) {
+    writeQuery();
+    return;
   }
 
-  window.history.replaceState(null, "", url);
+  /* Coalesce rapid control changes so WebKit's history safety limit is never exceeded. */
+  window.clearTimeout(querySyncTimer);
+  querySyncTimer = window.setTimeout(writeQuery, 200);
 }
 
 function createElement(tagName, { className, text, attributes = {}, data = {} } = {}) {
@@ -396,7 +411,14 @@ function setDrawerOpen(open, { returnFocus = true } = {}) {
   drawerBackdrop.hidden = !open;
 
   if (open) {
-    drawerReturnFocus = document.activeElement;
+    const activeElement = document.activeElement;
+    const hasMeaningfulActiveElement =
+      activeElement instanceof HTMLElement &&
+      activeElement !== body &&
+      activeElement !== document.documentElement;
+
+    /* WebKit may leave pointer-activated buttons unfocused, so never return focus to the page body. */
+    drawerReturnFocus = hasMeaningfulActiveElement ? activeElement : drawerToggle;
     body.dataset.demoControlsOpen = "true";
     drawerClose.focus({ preventScroll: true });
     return;

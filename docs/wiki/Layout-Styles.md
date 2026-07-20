@@ -1,43 +1,33 @@
 # Layout Styles
 
-Layout styles change spatial behavior without changing UI paint. Select them with `data-layout`, `layout-style`, `.ly-layout-*`, or `.ly-style-*`.
-
-## Available Styles
-
-| Style | Best for |
-| --- | --- |
-| `minimal-saas` | Quiet SaaS dashboards, admin tools, and predictable workspaces. |
-| `bento` | Modular dashboards with repeated card surfaces. |
-| `maximalist` | Editorial pages and feature-heavy product screens. |
-| `bauhaus` | Strict modular grids and structured presentation. |
-| `tactile` | Instrument panels and control-heavy interfaces. |
-| `neumorphism` | Centered island layouts and roomy product surfaces. |
-| `retrofuturism` | Panoramic shells and wide staged views. |
-| `brutalism` | Full-bleed slabs and abrupt sectional hierarchy. |
-| `cyberpunk` | Dense command surfaces and narrow utility rails. |
-| `y2k` | Centered hub shells with dock-like support regions. |
-| `retro-glass` | Layered top-frame shells with floating utility rails. |
-| `f-pattern` | Western reading paths with strong top and left scan zones. |
-| `z-pattern` | Landing and promotional flows that move diagonally across the viewport. |
-| `split-screen` | Two competing focal points with equal weight. |
-| `mondrian` | Asymmetric rectangular block compositions. |
-| `synthwave` | Cinematic preview flows and retro-futuristic stage layouts. |
-
-## Selector Contract
+V2 calls spatial styles “personalities” and selects them with the canonical `data-ly-layout` hook on `.ly-root`.
 
 ```html
-<body data-layout="synthwave" layout-style="synthwave" class="ly-root">
-  <main class="ly-layout-synthwave ly-style-synthwave">...</main>
-</body>
+<body class="ly-root" data-ly-layout="synthwave">...</body>
 ```
 
-Most applications only need `data-layout`. The class and `layout-style` selectors are provided for integration flexibility.
+## Sixteen Personalities
 
-## Mixing UI And Layout
+| Family | Personality | Spatial character |
+| --- | --- | --- |
+| Left rail | `minimal-saas` | Restrained application rail and measured workspace. |
+| Left rail | `bauhaus` | Modular columns and assertive structural rhythm. |
+| Left rail | `tactile` | Heavier instrument rail and chunky spacing. |
+| Left rail | `cyberpunk` | Narrow command rail and dense track rhythm. |
+| Left rail | `f-pattern` | Top-and-left scan emphasis. |
+| Right rail | `brutalism` | Raw workspace with a strong right support rail. |
+| Right rail | `neumorphism` | Roomy central workspace and detached right rail. |
+| Right rail | `y2k` | Centered hub with a dock-like support region. |
+| Right rail | `retro-glass` | Broad stage with a floating right utility zone. |
+| Right rail | `z-pattern` | Diagonal reading path into a right support rail. |
+| Three zone | `retrofuturism` | Panoramic bridge with symmetric support zones. |
+| Three zone | `mondrian` | Asymmetric block composition. |
+| Three zone | `synthwave` | Cinematic center stage with flanking zones. |
+| Mosaic | `bento` | Full-width modular tile rhythm. |
+| Mosaic | `maximalist` | Staggered editorial spans and broad measure. |
+| Equal split | `split-screen` | Two equally weighted primary regions. |
 
-```html
-<body data-ui="cyberpunk" data-layout="synthwave" data-theme="cyber-lime" data-mode="dark">
-```
+Every personality changes at least two structural characteristics, such as area placement, shell direction, grid/span rhythm, wrapper measure, or responsive threshold. Personalities never set UI paint or change DOM order.
 
-This is supported because layout styles do not target `data-ui`.
+The v1 `data-layout`, `layout-style`, `.ly-layout-*`, and `.ly-style-*` hooks are available only through `layout-style-css/legacy.css`. New code must use `data-ly-layout`.
 

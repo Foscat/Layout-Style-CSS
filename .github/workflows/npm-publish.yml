@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release tag to publish, for example v1.1.2"
+        description: "Release tag to publish, for example v2.0.0"
         required: true
         type: string
 
@@ -43,8 +43,11 @@ jobs:
             exit 1
           fi
 
-      - name: Verify package
-        run: npm run check
+      - name: Install Playwright browsers
+        run: npx --no-install playwright install --with-deps chromium firefox webkit
+
+      - name: Verify release package
+        run: npm run release:verify
 
       - name: Publish package to npm
         run: npm publish --access public

@@ -8,6 +8,7 @@ Thanks for improving `layout-style-css`. This repository is a CSS layout library
 npm install
 npm run build
 npm run lint
+npm run check:demo-js
 npm test
 ```
 
@@ -23,7 +24,9 @@ npm run release:verify
 - Regenerate `dist/` with `npm run build`; do not hand-edit generated dist files.
 - Keep public layout classes prefixed with `ly-`.
 - Leave colors, typography, borders, shadows, native controls, focus states, themes, and modes to `ui-style-kit-css`.
-- Add structural aliases in `styles/layout-ui-style-kit-bridge.css` only when they map to layout primitives or layout recipes.
+- Add structural aliases in `styles/integrations/ui-style-kit.css` only when they map to layout primitives or layout recipes.
+- Preserve semantic mobile DOM, reading, and focus order; built-in recipes must use named areas instead of `order`.
+- Test container behavior below and above `48rem` and `64rem`.
 - Update README, `docs/wiki`, and `CHANGELOG.md` when a public class, export, recipe, release workflow, or package behavior changes.
 
 ## Testing Expectations
@@ -31,6 +34,7 @@ npm run release:verify
 Every change that affects public behavior should update or preserve:
 
 - `test/layout-css-contract.test.mjs` for package, CSS, docs, and tarball contracts.
+- `test/release-docs-contract.test.mjs` for current documentation and workflow contracts.
 - `test/demo-smoke.test.mjs` for rendered demo behavior.
 - `test/pages-artifact.test.mjs` for GitHub Pages output.
 - `stylelint` for authored CSS formatting.
@@ -42,6 +46,7 @@ Every change that affects public behavior should update or preserve:
 - README examples use exported package entrypoints.
 - Documentation links resolve to versioned files.
 - Demo controls remain compact on mobile and tablet viewports.
+- Chromium, Firefox, and WebKit pass for release-facing rendered changes.
 - New CSS does not introduce UI Style Kit-owned visual declarations.
 
 ## Wiki Updates

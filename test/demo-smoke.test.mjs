@@ -3,7 +3,7 @@ import { createReadStream, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium } from "@playwright/test";
+import { chromium, firefox, webkit } from "@playwright/test";
 
 const root = normalize(fileURLToPath(new URL("..", import.meta.url))).replace(/[\\/]$/, "");
 const demoPath = join(root, "demo", "index.html");
@@ -166,6 +166,15 @@ const viewports = [
   { width: 1280, height: 900 },
   { width: 1440, height: 900 }
 ];
+const browserTypes = Object.freeze({ chromium, firefox, webkit });
+const browserArguments = process.argv.filter((argument) => argument.startsWith("--browser="));
+
+assert(browserArguments.length <= 1, "Demo smoke accepts at most one --browser argument");
+const browserName = browserArguments[0]?.slice("--browser=".length) ?? "chromium";
+assert(
+  Object.hasOwn(browserTypes, browserName),
+  `Unsupported browser ${browserName}; expected chromium, firefox, or webkit`
+);
 const quickGate = process.argv.includes("--quick") || process.env.DEMO_SMOKE_QUICK === "1";
 
 mkdirSync(testTempDir, { recursive: true });
@@ -318,7 +327,7 @@ function assertStaticContract() {
   );
   assert.equal(
     packageJson.scripts["test:demo:quick"],
-    "node test/demo-smoke.test.mjs --quick",
+    "node test/demo-smoke.test.mjs --quick --browser=chromium",
     "Package scripts must expose the Chromium quick gate"
   );
 }
@@ -875,8 +884,30 @@ assertStaticContract();
 
 const server = createStaticServer();
 const port = await listen(server);
-const browser = await chromium.launch();
-const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+const browser = await browserTypes[browserName].launch();
+const context = await browser.newContext(
+  browserName === "chromium" ? { permissions: ["clipboard-read", "clipboard-write"] } : {}
+);
+
+if (browserName !== "chromium") {
+  /*
+    Firefox and WebKit do not expose Playwright clipboard permissions. A page-local
+    clipboard keeps snippet assertions deterministic without relaxing application code.
+  */
+  await context.addInitScript(() => {
+    let clipboardText = "";
+
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        readText: async () => clipboardText,
+        writeText: async (value) => {
+          clipboardText = String(value);
+        }
+      }
+    });
+  });
+}
 const page = await context.newPage();
 const consoleErrors = [];
 const pageErrors = [];
@@ -907,4 +938,4 @@ try {
   server.close();
 }
 
-console.log("Demo v2 static and Chromium rendered checks look good.");
+console.log(`Demo v2 static and ${browserName} rendered checks look good.`);
