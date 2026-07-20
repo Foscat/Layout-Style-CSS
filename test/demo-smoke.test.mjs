@@ -1,12 +1,15 @@
-import { createReadStream, existsSync, mkdirSync } from "node:fs";
+import assert from "node:assert/strict";
+import { createReadStream, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 
 const root = normalize(fileURLToPath(new URL("..", import.meta.url))).replace(/[\\/]$/, "");
 const demoPath = join(root, "demo", "index.html");
+const demoCssPath = join(root, "demo", "demo.css");
+const demoJsPath = join(root, "demo", "demo.js");
+const packagePath = join(root, "package.json");
 const testTempDir = join(root, ".tmp", "playwright");
 const uiKitCssPath = join(
   root,
@@ -15,8 +18,74 @@ const uiKitCssPath = join(
   "dist",
   "ui-style-kit.with-bridge.min.css"
 );
+const interactiveSurfaceCssPath = join(
+  root,
+  "node_modules",
+  "interactive-surface-css",
+  "state-core.css"
+);
+const uiKitUrl =
+  "https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css";
+const interactiveSurfaceUrl =
+  "https://unpkg.com/interactive-surface-css@1.4.0/state-core.css";
 
-// Keep Playwright artifacts inside the repository workspace for locked-down Windows runners.
+const recipes = [
+  "app-shell",
+  "dashboard",
+  "docs",
+  "list-detail",
+  "split-hero",
+  "gallery",
+  "card-grid"
+];
+const personalities = [
+  "minimal-saas",
+  "bauhaus",
+  "tactile",
+  "cyberpunk",
+  "f-pattern",
+  "brutalism",
+  "neumorphism",
+  "y2k",
+  "retro-glass",
+  "z-pattern",
+  "retrofuturism",
+  "mondrian",
+  "synthwave",
+  "bento",
+  "maximalist",
+  "split-screen"
+];
+const controlValues = {
+  wrapperSelect: ["default", "compact", "prose", "content", "wide", "full", "breakout"],
+  recipeSelect: recipes,
+  personalitySelect: personalities,
+  containerSelect: ["auto", "40rem", "47rem", "49rem", "63rem", "65rem", "80rem"],
+  densitySelect: ["compact", "comfortable", "spacious"],
+  ecosystemSelect: ["layout-only", "layout-ui", "all-three"]
+};
+const recipeAreas = {
+  "app-shell": ["header", "nav", "main", "aside", "footer"],
+  dashboard: ["header", "nav", "main", "aside", "footer"],
+  docs: ["header", "nav", "main", "aside", "footer"],
+  "list-detail": ["primary", "secondary", "actions"],
+  "split-hero": ["content", "media", "actions"],
+  gallery: [],
+  "card-grid": []
+};
+const recipeSequence = {
+  ...recipeAreas,
+  gallery: ["item-1", "item-2", "item-3", "item-4", "item-5"],
+  "card-grid": ["item-1", "item-2", "item-3", "item-4", "item-5", "item-6"]
+};
+const viewports = [
+  { width: 375, height: 667 },
+  { width: 768, height: 1024 },
+  { width: 1280, height: 900 },
+  { width: 1440, height: 900 }
+];
+const quickGate = process.argv.includes("--quick") || process.env.DEMO_SMOKE_QUICK === "1";
+
 mkdirSync(testTempDir, { recursive: true });
 process.env.TEMP = testTempDir;
 process.env.TMP = testTempDir;
@@ -24,7 +93,9 @@ process.env.TMP = testTempDir;
 const mimeTypes = new Map([
   [".css", "text/css; charset=utf-8"],
   [".html", "text/html; charset=utf-8"],
+  [".js", "text/javascript; charset=utf-8"],
   [".json", "application/json; charset=utf-8"],
+  [".png", "image/png"],
   [".svg", "image/svg+xml; charset=utf-8"],
   [".xml", "application/xml; charset=utf-8"]
 ]);
@@ -35,7 +106,7 @@ function createStaticServer() {
     const relativePath = requestPath === "/" ? "/demo/index.html" : requestPath;
     const normalized = normalize(join(root, relativePath));
 
-    // Keep the smoke server from serving files outside the repository root.
+    // The local fixture server must never expose paths outside the package root.
     if (!normalized.startsWith(root + sep) && normalized !== root) {
       response.writeHead(403);
       response.end("Forbidden");
@@ -65,493 +136,492 @@ function listen(server) {
   });
 }
 
-async function verifyDemoState(page, path, expectedState, viewport) {
-  const consoleErrors = [];
-  const pageErrors = [];
-  const routeUrl =
-    "https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css";
-  const onConsole = (message) => {
-    if (message.type() === "error") {
-      consoleErrors.push(message.text());
-    }
-  };
-  const onPageError = (error) => {
-    pageErrors.push(error.message);
-  };
-  const routeHandler = (route) => route.fulfill({ path: uiKitCssPath, contentType: "text/css" });
+function assertStaticContract() {
+  assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
+  assert(existsSync(demoCssPath), "The v2 demo must move authored styles into demo/demo.css");
+  assert(existsSync(demoJsPath), "The v2 demo must move behavior into demo/demo.js");
+  assert(existsSync(uiKitCssPath), "Demo smoke test requires ui-style-kit-css@2.0.1");
+  assert(
+    existsSync(interactiveSurfaceCssPath),
+    "Demo smoke test requires interactive-surface-css@1.4.0"
+  );
 
-  const assertBackgroundLayers = (value, expected, message) => {
-    const layers = value.split(",").map((layer) => layer.trim()).filter(Boolean);
+  const html = readFileSync(demoPath, "utf8");
+  const css = readFileSync(demoCssPath, "utf8");
+  const script = readFileSync(demoJsPath, "utf8");
+  const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
 
-    assert(
-      layers.length > 0 && layers.every((layer) => layer === expected),
-      `${message}; received "${value}"`
-    );
-  };
+  assert(html.includes('href="./demo.css"'), "Demo must load its external stylesheet");
+  assert(html.includes('src="./demo.js"'), "Demo must load its external JavaScript");
+  assert(!html.includes("<style"), "Demo HTML must not retain a monolithic inline style block");
+  assert(
+    !/<script(?![^>]*type=["']application\/ld\+json["'])(?![^>]*\bsrc=)[^>]*>/i.test(html),
+    "Demo behavior must not remain in an inline script"
+  );
 
-  page.on("console", onConsole);
-  page.on("pageerror", onPageError);
-  await page.route(routeUrl, routeHandler);
-
-  try {
-    await page.setViewportSize(viewport);
-    await page.goto(path, { waitUntil: "networkidle" });
-
-    // Task 4 migrates the demo controls; exercise the v2 personality hook meanwhile.
-    await page.evaluate((layout) => {
-      document.body.dataset.lyLayout = layout;
-    }, expectedState.layout);
-
-    const state = await page.evaluate(() => ({
-      title: document.title,
-      ui: document.body.dataset.ui,
-      layout: document.body.dataset.layout,
-      v2Layout: document.body.dataset.lyLayout,
-      theme: document.body.dataset.theme,
-      mode: document.body.dataset.mode,
-      layoutStyle: document.body.getAttribute("layout-style"),
-      bodyHeight: document.body.getBoundingClientRect().height,
-      horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth,
-      shell: document.querySelector(".ly-app-shell")?.getBoundingClientRect().toJSON(),
-      shellAreas: getComputedStyle(document.querySelector(".ly-app-shell")).gridTemplateAreas,
-      shellColumns: getComputedStyle(document.querySelector(".ly-app-shell")).gridTemplateColumns,
-      shellRows: getComputedStyle(document.querySelector(".ly-app-shell")).gridTemplateRows,
-      header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
-      main: document.querySelector(".ly-app-main")?.getBoundingClientRect().toJSON(),
-      stage: document.querySelector("#stage")?.getBoundingClientRect().toJSON(),
-      wrappers: document.querySelectorAll(".ly-wrapper").length,
-      recipes: document.querySelectorAll("#recipes article").length,
-      surfaces: document.querySelectorAll(".ly-surface").length,
-      rootBackgroundAttachment: getComputedStyle(document.body).backgroundAttachment,
-      rootBackgroundRepeat: getComputedStyle(document.body).backgroundRepeat,
-      rootBackgroundSize: getComputedStyle(document.body).backgroundSize,
-      uiButtonClasses: document.querySelector("[data-ui-kit~='button']")?.className,
-      uiSurfaceClasses: document.querySelector("[data-ui-kit~='card'], [data-ui-kit~='panel']")?.className
-    }));
-
-    assert(
-      state.title.includes("layout-style-css"),
-      `Demo title should use production naming; received "${state.title}"`
+  for (const [id, values] of Object.entries(controlValues)) {
+    assert(html.includes(`id="${id}"`), `Demo missing #${id}`);
+    const selectMatch = html.match(new RegExp(`<select[^>]*id="${id}"[\\s\\S]*?<\\/select>`));
+    assert(selectMatch, `Demo must render #${id} as a select`);
+    const actualValues = [...selectMatch[0].matchAll(/<option value="([^"]+)">/g)].map(
+      ([, value]) => value
     );
-    assert.equal(state.ui, expectedState.ui);
-    assert.equal(state.layout, expectedState.layout);
-    assert.equal(state.v2Layout, expectedState.layout);
-    assert.equal(state.theme, expectedState.theme);
-    assert.equal(state.mode, expectedState.mode);
-    assert.equal(state.layoutStyle, expectedState.layout);
-    assert(state.bodyHeight > 0, "Demo body should render with measurable height");
-    const renderContext = `${expectedState.layout} at ${viewport.width}x${viewport.height}`;
-    assert(
-      state.header?.width > 0 && state.header.height > 0,
-      `Demo header should be visible for ${renderContext}`
-    );
-    assert(
-      state.main?.width > 0 && state.main.height > 0,
-      `Demo main region should be visible for ${renderContext}; shell ${JSON.stringify({ rect: state.shell, areas: state.shellAreas, columns: state.shellColumns, rows: state.shellRows })}`
-    );
-    assert(
-      state.stage?.width > 0 && state.stage.height > 0,
-      `Demo stage should be visible for ${renderContext}`
-    );
-    assert(state.wrappers >= 6, `Demo should exercise responsive wrapper recipes; found ${state.wrappers}`);
-    assert(state.recipes >= 6, `Demo should render recipe-style organization examples; found ${state.recipes}`);
-    assert(state.surfaces >= 8, "Demo should render the layout surface examples");
-    assert(
-      state.uiButtonClasses?.includes(`${expectedState.uiPrefix}-button`),
-      `Demo buttons should receive the active UI Style Kit prefix; received "${state.uiButtonClasses}"`
-    );
-    assert(
-      state.uiSurfaceClasses?.match(new RegExp(`\\b${expectedState.uiPrefix}-(card|panel)\\b`)),
-      `Demo surfaces should receive the active UI Style Kit prefix; received "${state.uiSurfaceClasses}"`
-    );
-    assert(
-      state.horizontalOverflow <= 4,
-      `Demo should not create meaningful horizontal overflow; received ${state.horizontalOverflow}px`
-    );
-    assertBackgroundLayers(
-      state.rootBackgroundAttachment,
-      "fixed",
-      "Demo root backgrounds should stay anchored while scrolling"
-    );
-    assertBackgroundLayers(
-      state.rootBackgroundRepeat,
-      "no-repeat",
-      "Demo root backgrounds should not tile"
-    );
-    assertBackgroundLayers(
-      state.rootBackgroundSize,
-      "100% 100%",
-      "Demo root backgrounds should cover the viewport once"
-    );
-    assert.deepEqual(consoleErrors, [], "Demo should not log console errors");
-    assert.deepEqual(pageErrors, [], "Demo should not throw page errors");
-  } finally {
-    page.off("console", onConsole);
-    page.off("pageerror", onPageError);
-    await page.unroute(routeUrl, routeHandler);
+    assert.deepEqual(actualValues, values, `#${id} must expose the exact allowlisted values`);
   }
+
+  for (const id of ["uiSelect", "themeSelect", "modeSelect"]) {
+    assert(html.includes(`id="${id}"`), `Demo missing #${id}`);
+  }
+
+  for (const id of [
+    "demoControlsToggle",
+    "demoControlsDrawer",
+    "demoControlsBackdrop",
+    "demoControlsClose",
+    "importsSnippet",
+    "markupSnippet",
+    "copyImports",
+    "copyMarkup",
+    "copyStatus",
+    "previewFrame",
+    "previewWrapper",
+    "previewRoot",
+    "recipePreview",
+    "stateToggle"
+  ]) {
+    assert(html.includes(`id="${id}"`), `Demo missing #${id}`);
+  }
+
+  const stylesheetIds = [
+    "uiKitStylesheet",
+    "interactiveSurfaceStylesheet",
+    "layoutIntegrationStylesheet",
+    "layoutCoreStylesheet"
+  ];
+  const stylesheetPositions = stylesheetIds.map((id) => html.indexOf(`id="${id}"`));
+  assert(stylesheetPositions.every((position) => position >= 0), "Demo missing ecosystem links");
+  assert.deepEqual(
+    [...stylesheetPositions].sort((a, b) => a - b),
+    stylesheetPositions,
+    "Ecosystem stylesheet DOM order must be UI, Interactive Surface, integration, then core"
+  );
+  assert(html.includes(uiKitUrl), "Demo must pin ui-style-kit-css@2.0.1");
+  assert(html.includes(interactiveSurfaceUrl), "Demo must pin interactive-surface-css@1.4.0");
+  assert(html.includes("../dist/integrations/ui-style-kit.css"), "Demo must load the integration bridge");
+  assert(html.includes("../dist/layout-style-css.css"), "Demo must load the default v2 bundle");
+  assert(!html.includes("data-layout="), "V2 demo markup must not use the legacy data-layout hook");
+  assert(!html.includes("layout-style="), "V2 demo markup must not use the legacy layout-style hook");
+  assert(html.includes("data-ly-layout="), "Demo must use the canonical personality hook");
+  assert(html.includes("data-ly-recipe="), "Demo must use the canonical recipe hook");
+  assert(html.includes("data-ly-area="), "Demo must use canonical area hooks");
+
+  assert(script.includes("const ALLOWLISTS = Object.freeze"), "Query state must use explicit allowlists");
+  assert(script.includes("URLSearchParams"), "Demo must restore and synchronize query state");
+  assert(!script.includes("innerHTML"), "Demo JavaScript must never interpolate with innerHTML");
+  assert(
+    script.includes("importsSnippet.textContent") && script.includes("markupSnippet.textContent"),
+    "Generated snippets must be assigned with textContent"
+  );
+  assert(script.includes("replaceChildren"), "Dynamic recipes must use safe DOM construction");
+  assert(css.includes("container-type: inline-size"), "Demo stage must exercise nested containment");
+  assert(css.includes("safe-area-inset"), "Mobile drawer chrome must respect safe-area insets");
+
+  assert(packageJson.files.includes("demo/demo.css"), "npm package must include demo/demo.css");
+  assert(packageJson.files.includes("demo/demo.js"), "npm package must include demo/demo.js");
+  assert(packageJson.scripts.lint.includes("demo/**/*.css"), "Stylelint must cover demo CSS");
+  assert.equal(
+    packageJson.scripts["check:demo-js"],
+    "node --check demo/demo.js",
+    "Package checks must validate demo JavaScript syntax"
+  );
+  assert.equal(
+    packageJson.scripts["test:demo:quick"],
+    "node test/demo-smoke.test.mjs --quick",
+    "Package scripts must expose the Chromium quick gate"
+  );
 }
 
-async function verifyMobileControlsDrawer(page, baseUrl, viewport) {
+async function waitForReady(page) {
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+}
+
+async function selectDemoOption(page, id, value) {
+  await page.locator(`#${id}`).evaluate((control, nextValue) => {
+    control.value = nextValue;
+    control.dispatchEvent(new Event("change", { bubbles: true }));
+  }, value);
+}
+
+async function verifyQueryAndEcosystem(page, baseUrl) {
+  const restoredUrl =
+    `${baseUrl}?wrapper=prose&recipe=docs&personality=synthwave&container=49rem` +
+    "&density=compact&ui=cyberpunk&theme=cyber-lime&mode=dark&ecosystem=all-three";
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(restoredUrl, { waitUntil: "networkidle" });
+  await waitForReady(page);
+
+  const restored = await page.evaluate(() => ({
+    state: {
+      wrapper: document.querySelector("#wrapperSelect")?.value,
+      recipe: document.querySelector("#recipeSelect")?.value,
+      personality: document.querySelector("#personalitySelect")?.value,
+      container: document.querySelector("#containerSelect")?.value,
+      density: document.querySelector("#densitySelect")?.value,
+      ui: document.querySelector("#uiSelect")?.value,
+      theme: document.querySelector("#themeSelect")?.value,
+      mode: document.querySelector("#modeSelect")?.value,
+      ecosystem: document.querySelector("#ecosystemSelect")?.value
+    },
+    body: {
+      layout: document.body.dataset.lyLayout,
+      density: document.body.dataset.density,
+      ecosystem: document.body.dataset.ecosystem
+    },
+    previewLayout: document.querySelector("#previewRoot")?.dataset.lyLayout,
+    wrapperClass: document.querySelector("#previewWrapper")?.className,
+    recipe: document.querySelector("#recipePreview")?.dataset.lyRecipe,
+    links: [
+      document.querySelector("#uiKitStylesheet")?.disabled,
+      document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
+      document.querySelector("#layoutIntegrationStylesheet")?.disabled,
+      document.querySelector("#layoutCoreStylesheet")?.disabled
+    ],
+    imports: document.querySelector("#importsSnippet")?.textContent,
+    markup: document.querySelector("#markupSnippet")?.textContent
+  }));
+
+  assert.deepEqual(restored.state, {
+    wrapper: "prose",
+    recipe: "docs",
+    personality: "synthwave",
+    container: "49rem",
+    density: "compact",
+    ui: "cyberpunk",
+    theme: "cyber-lime",
+    mode: "dark",
+    ecosystem: "all-three"
+  });
+  assert.deepEqual(restored.body, {
+    layout: "synthwave",
+    density: "compact",
+    ecosystem: "all-three"
+  });
+  assert.equal(restored.previewLayout, "synthwave");
+  assert.match(restored.wrapperClass, /\bly-wrapper--prose\b/);
+  assert.equal(restored.recipe, "docs");
+  assert.deepEqual(restored.links, [false, false, false, false]);
+  assert.equal(
+    restored.imports,
+    [
+      'import "ui-style-kit-css/with-bridge.css";',
+      'import "interactive-surface-css/state-core.css";',
+      'import "layout-style-css/integrations/ui-style-kit.css";',
+      'import "layout-style-css";'
+    ].join("\n")
+  );
+  assert(restored.markup.includes('data-ly-recipe="docs"'));
+  assert(restored.markup.includes('data-ly-layout="synthwave"'));
+
+  await page.goto(
+    `${baseUrl}?wrapper=javascript%3Aalert(1)&recipe=unknown&personality=%3Cscript%3E` +
+      "&container=999rem&density=unsafe&ui=unknown&theme=unknown&mode=unknown&ecosystem=unknown",
+    { waitUntil: "networkidle" }
+  );
+  await waitForReady(page);
+  const rejected = await page.evaluate(() => ({
+    values: [
+      document.querySelector("#wrapperSelect")?.value,
+      document.querySelector("#recipeSelect")?.value,
+      document.querySelector("#personalitySelect")?.value,
+      document.querySelector("#containerSelect")?.value,
+      document.querySelector("#densitySelect")?.value,
+      document.querySelector("#uiSelect")?.value,
+      document.querySelector("#themeSelect")?.value,
+      document.querySelector("#modeSelect")?.value,
+      document.querySelector("#ecosystemSelect")?.value
+    ],
+    search: window.location.search,
+    injected: document.querySelector("script script") !== null
+  }));
+  assert.deepEqual(rejected.values, [
+    "default",
+    "app-shell",
+    "minimal-saas",
+    "auto",
+    "comfortable",
+    "minimal-saas",
+    "arctic-indigo",
+    "light",
+    "all-three"
+  ]);
+  assert(!rejected.search.includes("javascript"));
+  assert(!rejected.search.includes("script"));
+  assert.equal(rejected.injected, false);
+
+  await page.selectOption("#ecosystemSelect", "layout-only");
+  await page.waitForFunction(() => new URLSearchParams(location.search).get("ecosystem") === "layout-only");
+  assert.deepEqual(
+    await page.evaluate(() => [
+      document.querySelector("#uiKitStylesheet")?.disabled,
+      document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
+      document.querySelector("#layoutIntegrationStylesheet")?.disabled,
+      document.querySelector("#layoutCoreStylesheet")?.disabled
+    ]),
+    [true, true, true, false]
+  );
+
+  await page.selectOption("#ecosystemSelect", "layout-ui");
+  assert.deepEqual(
+    await page.evaluate(() => [
+      document.querySelector("#uiKitStylesheet")?.disabled,
+      document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
+      document.querySelector("#layoutIntegrationStylesheet")?.disabled,
+      document.querySelector("#layoutCoreStylesheet")?.disabled
+    ]),
+    [false, true, false, false]
+  );
+
+  await page.selectOption("#ecosystemSelect", "all-three");
+  const stateBefore = await page.locator("#stateToggle").evaluate((element) => ({
+    pressed: element.getAttribute("aria-pressed"),
+    opacity: Number.parseFloat(getComputedStyle(element, "::before").opacity)
+  }));
+  await page.click("#stateToggle");
+  await page.waitForFunction(() => {
+    const element = document.querySelector("#stateToggle");
+    return element && Number.parseFloat(getComputedStyle(element, "::before").opacity) > 0;
+  });
+  const stateAfter = await page.locator("#stateToggle").evaluate((element) => ({
+    pressed: element.getAttribute("aria-pressed"),
+    opacity: Number.parseFloat(getComputedStyle(element, "::before").opacity)
+  }));
+  assert.equal(stateBefore.pressed, "false");
+  assert.equal(stateAfter.pressed, "true");
+  assert(
+    stateAfter.opacity > stateBefore.opacity,
+    `All-three active state should be visibly stronger; ${stateBefore.opacity} -> ${stateAfter.opacity}`
+  );
+
+  await page.click("#copyImports");
+  await page.waitForFunction(() => document.querySelector("#copyStatus")?.dataset.copyState === "success");
+  assert.match(await page.locator("#copyStatus").textContent(), /Copied imports/i);
+  assert.equal(
+    (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n"),
+    restored.imports
+  );
+}
+
+async function verifyMobileDrawer(page, baseUrl, viewport) {
   await page.setViewportSize(viewport);
   await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await waitForReady(page);
 
-  const closedState = await page.evaluate(() => ({
-    header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
-    toggle: document.querySelector("#demoControlsToggle")?.getBoundingClientRect().toJSON(),
-    toggleExpanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
-    drawerHidden: document.querySelector("#demoControlsDrawer")?.getAttribute("aria-hidden"),
-    horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth
-  }));
-
-  assert(closedState.header?.height <= 112, `Closed mobile header should stay compact; received ${closedState.header?.height}px`);
-  assert(closedState.toggle?.width > 0 && closedState.toggle.height > 0, "Mobile controls toggle should be visible");
-  assert.equal(closedState.toggleExpanded, "false", "Mobile controls toggle should start collapsed");
-  assert.equal(closedState.drawerHidden, "true", "Mobile controls drawer should start hidden");
-  assert(
-    closedState.horizontalOverflow <= 4,
-    `Closed mobile header should not create horizontal overflow; received ${closedState.horizontalOverflow}px`
-  );
-
-  const waitForDrawerOpen = () =>
-    page.waitForFunction((viewportWidth) => {
-      const toggle = document.querySelector("#demoControlsToggle");
-      const drawer = document.querySelector("#demoControlsDrawer");
-      if (!(toggle instanceof HTMLElement) || !(drawer instanceof HTMLElement)) {
-        return false;
-      }
-
-      if (toggle.getAttribute("aria-expanded") !== "true" || drawer.getAttribute("aria-hidden") !== "false") {
-        return false;
-      }
-
-      const { width, height, left, right } = drawer.getBoundingClientRect();
-      return width > 0 && height > 0 && left >= -1 && right <= viewportWidth + 1;
-    }, viewport.width);
+  const closed = await page.evaluate(() => {
+    const drawer = document.querySelector("#demoControlsDrawer");
+    const toggle = document.querySelector("#demoControlsToggle");
+    const toggleRect = toggle?.getBoundingClientRect();
+    return {
+      expanded: toggle?.getAttribute("aria-expanded"),
+      hidden: drawer?.hidden,
+      ariaHidden: drawer?.getAttribute("aria-hidden"),
+      inert: drawer?.inert,
+      toggleSize: [toggleRect?.width, toggleRect?.height],
+      overflow: document.documentElement.scrollWidth - innerWidth
+    };
+  });
+  assert.deepEqual(closed, {
+    expanded: "false",
+    hidden: true,
+    ariaHidden: "true",
+    inert: true,
+    toggleSize: closed.toggleSize,
+    overflow: closed.overflow
+  });
+  assert(closed.toggleSize[0] >= 44 && closed.toggleSize[1] >= 44, "Drawer toggle needs a 44px touch target");
+  assert(closed.overflow <= 4, `Closed drawer overflowed by ${closed.overflow}px`);
 
   await page.click("#demoControlsToggle");
-  await waitForDrawerOpen();
-  const openState = await page.evaluate(() => ({
-    toggleExpanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
-    drawerHidden: document.querySelector("#demoControlsDrawer")?.getAttribute("aria-hidden"),
-    drawer: document.querySelector("#demoControlsDrawer")?.getBoundingClientRect().toJSON(),
-    firstSelect: document.querySelector("#uiSelect")?.getBoundingClientRect().toJSON(),
-    horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth
-  }));
-
-  assert.equal(openState.toggleExpanded, "true", "Mobile controls toggle should expand the drawer");
-  assert.equal(openState.drawerHidden, "false", "Mobile controls drawer should be announced as visible");
-  assert(openState.drawer?.width > 0 && openState.drawer.height > 0, "Mobile controls drawer should be visible after opening");
-  assert(
-    openState.drawer.left >= -1 && openState.drawer.right <= viewport.width + 1,
-    `Open mobile controls drawer should fit the viewport; received left ${openState.drawer.left}px and right ${openState.drawer.right}px`
-  );
-  assert(openState.firstSelect?.width > 0 && openState.firstSelect.height > 0, "Mobile controls should remain usable in the drawer");
-  assert(
-    openState.firstSelect.left >= 0 && openState.firstSelect.right <= viewport.width,
-    `Mobile controls should be reachable inside the drawer; received left ${openState.firstSelect.left}px and right ${openState.firstSelect.right}px`
-  );
-  assert(
-    openState.horizontalOverflow <= 4,
-    `Open mobile drawer should not create horizontal overflow; received ${openState.horizontalOverflow}px`
-  );
+  const open = await page.evaluate(() => {
+    const drawer = document.querySelector("#demoControlsDrawer");
+    const firstControl = document.querySelector("#wrapperSelect");
+    const drawerRect = drawer?.getBoundingClientRect();
+    const controlRect = firstControl?.getBoundingClientRect();
+    return {
+      expanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
+      hidden: drawer?.hidden,
+      ariaHidden: drawer?.getAttribute("aria-hidden"),
+      inert: drawer?.inert,
+      activeId: document.activeElement?.id,
+      drawerRect: drawerRect?.toJSON(),
+      controlSize: [controlRect?.width, controlRect?.height]
+    };
+  });
+  assert.equal(open.expanded, "true");
+  assert.equal(open.hidden, false);
+  assert.equal(open.ariaHidden, "false");
+  assert.equal(open.inert, false);
+  assert(open.activeId === "demoControlsClose" || open.activeId === "wrapperSelect");
+  assert(open.drawerRect.left >= -1 && open.drawerRect.right <= viewport.width + 1);
+  assert(open.controlSize[1] >= 44, "Drawer controls need usable touch targets");
 
   await page.keyboard.press("Escape");
-  assert.equal(
-    await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
-    "false",
-    "Escape should close the mobile controls drawer"
-  );
-  assert.equal(
-    await page.evaluate(() => document.activeElement?.id),
-    "demoControlsToggle",
-    "Closing the drawer should return focus to the toggle"
-  );
+  assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
+  assert.equal(await page.evaluate(() => document.activeElement?.id), "demoControlsToggle");
 
   await page.click("#demoControlsToggle");
-  await waitForDrawerOpen();
   await page.click("#demoControlsBackdrop", { position: { x: 8, y: 8 } });
-  assert.equal(
-    await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
-    "false",
-    "Backdrop click should close the mobile controls drawer"
-  );
+  assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
 
   await page.click("#demoControlsToggle");
-  await waitForDrawerOpen();
   await page.click("#demoControlsClose");
-  assert.equal(
-    await page.locator("#demoControlsToggle").getAttribute("aria-expanded"),
-    "false",
-    "Close button should close the mobile controls drawer"
-  );
+  assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
 }
 
-async function verifyPersonalityShellRows(page, baseUrl, personalityNames) {
-  await page.setViewportSize({ width: 1280, height: 900 });
+async function verifyRecipeAndPersonalityMatrix(page, baseUrl) {
+  const matrixViewports = quickGate ? [viewports[0], viewports[2]] : viewports;
+  const matrixPersonalities = quickGate
+    ? ["minimal-saas", "retro-glass", "bento", "split-screen"]
+    : personalities;
 
-  for (const name of personalityNames) {
-    await page.goto(baseUrl, { waitUntil: "networkidle" });
-    const geometry = await page.evaluate((personality) => {
-      document.body.dataset.lyLayout = personality;
+  for (const viewport of matrixViewports) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full&container=auto`, {
+      waitUntil: "networkidle"
+    });
+    await waitForReady(page);
 
-      const shell = document.querySelector(".ly-app-shell");
-      const main = document.querySelector(".ly-app-main");
-      const footer = document.createElement("footer");
-      footer.className = "ly-app-footer";
-      footer.textContent = "Personality row contract fixture";
-      shell?.append(footer);
+    for (const recipe of recipes) {
+      await selectDemoOption(page, "recipeSelect", recipe);
+      const geometry = await page.locator("#recipePreview").evaluate((rootElement) => {
+        const rootRect = rootElement.getBoundingClientRect();
+        const frame = document.querySelector("#previewFrame");
+        return {
+          recipe: rootElement.dataset.lyRecipe,
+          areas: [...rootElement.children].map((element) => element.dataset.lyArea).filter(Boolean),
+          sequence: [...rootElement.children].map((element) => element.dataset.demoSequence),
+          rootRect: rootRect.toJSON(),
+          display: getComputedStyle(rootElement).display,
+          gridAreas: getComputedStyle(rootElement).gridTemplateAreas,
+          rootOverflow: rootElement.scrollWidth - rootElement.clientWidth,
+          frameOverflow: frame.scrollWidth - frame.clientWidth,
+          pageOverflow: document.documentElement.scrollWidth - innerWidth
+        };
+      });
+      assert.equal(geometry.recipe, recipe);
+      assert.deepEqual(geometry.areas, recipeAreas[recipe], `${recipe} semantic area order drifted`);
+      assert.deepEqual(geometry.sequence, recipeSequence[recipe], `${recipe} DOM order drifted`);
+      assert.equal(geometry.display, "grid", `${recipe} should render as a grid recipe`);
+      assert(geometry.rootRect.width > 0 && geometry.rootRect.height > 0, `${recipe} should be visible`);
+      assert(geometry.rootOverflow <= 4, `${recipe} root overflowed by ${geometry.rootOverflow}px`);
+      assert(geometry.frameOverflow <= 4, `${recipe} frame overflowed by ${geometry.frameOverflow}px`);
+      assert(geometry.pageOverflow <= 4, `${recipe} page overflowed by ${geometry.pageOverflow}px`);
+    }
 
-      const shellStyle = shell ? getComputedStyle(shell) : null;
-      const areaRows = shellStyle?.gridTemplateAreas.match(/"[^"]+"/g) ?? [];
-      const rowTracks = shellStyle?.gridTemplateRows.trim().split(/\s+/).filter(Boolean) ?? [];
-
-      return {
-        areaRows,
-        rowTracks,
-        shell: shell?.getBoundingClientRect().toJSON(),
-        main: main?.getBoundingClientRect().toJSON(),
-        footer: footer.getBoundingClientRect().toJSON()
-      };
-    }, name);
-
-    assert.equal(
-      geometry.rowTracks.length,
-      geometry.areaRows.length,
-      `${name} must explicitly match ${geometry.areaRows.length} named-area rows; received ${geometry.rowTracks.join(" ")}`
-    );
-    assert(
-      geometry.main?.height > Math.max(100, geometry.footer.height * 2),
-      `${name} main track must remain the primary work region; main ${geometry.main?.height}px, footer ${geometry.footer.height}px`
-    );
-    assert(
-      geometry.footer.height > 0 && geometry.footer.height < geometry.shell.height / 3,
-      `${name} footer track must remain content-sized; footer ${geometry.footer.height}px, shell ${geometry.shell?.height}px`
-    );
-    assert(
-      geometry.main.top < geometry.footer.top && geometry.footer.bottom <= geometry.shell.bottom + 1,
-      `${name} footer must follow the main region within the shell geometry`
-    );
+    await selectDemoOption(page, "recipeSelect", "app-shell");
+    for (const personality of matrixPersonalities) {
+      await selectDemoOption(page, "personalitySelect", personality);
+      const geometry = await page.locator("#recipePreview").evaluate((rootElement) => ({
+        personality: document.querySelector("#previewRoot")?.dataset.lyLayout,
+        areas: [...rootElement.children].map((element) => element.dataset.lyArea).filter(Boolean),
+        rect: rootElement.getBoundingClientRect().toJSON(),
+        pageOverflow: document.documentElement.scrollWidth - innerWidth
+      }));
+      assert.equal(geometry.personality, personality);
+      assert.deepEqual(geometry.areas, recipeAreas["app-shell"], `${personality} changed DOM order`);
+      assert(geometry.rect.width > 0 && geometry.rect.height > 0, `${personality} should be visible`);
+      assert(geometry.pageOverflow <= 4, `${personality} overflowed by ${geometry.pageOverflow}px`);
+    }
   }
 }
 
-assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
-assert(existsSync(uiKitCssPath), "Demo smoke test requires ui-style-kit-css dev dependency");
+async function verifyNestedThresholdsAndFocus(page, baseUrl) {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=dashboard&personality=minimal-saas`,
+    { waitUntil: "networkidle" }
+  );
+  await waitForReady(page);
+
+  const snapshots = new Map();
+  for (const width of ["47rem", "49rem", "63rem", "65rem"]) {
+    await selectDemoOption(page, "containerSelect", width);
+    await page.waitForFunction(
+      (expected) => document.querySelector("#previewFrame")?.dataset.containerWidth === expected,
+      width
+    );
+    snapshots.set(
+      width,
+      await page.locator("#recipePreview").evaluate((rootElement) => ({
+        areas: getComputedStyle(rootElement).gridTemplateAreas,
+        sequence: [...rootElement.children].map((element) => element.dataset.demoSequence),
+        frameWidth: document.querySelector("#previewFrame")?.getBoundingClientRect().width
+      }))
+    );
+  }
+
+  assert(snapshots.get("47rem").frameWidth < 48 * 16);
+  assert(snapshots.get("49rem").frameWidth > 48 * 16);
+  assert(snapshots.get("63rem").frameWidth < 64 * 16);
+  assert(snapshots.get("65rem").frameWidth > 64 * 16);
+  assert.notEqual(snapshots.get("47rem").areas, snapshots.get("49rem").areas);
+  assert.notEqual(snapshots.get("63rem").areas, snapshots.get("65rem").areas);
+  for (const snapshot of snapshots.values()) {
+    assert.deepEqual(snapshot.sequence, recipeSequence.dashboard, "Container queries must preserve DOM order");
+  }
+
+  await selectDemoOption(page, "containerSelect", "47rem");
+  await page.locator("#recipePreview [data-demo-focus]").first().focus();
+  const tabOrder = [];
+  for (let index = 0; index < recipeSequence.dashboard.length; index += 1) {
+    tabOrder.push(await page.evaluate(() => document.activeElement?.dataset.demoFocus));
+    await page.keyboard.press("Tab");
+  }
+  assert.deepEqual(tabOrder, recipeSequence.dashboard, "Keyboard order must follow the mobile DOM order");
+
+  await selectDemoOption(page, "recipeSelect", "list-detail");
+  const scroll = await page.locator(".ly-scroll").evaluate((element) => ({
+    overflowY: getComputedStyle(element).overflowY,
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight
+  }));
+  assert(["auto", "scroll"].includes(scroll.overflowY));
+  assert(scroll.scrollHeight > scroll.clientHeight, "List detail must exercise bounded scrolling");
+}
+
+assertStaticContract();
 
 const server = createStaticServer();
 const port = await listen(server);
 const browser = await chromium.launch();
+const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+const page = await context.newPage();
+const consoleErrors = [];
+const pageErrors = [];
+
+page.on("console", (message) => {
+  if (message.type() === "error") {
+    consoleErrors.push(message.text());
+  }
+});
+page.on("pageerror", (error) => pageErrors.push(error.message));
+await page.route(uiKitUrl, (route) => route.fulfill({ path: uiKitCssPath, contentType: "text/css" }));
+await page.route(interactiveSurfaceUrl, (route) =>
+  route.fulfill({ path: interactiveSurfaceCssPath, contentType: "text/css" })
+);
 
 try {
-  const page = await browser.newPage();
   const baseUrl = `http://127.0.0.1:${port}/demo/index.html`;
-  const exhaustiveMatrix = process.env.DEMO_SMOKE_FULL_MATRIX === "1";
-  const viewports = exhaustiveMatrix
-    ? [
-        { name: "mobile portrait", width: 375, height: 667 },
-        { name: "mobile landscape", width: 667, height: 375 },
-        { name: "tablet portrait", width: 768, height: 1024 },
-        { name: "tablet landscape", width: 1024, height: 768 },
-        { name: "desktop", width: 1280, height: 900 },
-        { name: "desktop resized", width: 1440, height: 900 }
-      ]
-    : [
-        { name: "mobile portrait", width: 375, height: 667 },
-        { name: "tablet landscape", width: 1024, height: 768 },
-        { name: "desktop", width: 1280, height: 900 }
-      ];
-  const presets = [
-    {
-      path: baseUrl,
-      state: {
-        ui: "minimal-saas",
-        layout: "minimal-saas",
-        theme: "arctic-indigo",
-        mode: "light",
-        uiPrefix: "saas"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=bento`,
-      state: {
-        ui: "bento",
-        layout: "bento",
-        theme: "ocean-steel",
-        mode: "light",
-        uiPrefix: "bento"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=bauhaus`,
-      state: {
-        ui: "bauhaus",
-        layout: "bauhaus",
-        theme: "graphite-cyan",
-        mode: "light",
-        uiPrefix: "bau"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=tactile`,
-      state: {
-        ui: "tactile",
-        layout: "tactile",
-        theme: "forest-moss",
-        mode: "light",
-        uiPrefix: "tactile"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=mixed`,
-      state: {
-        ui: "cyberpunk",
-        layout: "maximalist",
-        theme: "arctic-indigo",
-        mode: "dark",
-        uiPrefix: "cyber"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=y2k`,
-      state: {
-        ui: "y2k",
-        layout: "y2k",
-        theme: "rose-quartz",
-        mode: "light",
-        uiPrefix: "y2k"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=neumorphism`,
-      state: {
-        ui: "neumorphism",
-        layout: "neumorphism",
-        theme: "desert-sage",
-        mode: "light",
-        uiPrefix: "neo"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=retroGlass`,
-      state: {
-        ui: "retro-glass",
-        layout: "retro-glass",
-        theme: "graphite-cyan",
-        mode: "dark",
-        uiPrefix: "rg"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=retrofuturism`,
-      state: {
-        ui: "retrofuturism",
-        layout: "retrofuturism",
-        theme: "midnight-gold",
-        mode: "dark",
-        uiPrefix: "retro"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=brutalism`,
-      state: {
-        ui: "brutalism",
-        layout: "brutalism",
-        theme: "midnight-gold",
-        mode: "contrast",
-        uiPrefix: "brutal"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=cyberpunk`,
-      state: {
-        ui: "cyberpunk",
-        layout: "cyberpunk",
-        theme: "cyber-lime",
-        mode: "dark",
-        uiPrefix: "cyber"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=maximalist`,
-      state: {
-        ui: "maximalist",
-        layout: "maximalist",
-        theme: "sunset-ember",
-        mode: "light",
-        uiPrefix: "max"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=fPattern`,
-      state: {
-        ui: "minimal-saas",
-        layout: "f-pattern",
-        theme: "arctic-indigo",
-        mode: "light",
-        uiPrefix: "saas"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=zPattern`,
-      state: {
-        ui: "bento",
-        layout: "z-pattern",
-        theme: "ocean-steel",
-        mode: "light",
-        uiPrefix: "bento"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=splitScreen`,
-      state: {
-        ui: "maximalist",
-        layout: "split-screen",
-        theme: "sunset-ember",
-        mode: "light",
-        uiPrefix: "max"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=mondrian`,
-      state: {
-        ui: "bauhaus",
-        layout: "mondrian",
-        theme: "graphite-cyan",
-        mode: "contrast",
-        uiPrefix: "bau"
-      }
-    },
-    {
-      path: `${baseUrl}?preset=synthwave`,
-      state: {
-        ui: "cyberpunk",
-        layout: "synthwave",
-        theme: "cyber-lime",
-        mode: "dark",
-        uiPrefix: "cyber"
-      }
-    }
-  ];
-
-  for (const viewport of viewports) {
-    for (const preset of presets) {
-      await verifyDemoState(page, preset.path, preset.state, viewport);
-    }
-  }
-
-  await verifyPersonalityShellRows(
-    page,
-    baseUrl,
-    [...new Set(presets.map(({ state }) => state.layout))]
-  );
-
-  await verifyMobileControlsDrawer(page, baseUrl, { width: 375, height: 667 });
-  await verifyMobileControlsDrawer(page, baseUrl, { width: 667, height: 375 });
-  await verifyMobileControlsDrawer(page, baseUrl, { width: 768, height: 1024 });
-  await verifyMobileControlsDrawer(page, baseUrl, { width: 1100, height: 696 });
+  await verifyQueryAndEcosystem(page, baseUrl);
+  await verifyMobileDrawer(page, baseUrl, { width: 375, height: 667 });
+  await verifyMobileDrawer(page, baseUrl, { width: 768, height: 1024 });
+  await verifyRecipeAndPersonalityMatrix(page, baseUrl);
+  await verifyNestedThresholdsAndFocus(page, baseUrl);
+  assert.deepEqual(consoleErrors, [], `Demo should not log console errors: ${consoleErrors.join(" | ")}`);
+  assert.deepEqual(pageErrors, [], `Demo should not throw page errors: ${pageErrors.join(" | ")}`);
 } finally {
+  await context.close();
   await browser.close();
   server.close();
 }
 
-console.log("Demo smoke checks look good.");
+console.log("Demo v2 static and Chromium rendered checks look good.");

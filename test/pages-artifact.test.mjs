@@ -22,6 +22,8 @@ assert.equal(result.status, 0, result.stderr || result.stdout);
 const requiredArtifactFiles = [
   ".nojekyll",
   "index.html",
+  "demo.css",
+  "demo.js",
   "browserconfig.xml",
   "robots.txt",
   "sitemap.xml",

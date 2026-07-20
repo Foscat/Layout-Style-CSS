@@ -88,6 +88,9 @@ const expectedV2Exports = {
 };
 
 const requiredDemoAssets = [
+  "demo/index.html",
+  "demo/demo.css",
+  "demo/demo.js",
   "demo/assets/favicon.svg",
   "demo/assets/apple-touch-icon.svg",
   "demo/assets/social-card.png",
@@ -1118,6 +1121,8 @@ assert.deepEqual(packageJson.files, [
   "styles",
   "docs/wiki",
   "demo/index.html",
+  "demo/demo.css",
+  "demo/demo.js",
   "demo/assets/apple-touch-icon.svg",
   "demo/assets/favicon.svg",
   "demo/assets/social-card.png",
@@ -1132,13 +1137,18 @@ assert.deepEqual(packageJson.files, [
   "LICENSE"
 ]);
 assert.equal(packageJson.scripts.build, "node scripts/build.mjs");
-assert.equal(packageJson.scripts.lint, "stylelint \"styles/**/*.css\"");
+assert.equal(packageJson.scripts.lint, "stylelint \"styles/**/*.css\" \"demo/**/*.css\"");
+assert.equal(packageJson.scripts["check:demo-js"], "node --check demo/demo.js");
+assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick");
 assert.equal(
   packageJson.scripts.test,
   "node test/layout-css-contract.test.mjs && node test/demo-smoke.test.mjs && node test/pages-artifact.test.mjs"
 );
 assert.equal(packageJson.scripts["pages:build"], "node scripts/build-pages.mjs");
-assert.equal(packageJson.scripts.check, "npm run build && npm run lint && npm test && npm run pack:dry-run");
+assert.equal(
+  packageJson.scripts.check,
+  "npm run build && npm run lint && npm run check:demo-js && npm test && npm run pack:dry-run"
+);
 assert.equal(packageJson.scripts["pack:dry-run"], "npm pack --dry-run --ignore-scripts");
 assert.equal(packageJson.scripts["publish:dry-run"], "npm publish --dry-run --access public");
 assert.equal(packageJson.scripts["release:verify"], "npm run check && npm run publish:dry-run");
@@ -1231,38 +1241,40 @@ assert(
   "Demo should opt into the focused UI Style Kit integration"
 );
 assert(demo.includes("ui-style-kit-css@2.0.1"), "Demo should pin UI Style Kit CSS v2.0.1");
-assert(demo.includes("Layout Recipes"), "Demo should expose recipe-style organization examples");
-assert(demo.includes("Button group"), "Demo should expose the button group layout recipe");
-assert(demo.includes("Card grid"), "Demo should expose the card grid layout recipe");
-assert(demo.includes("Card size"), "Demo should expose the card size layout recipe");
-assert(demo.includes("Gallery"), "Demo should expose the gallery layout recipe");
-assert(demo.includes("Carousel"), "Demo should expose the carousel layout recipe");
-assert(demo.includes("Frame and scroll"), "Demo should expose the frame and scroll layout recipe");
+assert(
+  demo.includes("interactive-surface-css@1.4.0/state-core.css"),
+  "Demo should pin the Interactive Surface 1.4.0 state core"
+);
+for (const recipe of [
+  "app-shell",
+  "dashboard",
+  "docs",
+  "list-detail",
+  "split-hero",
+  "gallery",
+  "card-grid"
+]) {
+  assert(demo.includes(`value="${recipe}"`), `Demo should expose the ${recipe} recipe option`);
+}
 assert(demo.includes('value="f-pattern"'), "Demo should expose the F-pattern layout option");
 assert(demo.includes('value="z-pattern"'), "Demo should expose the Z-pattern layout option");
 assert(demo.includes('value="split-screen"'), "Demo should expose the Split-Screen layout option");
 assert(demo.includes('value="mondrian"'), "Demo should expose the Mondrian layout option");
 assert(demo.includes('value="synthwave"'), "Demo should expose the Synthwave layout option");
-assert(demo.includes("F-pattern"), "Demo should describe the F-pattern layout style");
-assert(demo.includes("Z-pattern"), "Demo should describe the Z-pattern layout style");
-assert(demo.includes("Synthwave"), "Demo should describe the Synthwave layout style");
 assert(demo.includes('id="demoControlsToggle"'), "Demo should expose a mobile controls drawer toggle");
 assert(demo.includes('id="demoControlsDrawer"'), "Demo should expose a reusable controls drawer");
 assert(demo.includes("ly-wrapper"), "Demo should exercise the responsive wrapper alias");
 assert(
-  !/<button\b[^>]*\bclass=/.test(demo),
-  "Demo buttons must avoid local class attributes so ui-style-kit-css can own their visual style"
+  demo.includes('href="./demo.css"') && demo.includes('src="./demo.js"'),
+  "Demo should keep authored CSS and JavaScript in maintainable external files"
 );
 assert(
-  demo.includes("data-ui-kit"),
-  "Demo should use ui-style-kit-css public component hooks instead of local visual classes"
+  demo.includes("data-ly-layout") && demo.includes("data-ly-recipe") && demo.includes("data-ly-area"),
+  "Demo should use the canonical v2 layout, recipe, and area hooks"
 );
-
-// Semantic surfaces let the demo show UI Style Kit paint without adding local visual overrides.
-const semanticSurfaceCount = (demo.match(/<(?:article|aside)\b[^>]*\bly-surface\b/g) ?? []).length;
 assert(
-  semanticSurfaceCount >= 8,
-  `Demo should use semantic article/aside surfaces for visual examples; found ${semanticSurfaceCount}`
+  !demo.includes("data-layout=") && !demo.includes("layout-style="),
+  "Demo should not depend on legacy v1 root hooks"
 );
 
 for (const file of requiredFiles) {
@@ -1445,6 +1457,8 @@ const expectedPackFiles = [
   "demo/assets/favicon.svg",
   "demo/assets/social-card.png",
   "demo/browserconfig.xml",
+  "demo/demo.css",
+  "demo/demo.js",
   "demo/index.html",
   "demo/robots.txt",
   "demo/site.webmanifest",

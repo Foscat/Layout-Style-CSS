@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta http-equiv="content-language" content="en-US">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="title" content="layout-style-css + UI Style Kit CSS Demo">
-    <meta name="description" content="Interactive shell-first layout demo for layout-style-css, ui-style-kit-css v2.0.1, and optional interactive-surface-css integrations.">
-    <meta name="keywords" content="CSS layout library, layout styles, UI style kit CSS, shell layouts, responsive CSS, design system layout">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="title" content="layout-style-css 2.0 Interactive Layout Lab">
+    <meta name="description" content="Explore container-first wrappers, recipes, and layout personalities in layout-style-css 2.0 with optional UI Style Kit and Interactive Surface integrations.">
+    <meta name="keywords" content="CSS layout library, container queries, layout recipes, UI Style Kit CSS, Interactive Surface CSS, responsive CSS">
     <meta name="author" content="Foscat">
     <meta name="creator" content="Foscat">
     <meta name="publisher" content="Foscat">
-    <meta name="abstract" content="Shell-first CSS layout primitives that mix independently with ui-style-kit-css visual systems.">
-    <meta name="subject" content="CSS layout style library for UI shell composition">
+    <meta name="abstract" content="A container-first layout laboratory for semantic wrappers, responsive recipes, and independent layout personalities.">
+    <meta name="subject" content="CSS layout system and responsive composition library">
     <meta name="classification" content="Developer tools, CSS libraries, design systems">
     <meta name="category" content="Software Development">
     <meta name="coverage" content="Worldwide">
@@ -30,30 +30,30 @@
     <meta name="apple-mobile-web-app-title" content="layout-style-css">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
     <meta name="msapplication-TileColor" content="#111827">
     <meta name="msapplication-config" content="./browserconfig.xml">
     <meta name="color-scheme" content="light dark">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="en_US">
-    <meta property="og:title" content="layout-style-css + UI Style Kit CSS Demo">
-    <meta property="og:description" content="Swap layout shells independently from UI styles while keeping ui-style-kit-css in charge of visual identity.">
+    <meta property="og:title" content="layout-style-css 2.0 Interactive Layout Lab">
+    <meta property="og:description" content="Test semantic wrappers, container-responsive recipes, and sixteen spatial personalities without coupling layout to paint.">
     <meta property="og:image" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
     <meta property="og:image:secure_url" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
-    <meta property="og:image:alt" content="layout-style-css shell-first CSS social card">
+    <meta property="og:image:alt" content="layout-style-css interactive layout lab social card">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:url" content="https://foscat.github.io/layout-style-css/">
     <meta property="og:site_name" content="layout-style-css">
-    <meta property="og:updated_time" content="2026-06-30T00:00:00-05:00">
+    <meta property="og:updated_time" content="2026-07-20T00:00:00-05:00">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="layout-style-css + UI Style Kit CSS Demo">
-    <meta name="twitter:description" content="Shell-first responsive layouts that mix and match with ui-style-kit-css v2.0.1.">
+    <meta name="twitter:title" content="layout-style-css 2.0 Interactive Layout Lab">
+    <meta name="twitter:description" content="Container-first responsive layouts that pair cleanly with UI Style Kit CSS 2.0.1 and Interactive Surface CSS 1.4.0.">
     <meta name="twitter:image" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
-    <meta name="twitter:image:alt" content="layout-style-css shell-first CSS social card">
-    <meta itemprop="name" content="layout-style-css + UI Style Kit CSS Demo">
-    <meta itemprop="description" content="Shell-first responsive layouts that mix and match with ui-style-kit-css v2.0.1.">
+    <meta name="twitter:image:alt" content="layout-style-css interactive layout lab social card">
+    <meta itemprop="name" content="layout-style-css 2.0 Interactive Layout Lab">
+    <meta itemprop="description" content="A live workbench for semantic wrappers, responsive recipes, and spatial personalities.">
     <meta itemprop="image" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
     <link rel="canonical" href="https://foscat.github.io/layout-style-css/">
     <link rel="dns-prefetch" href="https://unpkg.com">
@@ -65,913 +65,259 @@
     <link rel="mask-icon" href="./assets/favicon.svg" color="#111827">
     <link rel="manifest" href="./site.webmanifest">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
-    <title>layout-style-css + UI Style Kit CSS Demo</title>
-    <link rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css">
-    <link rel="stylesheet" href="../dist/integrations/ui-style-kit.css">
-    <link rel="stylesheet" href="../dist/layout-style-css.css">
+    <title>layout-style-css 2.0 Interactive Layout Lab</title>
+
+    <link id="uiKitStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css">
+    <link id="interactiveSurfaceStylesheet" rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.4.0/state-core.css">
+    <link id="layoutIntegrationStylesheet" rel="stylesheet" href="../dist/integrations/ui-style-kit.css">
+    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css">
+    <link rel="stylesheet" href="./demo.css">
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "layout-style-css",
-        "description": "A shell-first CSS layout library designed to mix independently with ui-style-kit-css v2.0.1.",
+        "version": "2.0.0",
+        "description": "A dependency-free, container-first CSS layout library for semantic wrappers, composition primitives, responsive recipes, and spatial personalities.",
         "programmingLanguage": "CSS",
         "applicationCategory": "DeveloperApplication",
         "url": "https://foscat.github.io/layout-style-css/",
         "image": "https://foscat.github.io/layout-style-css/assets/social-card.png",
-        "datePublished": "2026-06-30",
-        "dateModified": "2026-06-30",
-        "keywords": [
-          "CSS layout library",
-          "layout styles",
-          "UI style kit CSS",
-          "responsive shell layouts",
-          "design system layout"
-        ],
-        "author": {
-          "@type": "Organization",
-          "name": "Foscat"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Foscat"
-        }
+        "datePublished": "2026-07-20",
+        "dateModified": "2026-07-20",
+        "author": { "@type": "Organization", "name": "Foscat" },
+        "publisher": { "@type": "Organization", "name": "Foscat" }
       }
     </script>
-    <style>
-      /*
-        Demo CSS is intentionally structural. UI Style Kit classes and native
-        selectors own paint, typography, borders, shadows, and control styling.
-      */
-      .demo-header {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.875rem var(--ly-page-padding-inline);
-      }
-
-      .demo-brand {
-        display: grid;
-        gap: 0.125rem;
-        min-width: 12rem;
-      }
-
-      .demo-controls {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 0.625rem;
-      }
-
-      .demo-controls-shell {
-        min-width: 0;
-      }
-
-      .demo-controls-panel {
-        min-width: 0;
-      }
-
-      .demo-controls-heading {
-        display: none;
-      }
-
-      #demoControlsToggle,
-      #demoControlsClose,
-      #demoControlsBackdrop {
-        display: none;
-      }
-
-      .demo-select {
-        min-width: 10.5rem;
-      }
-
-      .demo-sidebar {
-        padding: var(--ly-space-5);
-      }
-
-      .demo-sidebar-inner {
-        display: grid;
-        grid-auto-rows: max-content;
-        align-content: start;
-        gap: var(--ly-space-4);
-      }
-
-      .demo-sidebar-list {
-        display: grid;
-        gap: var(--ly-space-2);
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-
-      .demo-sidebar-list a {
-        display: block;
-        padding: 0.65rem 0.75rem;
-      }
-
-      .demo-title {
-        max-width: 12ch;
-        margin: 0;
-      }
-
-      .demo-lede {
-        max-width: 62ch;
-        margin: 0;
-      }
-
-      .demo-pill {
-        display: inline-flex;
-        align-items: center;
-        width: fit-content;
-        min-height: 2rem;
-        padding-inline: 0.75rem;
-      }
-
-      .demo-stage {
-        --ly-frame-ratio: auto;
-        min-height: 18rem;
-        display: grid;
-        align-content: end;
-        gap: var(--ly-space-4);
-      }
-
-      .demo-stat {
-        min-height: 9rem;
-        display: grid;
-        align-content: space-between;
-        gap: var(--ly-space-3);
-      }
-
-      .demo-panel-title {
-        margin: 0;
-      }
-
-      .demo-mini-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--ly-space-3);
-      }
-
-      .demo-mini-grid > * {
-        min-width: 0;
-      }
-
-      .demo-detail-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .demo-recipe-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-        gap: var(--ly-space-4);
-      }
-
-      .demo-recipe-card {
-        display: grid;
-        align-content: start;
-        gap: var(--ly-space-3);
-      }
-
-      .demo-recipe-preview {
-        display: grid;
-        gap: var(--ly-space-2);
-      }
-
-      .demo-recipe-preview code {
-        overflow-wrap: anywhere;
-      }
-
-      .demo-recipe-swatch {
-        min-block-size: 3.75rem;
-      }
-
-      @media (min-width: 90rem) {
-        .demo-detail-layout {
-          grid-template-columns: minmax(10rem, 0.4fr) minmax(0, 1fr);
-        }
-      }
-
-      @media (max-width: 74.999rem) {
-        .demo-header {
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .demo-brand {
-          flex: 1 1 min(100%, 13rem);
-          min-width: 0;
-        }
-
-        #demoControlsToggle {
-          display: inline-flex;
-          flex: 0 0 auto;
-        }
-
-        #demoControlsClose {
-          display: inline-flex;
-        }
-
-        #demoControlsBackdrop {
-          position: fixed;
-          inset: 0;
-          z-index: calc(var(--ly-z-header) + 10);
-        }
-
-        #demoControlsBackdrop[data-open="true"] {
-          display: block;
-        }
-
-        .demo-controls-shell {
-          position: fixed;
-          inset-block: 0;
-          inset-inline-end: 0;
-          z-index: calc(var(--ly-z-header) + 20);
-          width: min(calc(100% - 2rem), 24rem);
-          padding: var(--ly-space-4);
-          overflow: auto;
-          pointer-events: none;
-          transform: translateX(100%);
-          transition: transform 160ms ease;
-        }
-
-        .demo-controls-shell[aria-hidden="false"] {
-          pointer-events: auto;
-          transform: translateX(0);
-        }
-
-        .demo-controls-panel {
-          min-height: 100%;
-          display: grid;
-          grid-auto-rows: max-content;
-          align-content: start;
-          gap: var(--ly-space-4);
-        }
-
-        .demo-controls-heading {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: var(--ly-space-3);
-        }
-
-        .demo-controls {
-          display: grid;
-          grid-auto-rows: max-content;
-          align-content: start;
-          justify-content: stretch;
-        }
-
-        .demo-controls > * {
-          min-width: 0;
-        }
-
-        .demo-select {
-          width: 100%;
-        }
-
-        .ly-root[data-demo-controls-open="true"] {
-          overflow: hidden;
-        }
-      }
-
-      @media (min-width: 75rem) {
-        .demo-controls-panel {
-          display: contents;
-        }
-      }
-    </style>
+    <script type="module" src="./demo.js"></script>
   </head>
-  <body class="ly-root" data-ui="minimal-saas" data-layout="minimal-saas" layout-style="minimal-saas" data-theme="arctic-indigo" data-mode="light">
-    <div class="ly-app-shell">
-      <header class="ly-header ly-header--sticky ly-app-header">
-        <div class="demo-header">
-          <div class="demo-brand">
-            <strong>layout-style-css</strong>
-            <span>Independent shell layouts for ui-style-kit-css@2.0.1</span>
+  <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-density="comfortable" data-ecosystem="all-three">
+    <a class="demo-skip-link" href="#layoutLab">Skip to the layout lab</a>
+
+    <header class="demo-topbar">
+      <div class="demo-brand">
+        <span class="demo-kicker">layout-style-css 2.0</span>
+        <strong>Interactive Layout Lab</strong>
+      </div>
+      <div class="demo-topbar-actions">
+        <span id="ecosystemStatus" class="demo-status" role="status">All three libraries</span>
+        <button type="button" id="demoControlsToggle" aria-expanded="false" aria-controls="demoControlsDrawer" data-demo-button data-ui-kit="button button-secondary">
+          Layout controls
+        </button>
+      </div>
+    </header>
+
+    <div id="demoControlsBackdrop" class="demo-backdrop" hidden aria-hidden="true"></div>
+
+    <div class="demo-page">
+      <aside id="demoControlsDrawer" class="demo-controls" aria-labelledby="controlsTitle" aria-hidden="true" hidden inert>
+        <div class="demo-controls-heading">
+          <div>
+            <span class="demo-kicker">Workbench</span>
+            <h2 id="controlsTitle">Layout controls</h2>
           </div>
-
-          <button
-            type="button"
-            id="demoControlsToggle"
-            aria-controls="demoControlsDrawer"
-            aria-expanded="false"
-            data-ui-kit="button button-secondary"
-          >Controls</button>
-
-          <span id="demoControlsBackdrop" aria-hidden="true"></span>
-
-          <div class="demo-controls-shell" id="demoControlsDrawer" aria-hidden="true">
-            <div class="demo-controls-panel" data-ui-kit="panel">
-              <div class="demo-controls-heading">
-                <strong>Demo controls</strong>
-                <button type="button" id="demoControlsClose" data-ui-kit="button">Close</button>
-              </div>
-
-              <div class="demo-controls">
-                <label>
-                  <span class="ly-visually-hidden">UI system</span>
-                  <select class="demo-select" id="uiSelect" data-ui-kit="select">
-                    <option value="minimal-saas">Minimal SaaS UI</option>
-                    <option value="bento">Bento UI</option>
-                    <option value="maximalist">Maximalist UI</option>
-                    <option value="bauhaus">Bauhaus UI</option>
-                    <option value="tactile">Tactile UI</option>
-                    <option value="neumorphism">Neumorphism UI</option>
-                    <option value="retrofuturism">Retrofuturism UI</option>
-                    <option value="brutalism">Brutalism UI</option>
-                    <option value="cyberpunk">Cyberpunk UI</option>
-                    <option value="y2k">Y2K UI</option>
-                    <option value="retro-glass">Retro Glass UI</option>
-                  </select>
-                </label>
-                <label>
-                  <span class="ly-visually-hidden">Layout style</span>
-                  <select class="demo-select" id="layoutSelect" data-ui-kit="select">
-                    <option value="minimal-saas">Minimal SaaS Layout</option>
-                    <option value="bento">Bento Layout</option>
-                    <option value="maximalist">Maximalist Layout</option>
-                    <option value="bauhaus">Bauhaus Layout</option>
-                    <option value="tactile">Tactile Layout</option>
-                    <option value="neumorphism">Neumorphism Layout</option>
-                    <option value="retrofuturism">Retrofuturism Layout</option>
-                    <option value="brutalism">Brutalism Layout</option>
-                    <option value="cyberpunk">Cyberpunk Layout</option>
-                    <option value="y2k">Y2K Layout</option>
-                    <option value="retro-glass">Retro Glass Layout</option>
-                    <option value="f-pattern">F-pattern Layout</option>
-                    <option value="z-pattern">Z-pattern Layout</option>
-                    <option value="split-screen">Split-Screen Layout</option>
-                    <option value="mondrian">Mondrian Layout</option>
-                    <option value="synthwave">Synthwave Layout</option>
-                  </select>
-                </label>
-                <label>
-                  <span class="ly-visually-hidden">Theme</span>
-                  <select class="demo-select" id="themeSelect" data-ui-kit="select">
-                    <option value="arctic-indigo">Arctic Indigo</option>
-                    <option value="midnight-gold">Midnight Gold</option>
-                    <option value="ocean-steel">Ocean Steel</option>
-                    <option value="forest-moss">Forest Moss</option>
-                    <option value="sunset-ember">Sunset Ember</option>
-                    <option value="royal-plum">Royal Plum</option>
-                    <option value="graphite-cyan">Graphite Cyan</option>
-                    <option value="desert-sage">Desert Sage</option>
-                    <option value="rose-quartz">Rose Quartz</option>
-                    <option value="cyber-lime">Cyber Lime</option>
-                  </select>
-                </label>
-                <label>
-                  <span class="ly-visually-hidden">Mode</span>
-                  <select class="demo-select" id="modeSelect" data-ui-kit="select">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="contrast">Contrast</option>
-                  </select>
-                </label>
-                <button type="button" id="mixedPreset" data-ui-kit="button button-secondary">Cyberpunk UI + Maximalist Layout</button>
-              </div>
-            </div>
-          </div>
+          <button type="button" id="demoControlsClose" data-demo-button data-ui-kit="button button-secondary">
+            Close
+          </button>
         </div>
-      </header>
 
-      <aside class="ly-app-sidebar demo-sidebar" data-ui-kit="panel">
-        <div class="demo-sidebar-inner">
-          <span class="demo-pill" data-ui-kit="badge badge-secondary">Shell rail</span>
-          <nav aria-label="Demo sections" data-ui-kit="nav">
-            <ul class="demo-sidebar-list">
-              <li><a href="#stage" aria-current="page" data-ui-kit="nav-link">Stage</a></li>
-              <li><a href="#metrics" data-ui-kit="nav-link">Metrics</a></li>
-              <li><a href="#panes" data-ui-kit="nav-link">Panes</a></li>
-              <li><a href="#recipes" data-ui-kit="nav-link">Recipes</a></li>
-            </ul>
-          </nav>
-          <p>
-            This same rail becomes a SaaS sidebar, Z-pattern support rail, Split-Screen half, Mondrian block, Synthwave dock, or Retro Glass side panel.
-          </p>
-        </div>
+        <form class="demo-controls-grid" autocomplete="off">
+          <label for="wrapperSelect">Wrapper
+            <select id="wrapperSelect" data-query-key="wrapper" data-ui-kit="select">
+              <option value="default">Default</option>
+              <option value="compact">Compact · 40rem</option>
+              <option value="prose">Prose · 68ch</option>
+              <option value="content">Content · 72rem</option>
+              <option value="wide">Wide · 112rem</option>
+              <option value="full">Full width</option>
+              <option value="breakout">Breakout lanes</option>
+            </select>
+          </label>
+
+          <label for="recipeSelect">Recipe
+            <select id="recipeSelect" data-query-key="recipe" data-ui-kit="select">
+              <option value="app-shell">App shell</option>
+              <option value="dashboard">Dashboard</option>
+              <option value="docs">Documentation</option>
+              <option value="list-detail">List detail</option>
+              <option value="split-hero">Split hero</option>
+              <option value="gallery">Gallery</option>
+              <option value="card-grid">Card grid</option>
+            </select>
+          </label>
+
+          <label for="personalitySelect">Personality
+            <select id="personalitySelect" data-query-key="personality" data-ui-kit="select">
+              <option value="minimal-saas">Minimal SaaS</option>
+              <option value="bauhaus">Bauhaus</option>
+              <option value="tactile">Tactile</option>
+              <option value="cyberpunk">Cyberpunk</option>
+              <option value="f-pattern">F-pattern</option>
+              <option value="brutalism">Brutalism</option>
+              <option value="neumorphism">Neumorphism</option>
+              <option value="y2k">Y2K</option>
+              <option value="retro-glass">Retro Glass</option>
+              <option value="z-pattern">Z-pattern</option>
+              <option value="retrofuturism">Retrofuturism</option>
+              <option value="mondrian">Mondrian</option>
+              <option value="synthwave">Synthwave</option>
+              <option value="bento">Bento</option>
+              <option value="maximalist">Maximalist</option>
+              <option value="split-screen">Split Screen</option>
+            </select>
+          </label>
+
+          <label for="containerSelect">Nested container
+            <select id="containerSelect" data-query-key="container" data-ui-kit="select">
+              <option value="auto">Auto</option>
+              <option value="40rem">40rem · compact</option>
+              <option value="47rem">47rem · below medium</option>
+              <option value="49rem">49rem · above medium</option>
+              <option value="63rem">63rem · below large</option>
+              <option value="65rem">65rem · above large</option>
+              <option value="80rem">80rem · expansive</option>
+            </select>
+          </label>
+
+          <label for="densitySelect">Density
+            <select id="densitySelect" data-query-key="density" data-ui-kit="select">
+              <option value="compact">Compact</option>
+              <option value="comfortable">Comfortable</option>
+              <option value="spacious">Spacious</option>
+            </select>
+          </label>
+
+          <label for="uiSelect">UI style
+            <select id="uiSelect" data-query-key="ui" data-ui-kit="select">
+              <option value="minimal-saas">Minimal SaaS</option>
+              <option value="bento">Bento</option>
+              <option value="maximalist">Maximalist</option>
+              <option value="bauhaus">Bauhaus</option>
+              <option value="tactile">Tactile</option>
+              <option value="neumorphism">Neumorphism</option>
+              <option value="retrofuturism">Retrofuturism</option>
+              <option value="brutalism">Brutalism</option>
+              <option value="cyberpunk">Cyberpunk</option>
+              <option value="y2k">Y2K</option>
+              <option value="retro-glass">Retro Glass</option>
+            </select>
+          </label>
+
+          <label for="themeSelect">Theme
+            <select id="themeSelect" data-query-key="theme" data-ui-kit="select">
+              <option value="arctic-indigo">Arctic Indigo</option>
+              <option value="ocean-steel">Ocean Steel</option>
+              <option value="graphite-cyan">Graphite Cyan</option>
+              <option value="forest-moss">Forest Moss</option>
+              <option value="rose-quartz">Rose Quartz</option>
+              <option value="desert-sage">Desert Sage</option>
+              <option value="midnight-gold">Midnight Gold</option>
+              <option value="cyber-lime">Cyber Lime</option>
+              <option value="sunset-ember">Sunset Ember</option>
+            </select>
+          </label>
+
+          <label for="modeSelect">Mode
+            <select id="modeSelect" data-query-key="mode" data-ui-kit="select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="contrast">High contrast</option>
+            </select>
+          </label>
+
+          <label for="ecosystemSelect">Ecosystem
+            <select id="ecosystemSelect" data-query-key="ecosystem" data-ui-kit="select">
+              <option value="layout-only">Layout only</option>
+              <option value="layout-ui">Layout + UI</option>
+              <option value="all-three">All three</option>
+            </select>
+          </label>
+        </form>
       </aside>
 
-      <main class="ly-app-main">
-        <section class="ly-section" id="stage">
-          <div class="ly-wrapper ly-wrapper--wide ly-stack ly-gap-8">
-            <div class="ly-split">
-              <div class="ly-stack ly-gap-5 ly-readable">
-                <span class="demo-pill" data-ui-kit="badge badge-primary">Matched by default, mixed by design</span>
-                <h1 class="demo-title" data-ui-kit="title">Swap shells without swapping UI style.</h1>
-                <p class="demo-lede">
-                  UI styles and layout designs work best together, but they are intentionally independent. Try
-                  <code>data-ui="cyberpunk"</code>, <code>data-layout="maximalist"</code>,
-                  <code>data-theme="arctic-indigo"</code>, and <code>data-mode="dark"</code>.
-                </p>
-                <div class="ly-cluster">
-                  <button type="button" id="matchedPreset" data-ui-kit="button button-primary">Match UI and Layout</button>
-                  <button type="button" id="contrastPreset" data-ui-kit="button">Try Retro Glass Layout</button>
-                </div>
-              </div>
-
-              <aside class="ly-frame ly-surface ly-pad-6 demo-stage" data-ui-kit="panel">
-                <div class="ly-stack ly-gap-4">
-                  <span class="demo-pill" data-ui-kit="badge">Responsive stage</span>
-                  <p>
-                    The layout style controls shell placement, pane rhythm, and grid behavior while UI Style Kit controls visual identity.
-                  </p>
-                  <fieldset>
-                    <legend>Native controls</legend>
-                    <label>
-                      Preview mode
-                      <select>
-                        <option>Matched pair</option>
-                        <option>Mixed pair</option>
-                      </select>
-                    </label>
-                    <label><input type="checkbox" checked> UI style hooks active</label>
-                    <progress value="72" max="100">72%</progress>
-                  </fieldset>
-                </div>
-              </aside>
-            </div>
-
-            <div class="ly-grid ly-grid--auto" id="metrics">
-              <article class="ly-surface ly-pad-6 demo-stat" data-ui-kit="card">
-                <span>Shell mode</span>
-                <strong>16</strong>
-                <span>layout styles</span>
-              </article>
-              <article class="ly-surface ly-pad-6 demo-stat" data-ui-kit="card">
-                <span>Contract</span>
-                <strong>0</strong>
-                <span>required new classes</span>
-              </article>
-              <article class="ly-surface ly-pad-6 demo-stat" data-ui-kit="card">
-                <span>Switches</span>
-                <strong>4</strong>
-                <span>UI, layout, theme, mode</span>
-              </article>
-              <article class="ly-surface ly-pad-6 demo-stat" data-ui-kit="card">
-                <span>Bundle</span>
-                <strong>3</strong>
-                <span>optional libraries together</span>
-              </article>
-            </div>
-
-            <div class="ly-panes ly-panes--two" id="panes">
-              <aside class="ly-surface ly-pad-6 ly-stack ly-gap-4" data-ui-kit="panel">
-                <h2 class="demo-panel-title">Supporting pane</h2>
-                <p>
-                  Each layout decides whether this feels like a sidecar, dock, island, slab, or glass rail.
-                </p>
-                <div class="demo-mini-grid" aria-hidden="true">
-                  <span data-ui-kit="badge">Grid</span>
-                  <span data-ui-kit="badge badge-secondary">Pane</span>
-                  <span data-ui-kit="badge badge-primary">Shell</span>
-                </div>
-              </aside>
-
-              <article class="ly-surface ly-pad-6 ly-stack ly-gap-5" data-ui-kit="card">
-                <h2 class="demo-panel-title">Primary workspace</h2>
-                <p>
-                  The markup stays fixed while the selected layout style changes the shell, split, pane, and auto-grid composition.
-                </p>
-                <div class="ly-sidebar-layout demo-detail-layout">
-                  <aside class="ly-surface ly-pad-4" data-ui-kit="panel">Context</aside>
-                  <article class="ly-surface ly-pad-4" data-ui-kit="panel">Workspace detail</article>
-                </div>
-              </article>
-            </div>
-
-            <section class="ly-stack ly-gap-5" id="recipes" aria-labelledby="recipes-title">
-              <div class="ly-wrapper ly-wrapper--readable ly-stack ly-gap-3">
-                <span class="demo-pill" data-ui-kit="badge badge-secondary">Layout Recipes</span>
-                <h2 class="demo-panel-title" id="recipes-title">Recipe-style organization for major wrapper contracts.</h2>
-                <p>
-                  Start with a recipe, then mix UI style, layout style, theme, and mode without changing the wrapper contract.
-                </p>
-              </div>
-
-              <div class="ly-card-grid demo-recipe-grid">
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">App shell</h3>
-                  <p>Use one root shell for a persistent header, sidebar, and main workspace.</p>
-                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
-                    <code>.ly-app-shell</code>
-                    <code>.ly-app-header</code>
-                    <code>.ly-app-sidebar</code>
-                    <code>.ly-app-main</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Content page</h3>
-                  <p>Use a readable wrapper for documentation, articles, and focused landing sections.</p>
-                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
-                    <code>.ly-wrapper</code>
-                    <code>.ly-wrapper--readable</code>
-                    <code>.ly-section</code>
-                    <code>.ly-stack</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Card grid</h3>
-                  <p>Use auto-fit tracks for cards that collapse from desktop to tablet and mobile.</p>
-                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
-                    <code>.ly-wrapper--wide</code>
-                    <code>.ly-card-grid</code>
-                    <code>.ly-surface</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Split hero</h3>
-                  <p>Use a split when one message needs a supporting panel or interactive preview.</p>
-                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
-                    <code>.ly-wrapper--xl</code>
-                    <code>.ly-split</code>
-                    <code>.ly-stack</code>
-                    <code>.ly-frame</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Docs sidebar</h3>
-                  <p>Use a local sidebar inside the main content when the global shell is not enough.</p>
-                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
-                    <code>.ly-sidebar-layout</code>
-                    <code>.ly-sidebar-layout--right</code>
-                    <code>.ly-sidebar</code>
-                    <code>.ly-content</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">List detail</h3>
-                  <p>Use adaptive panes for inboxes, editors, queues, and preview-driven workflows.</p>
-                  <div class="ly-wrapper ly-wrapper--readable demo-recipe-preview">
-                    <code>.ly-panes</code>
-                    <code>.ly-panes--two</code>
-                    <code>.ly-scroll-area</code>
-                    <code>.ly-surface</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-sm demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Button group</h3>
-                  <p>Use a wrapping action row without forcing buttons to fill the mobile viewport.</p>
-                  <div class="ly-button-group">
-                    <button type="button" data-ui-kit="button button-primary">Primary</button>
-                    <button type="button" data-ui-kit="button">Secondary</button>
-                  </div>
-                  <div class="demo-recipe-preview">
-                    <code>.ly-button-group</code>
-                    <code>.saas-button-group</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-lg demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Card size</h3>
-                  <p>Use sizing helpers when cards need consistent rhythm without hard-coded visual styles.</p>
-                  <div class="demo-recipe-preview">
-                    <code>.ly-card-sm</code>
-                    <code>.ly-card-md</code>
-                    <code>.ly-card-lg</code>
-                    <code>.saas-card-grid</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Gallery</h3>
-                  <p>Use gallery tracks for image or media groups that should reflow without a script.</p>
-                  <div class="ly-gallery">
-                    <div class="ly-frame ly-frame-4x3 demo-recipe-swatch" data-ui-kit="panel"></div>
-                    <div class="ly-frame ly-frame-4x3 demo-recipe-swatch" data-ui-kit="panel"></div>
-                    <div class="ly-frame ly-frame-4x3 demo-recipe-swatch" data-ui-kit="panel"></div>
-                  </div>
-                  <div class="demo-recipe-preview">
-                    <code>.ly-gallery</code>
-                    <code>.rg-gallery</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Carousel</h3>
-                  <p>Use horizontal snap tracks for preview rows while keeping card visuals external.</p>
-                  <div class="ly-carousel">
-                    <div class="ly-surface ly-pad-4 ly-card-sm" data-ui-kit="panel">One</div>
-                    <div class="ly-surface ly-pad-4 ly-card-sm" data-ui-kit="panel">Two</div>
-                    <div class="ly-surface ly-pad-4 ly-card-sm" data-ui-kit="panel">Three</div>
-                  </div>
-                  <div class="demo-recipe-preview">
-                    <code>.ly-carousel</code>
-                    <code>.bento-carousel</code>
-                  </div>
-                </article>
-
-                <article class="ly-surface ly-pad-5 ly-card-md demo-recipe-card" data-ui-kit="card">
-                  <h3 class="demo-panel-title">Frame and scroll</h3>
-                  <p>Use frames for media ratios and scroll areas for bounded content regions.</p>
-                  <div class="demo-recipe-preview">
-                    <code>.ly-frame</code>
-                    <code>.ly-frame-16x9</code>
-                    <code>.ly-scroll-area</code>
-                    <code>.ly-overflow-auto</code>
-                  </div>
-                </article>
-              </div>
-            </section>
+      <main id="layoutLab" class="demo-main">
+        <section class="demo-intro" aria-labelledby="demoTitle">
+          <div>
+            <span class="demo-kicker">Container-first · dependency-free</span>
+            <h1 id="demoTitle">Compose for the space a component actually has.</h1>
+            <p>
+              Change wrappers, recipes, personalities, and companion layers independently. The preview keeps semantic mobile order while named areas rearrange at its own 48rem and 64rem container thresholds.
+            </p>
           </div>
+          <div class="demo-state-panel">
+            <span>Interactive Surface 1.4.0 state</span>
+            <button type="button" id="stateToggle" class="interactive-surface" aria-pressed="false" data-surface-level="2" data-surface-variant="primary" data-demo-button data-ui-kit="button button-primary">
+              Toggle active state
+            </button>
+          </div>
+        </section>
+
+        <section class="demo-lab" aria-labelledby="stageTitle">
+          <div class="demo-section-heading">
+            <div>
+              <span class="demo-kicker">Live preview</span>
+              <h2 id="stageTitle">Responsive recipe stage</h2>
+            </div>
+            <output id="containerReadout" for="containerSelect">Container: auto</output>
+          </div>
+
+          <div id="previewFrame" class="demo-preview-frame" data-container-width="auto">
+            <div id="previewRoot" class="ly-root demo-preview-root" data-ly-layout="minimal-saas">
+              <div id="previewWrapper" class="ly-wrapper">
+                <div id="recipePreview" class="ly-app-shell demo-recipe" data-ly-recipe="app-shell">
+                  <header class="demo-region" data-ly-area="header" data-demo-sequence="header">
+                    <strong>Header</strong>
+                    <button type="button" data-demo-button data-demo-focus="header" data-ui-kit="button">Header action</button>
+                  </header>
+                  <nav class="demo-region" data-ly-area="nav" data-demo-sequence="nav" aria-label="Preview navigation">
+                    <strong>Navigation</strong>
+                    <button type="button" data-demo-button data-demo-focus="nav" data-ui-kit="button">Navigation action</button>
+                  </nav>
+                  <main class="demo-region" data-ly-area="main" data-demo-sequence="main">
+                    <strong>Main</strong>
+                    <button type="button" data-demo-button data-demo-focus="main" data-ui-kit="button">Main action</button>
+                  </main>
+                  <aside class="demo-region" data-ly-area="aside" data-demo-sequence="aside">
+                    <strong>Aside</strong>
+                    <button type="button" data-demo-button data-demo-focus="aside" data-ui-kit="button">Aside action</button>
+                  </aside>
+                  <footer class="demo-region" data-ly-area="footer" data-demo-sequence="footer">
+                    <strong>Footer</strong>
+                    <button type="button" data-demo-button data-demo-focus="footer" data-ui-kit="button">Footer action</button>
+                  </footer>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-code-grid" aria-labelledby="codeTitle">
+          <div class="demo-section-heading demo-code-heading">
+            <div>
+              <span class="demo-kicker">Copy-ready</span>
+              <h2 id="codeTitle">Imports and semantic markup</h2>
+            </div>
+            <p id="copyStatus" class="demo-copy-status" role="status" aria-live="polite">Ready to copy.</p>
+          </div>
+
+          <article class="demo-code-card" data-ui-kit="card">
+            <div class="demo-code-card-heading">
+              <h3>Imports</h3>
+              <button type="button" id="copyImports" data-copy-target="importsSnippet" data-demo-button data-ui-kit="button button-secondary">Copy imports</button>
+            </div>
+            <pre><code id="importsSnippet"></code></pre>
+          </article>
+
+          <article class="demo-code-card" data-ui-kit="card">
+            <div class="demo-code-card-heading">
+              <h3>Markup</h3>
+              <button type="button" id="copyMarkup" data-copy-target="markupSnippet" data-demo-button data-ui-kit="button button-secondary">Copy markup</button>
+            </div>
+            <pre><code id="markupSnippet"></code></pre>
+          </article>
         </section>
       </main>
     </div>
-
-    <script>
-      const body = document.body;
-      const uiSelect = document.querySelector("#uiSelect");
-      const layoutSelect = document.querySelector("#layoutSelect");
-      const themeSelect = document.querySelector("#themeSelect");
-      const modeSelect = document.querySelector("#modeSelect");
-      const controlsToggle = document.querySelector("#demoControlsToggle");
-      const controlsDrawer = document.querySelector("#demoControlsDrawer");
-      const controlsBackdrop = document.querySelector("#demoControlsBackdrop");
-      const controlsClose = document.querySelector("#demoControlsClose");
-      const mixedPreset = document.querySelector("#mixedPreset");
-      const matchedPreset = document.querySelector("#matchedPreset");
-      const contrastPreset = document.querySelector("#contrastPreset");
-      const mobileControlsQuery = window.matchMedia("(max-width: 74.999rem)");
-      let previousDemoControlsFocus = null;
-      const uiClassPrefixes = {
-        "minimal-saas": "saas",
-        bento: "bento",
-        maximalist: "max",
-        bauhaus: "bau",
-        tactile: "tactile",
-        neumorphism: "neo",
-        retrofuturism: "retro",
-        brutalism: "brutal",
-        cyberpunk: "cyber",
-        y2k: "y2k",
-        "retro-glass": "rg"
-      };
-
-      function syncUiKitClasses(ui) {
-        const prefix = uiClassPrefixes[ui];
-
-        document.querySelectorAll("[data-ui-kit]").forEach((element) => {
-          const previousClasses = element.dataset.uiKitApplied?.split(" ").filter(Boolean) || [];
-
-          if (previousClasses.length > 0) {
-            element.classList.remove(...previousClasses);
-          }
-
-          const nextClasses = element.dataset.uiKit
-            .split(/\s+/)
-            .filter(Boolean)
-            .map((role) => `${prefix}-${role}`);
-
-          if (nextClasses.length > 0) {
-            element.classList.add(...nextClasses);
-          }
-
-          element.dataset.uiKitApplied = nextClasses.join(" ");
-        });
-      }
-
-      function applyDemoState({ ui, layout, theme, mode }) {
-        body.dataset.ui = ui;
-        body.dataset.layout = layout;
-        body.setAttribute("layout-style", layout);
-        body.dataset.theme = theme;
-        body.dataset.mode = mode;
-        syncUiKitClasses(ui);
-
-        uiSelect.value = ui;
-        layoutSelect.value = layout;
-        themeSelect.value = theme;
-        modeSelect.value = mode;
-      }
-
-      // Mobile and tablet controls use a drawer so the sticky header stays compact.
-      function setDemoControlsOpen(open, { returnFocus = true } = {}) {
-        if (!mobileControlsQuery.matches) {
-          controlsToggle.setAttribute("aria-expanded", "false");
-          controlsDrawer.setAttribute("aria-hidden", "false");
-          controlsBackdrop.dataset.open = "false";
-          delete body.dataset.demoControlsOpen;
-          previousDemoControlsFocus = null;
-          return;
-        }
-
-        controlsToggle.setAttribute("aria-expanded", String(open));
-        controlsDrawer.setAttribute("aria-hidden", String(!open));
-        controlsBackdrop.dataset.open = String(open);
-
-        if (open) {
-          previousDemoControlsFocus = document.activeElement;
-          body.dataset.demoControlsOpen = "true";
-          controlsDrawer.querySelector("select, button, a, input")?.focus({ preventScroll: true });
-          return;
-        }
-
-        delete body.dataset.demoControlsOpen;
-
-        if (returnFocus) {
-          const focusTarget = previousDemoControlsFocus instanceof HTMLElement
-            ? previousDemoControlsFocus
-            : controlsToggle;
-          focusTarget.focus({ preventScroll: true });
-        }
-
-        previousDemoControlsFocus = null;
-      }
-
-      function syncDemoControlsMode() {
-        setDemoControlsOpen(false, { returnFocus: false });
-      }
-
-      // Deep-linked state keeps visual regression checks and shared demos reproducible.
-      const queryState = new URLSearchParams(window.location.search);
-      const presetState = {
-        minimalSaas: {
-          ui: "minimal-saas",
-          layout: "minimal-saas",
-          theme: "arctic-indigo",
-          mode: "light"
-        },
-        bento: {
-          ui: "bento",
-          layout: "bento",
-          theme: "ocean-steel",
-          mode: "light"
-        },
-        bauhaus: {
-          ui: "bauhaus",
-          layout: "bauhaus",
-          theme: "graphite-cyan",
-          mode: "light"
-        },
-        tactile: {
-          ui: "tactile",
-          layout: "tactile",
-          theme: "forest-moss",
-          mode: "light"
-        },
-        mixed: {
-          ui: "cyberpunk",
-          layout: "maximalist",
-          theme: "arctic-indigo",
-          mode: "dark"
-        },
-        y2k: {
-          ui: "y2k",
-          layout: "y2k",
-          theme: "rose-quartz",
-          mode: "light"
-        },
-        neumorphism: {
-          ui: "neumorphism",
-          layout: "neumorphism",
-          theme: "desert-sage",
-          mode: "light"
-        },
-        retroGlass: {
-          ui: "retro-glass",
-          layout: "retro-glass",
-          theme: "graphite-cyan",
-          mode: "dark"
-        },
-        retrofuturism: {
-          ui: "retrofuturism",
-          layout: "retrofuturism",
-          theme: "midnight-gold",
-          mode: "dark"
-        },
-        brutalism: {
-          ui: "brutalism",
-          layout: "brutalism",
-          theme: "midnight-gold",
-          mode: "contrast"
-        },
-        cyberpunk: {
-          ui: "cyberpunk",
-          layout: "cyberpunk",
-          theme: "cyber-lime",
-          mode: "dark"
-        },
-        maximalist: {
-          ui: "maximalist",
-          layout: "maximalist",
-          theme: "sunset-ember",
-          mode: "light"
-        },
-        fPattern: {
-          ui: "minimal-saas",
-          layout: "f-pattern",
-          theme: "arctic-indigo",
-          mode: "light"
-        },
-        zPattern: {
-          ui: "bento",
-          layout: "z-pattern",
-          theme: "ocean-steel",
-          mode: "light"
-        },
-        splitScreen: {
-          ui: "maximalist",
-          layout: "split-screen",
-          theme: "sunset-ember",
-          mode: "light"
-        },
-        mondrian: {
-          ui: "bauhaus",
-          layout: "mondrian",
-          theme: "graphite-cyan",
-          mode: "contrast"
-        },
-        synthwave: {
-          ui: "cyberpunk",
-          layout: "synthwave",
-          theme: "cyber-lime",
-          mode: "dark"
-        }
-      };
-      applyDemoState(presetState[queryState.get("preset")] || {
-        ui: queryState.get("ui") || body.dataset.ui,
-        layout: queryState.get("layout") || body.dataset.layout,
-        theme: queryState.get("theme") || body.dataset.theme,
-        mode: queryState.get("mode") || body.dataset.mode
-      });
-      syncDemoControlsMode();
-
-      uiSelect.addEventListener("change", () => {
-        body.dataset.ui = uiSelect.value;
-        syncUiKitClasses(uiSelect.value);
-      });
-
-      layoutSelect.addEventListener("change", () => {
-        body.dataset.layout = layoutSelect.value;
-        body.setAttribute("layout-style", layoutSelect.value);
-      });
-
-      themeSelect.addEventListener("change", () => {
-        body.dataset.theme = themeSelect.value;
-      });
-
-      modeSelect.addEventListener("change", () => {
-        body.dataset.mode = modeSelect.value;
-      });
-
-      controlsToggle.addEventListener("click", () => {
-        setDemoControlsOpen(controlsToggle.getAttribute("aria-expanded") !== "true");
-      });
-
-      controlsClose.addEventListener("click", () => {
-        setDemoControlsOpen(false);
-      });
-
-      controlsBackdrop.addEventListener("click", () => {
-        setDemoControlsOpen(false);
-      });
-
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && controlsToggle.getAttribute("aria-expanded") === "true") {
-          setDemoControlsOpen(false);
-        }
-      });
-
-      mobileControlsQuery.addEventListener("change", syncDemoControlsMode);
-
-      mixedPreset.addEventListener("click", () => {
-        applyDemoState({
-          ui: "cyberpunk",
-          layout: "maximalist",
-          theme: "arctic-indigo",
-          mode: "dark"
-        });
-        setDemoControlsOpen(false);
-      });
-
-      matchedPreset.addEventListener("click", () => {
-        applyDemoState({
-          ui: uiSelect.value,
-          layout: uiSelect.value,
-          theme: themeSelect.value,
-          mode: modeSelect.value
-        });
-        setDemoControlsOpen(false);
-      });
-
-      contrastPreset.addEventListener("click", () => {
-        applyDemoState({
-          ui: "bauhaus",
-          layout: "retro-glass",
-          theme: "graphite-cyan",
-          mode: "dark"
-        });
-        setDemoControlsOpen(false);
-      });
-    </script>
   </body>
 </html>
