@@ -97,15 +97,25 @@ async function verifyDemoState(page, path, expectedState, viewport) {
     await page.setViewportSize(viewport);
     await page.goto(path, { waitUntil: "networkidle" });
 
+    // Task 4 migrates the demo controls; exercise the v2 personality hook meanwhile.
+    await page.evaluate((layout) => {
+      document.body.dataset.lyLayout = layout;
+    }, expectedState.layout);
+
     const state = await page.evaluate(() => ({
       title: document.title,
       ui: document.body.dataset.ui,
       layout: document.body.dataset.layout,
+      v2Layout: document.body.dataset.lyLayout,
       theme: document.body.dataset.theme,
       mode: document.body.dataset.mode,
       layoutStyle: document.body.getAttribute("layout-style"),
       bodyHeight: document.body.getBoundingClientRect().height,
       horizontalOverflow: document.documentElement.scrollWidth - window.innerWidth,
+      shell: document.querySelector(".ly-app-shell")?.getBoundingClientRect().toJSON(),
+      shellAreas: getComputedStyle(document.querySelector(".ly-app-shell")).gridTemplateAreas,
+      shellColumns: getComputedStyle(document.querySelector(".ly-app-shell")).gridTemplateColumns,
+      shellRows: getComputedStyle(document.querySelector(".ly-app-shell")).gridTemplateRows,
       header: document.querySelector(".ly-app-header")?.getBoundingClientRect().toJSON(),
       main: document.querySelector(".ly-app-main")?.getBoundingClientRect().toJSON(),
       stage: document.querySelector("#stage")?.getBoundingClientRect().toJSON(),
@@ -125,13 +135,24 @@ async function verifyDemoState(page, path, expectedState, viewport) {
     );
     assert.equal(state.ui, expectedState.ui);
     assert.equal(state.layout, expectedState.layout);
+    assert.equal(state.v2Layout, expectedState.layout);
     assert.equal(state.theme, expectedState.theme);
     assert.equal(state.mode, expectedState.mode);
     assert.equal(state.layoutStyle, expectedState.layout);
     assert(state.bodyHeight > 0, "Demo body should render with measurable height");
-    assert(state.header?.width > 0 && state.header.height > 0, "Demo header should be visible");
-    assert(state.main?.width > 0 && state.main.height > 0, "Demo main region should be visible");
-    assert(state.stage?.width > 0 && state.stage.height > 0, "Demo stage should be visible");
+    const renderContext = `${expectedState.layout} at ${viewport.width}x${viewport.height}`;
+    assert(
+      state.header?.width > 0 && state.header.height > 0,
+      `Demo header should be visible for ${renderContext}`
+    );
+    assert(
+      state.main?.width > 0 && state.main.height > 0,
+      `Demo main region should be visible for ${renderContext}; shell ${JSON.stringify({ rect: state.shell, areas: state.shellAreas, columns: state.shellColumns, rows: state.shellRows })}`
+    );
+    assert(
+      state.stage?.width > 0 && state.stage.height > 0,
+      `Demo stage should be visible for ${renderContext}`
+    );
     assert(state.wrappers >= 6, `Demo should exercise responsive wrapper recipes; found ${state.wrappers}`);
     assert(state.recipes >= 6, `Demo should render recipe-style organization examples; found ${state.recipes}`);
     assert(state.surfaces >= 8, "Demo should render the layout surface examples");

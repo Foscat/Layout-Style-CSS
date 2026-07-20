@@ -134,75 +134,8 @@
   .ly-app-aside { grid-area: aside; min-inline-size: 0; }
   .ly-app-footer { grid-area: footer; min-inline-size: 0; }
 
-  /* Old personality hooks remain opt-in markers for the v2 migration window. */
-  :where(
-    [data-layout="minimal-saas"],
-    [data-layout="bento"],
-    [data-layout="maximalist"],
-    [data-layout="bauhaus"],
-    [data-layout="tactile"],
-    [data-layout="neumorphism"],
-    [data-layout="retrofuturism"],
-    [data-layout="brutalism"],
-    [data-layout="cyberpunk"],
-    [data-layout="y2k"],
-    [data-layout="retro-glass"],
-    [data-layout="f-pattern"],
-    [data-layout="z-pattern"],
-    [data-layout="split-screen"],
-    [data-layout="mondrian"],
-    [data-layout="synthwave"],
-    [layout-style="minimal-saas"],
-    [layout-style="bento"],
-    [layout-style="maximalist"],
-    [layout-style="bauhaus"],
-    [layout-style="tactile"],
-    [layout-style="neumorphism"],
-    [layout-style="retrofuturism"],
-    [layout-style="brutalism"],
-    [layout-style="cyberpunk"],
-    [layout-style="y2k"],
-    [layout-style="retro-glass"],
-    [layout-style="f-pattern"],
-    [layout-style="z-pattern"],
-    [layout-style="split-screen"],
-    [layout-style="mondrian"],
-    [layout-style="synthwave"],
-    .ly-layout-minimal-saas,
-    .ly-layout-bento,
-    .ly-layout-maximalist,
-    .ly-layout-bauhaus,
-    .ly-layout-tactile,
-    .ly-layout-neumorphism,
-    .ly-layout-retrofuturism,
-    .ly-layout-brutalism,
-    .ly-layout-cyberpunk,
-    .ly-layout-y2k,
-    .ly-layout-retro-glass,
-    .ly-layout-f-pattern,
-    .ly-layout-z-pattern,
-    .ly-layout-split-screen,
-    .ly-layout-mondrian,
-    .ly-layout-synthwave,
-    .ly-style-minimal-saas,
-    .ly-style-bento,
-    .ly-style-maximalist,
-    .ly-style-bauhaus,
-    .ly-style-tactile,
-    .ly-style-neumorphism,
-    .ly-style-retrofuturism,
-    .ly-style-brutalism,
-    .ly-style-cyberpunk,
-    .ly-style-y2k,
-    .ly-style-retro-glass,
-    .ly-style-f-pattern,
-    .ly-style-z-pattern,
-    .ly-style-split-screen,
-    .ly-style-mondrian,
-    .ly-style-synthwave
-  ) {
-    --ly-legacy-layout-hook: 1;
-  }
+  /* The build expands canonical personality rules into functional v1 aliases here. */
+  /* @generated-personality-aliases */
 
   @container (min-width: 48rem) {
     .ly-sidebar-layout {

@@ -7,6 +7,7 @@ const sourceDir = join(root, "styles");
 const distDir = join(root, "dist");
 const cascadeLayerPrelude =
   "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;";
+const legacyAliasMarker = "/* @generated-personality-aliases */";
 
 const coreModuleFiles = ["wrappers.css", "primitives.css", "recipes.css", "utilities.css"];
 const personalityNames = [
@@ -67,6 +68,60 @@ async function readSource(file) {
   return readFile(join(sourceDir, file), "utf8");
 }
 
+function extractPersonalityLayerBody(css, file) {
+  const layerStart = css.indexOf("@layer ly.personalities.");
+
+  if (layerStart === -1) {
+    throw new Error(`${file} must define a personality cascade layer.`);
+  }
+
+  const bodyStart = css.indexOf("{", layerStart);
+  let depth = 1;
+
+  for (let index = bodyStart + 1; index < css.length; index += 1) {
+    if (css[index] === "{") {
+      depth += 1;
+    } else if (css[index] === "}") {
+      depth -= 1;
+    }
+
+    if (depth === 0) {
+      return css.slice(bodyStart + 1, index).trim();
+    }
+  }
+
+  throw new Error(`${file} has an incomplete personality cascade layer.`);
+}
+
+async function generateLegacyCss() {
+  const source = await readSource("legacy.css");
+
+  if (!source.includes(legacyAliasMarker)) {
+    throw new Error("styles/legacy.css must contain the personality alias build marker.");
+  }
+
+  const aliases = [];
+
+  for (const name of personalityNames) {
+    const file = `personalities/${name}.css`;
+    const css = await readSource(file);
+    const canonicalRoot = `:where(.ly-root[data-ly-layout="${name}"])`;
+    const legacyRoot = `:where(.ly-root[data-layout="${name}"], .ly-root[layout-style="${name}"], .ly-root.ly-layout-${name}, .ly-root.ly-style-${name})`;
+    const body = extractPersonalityLayerBody(css, file);
+
+    if (!body.includes(canonicalRoot)) {
+      throw new Error(`${file} must use the canonical ${canonicalRoot} selector.`);
+    }
+
+    aliases.push(
+      `/* V1 personality aliases for ${name}; generated from the canonical v2 source. */\n${body.replaceAll(canonicalRoot, legacyRoot)}`
+    );
+  }
+
+  /* Generated aliases prevent the compatibility bundle from drifting from v2 geometry. */
+  return source.replace(legacyAliasMarker, aliases.join("\n\n"));
+}
+
 async function writeDist(file, css) {
   const destination = join(distDir, file);
   assertInsideRoot(destination);
@@ -81,7 +136,7 @@ await rm(distDir, { recursive: true, force: true });
 await mkdir(distDir, { recursive: true });
 
 for (const file of authoredEntryFiles) {
-  await writeDist(file, await readSource(file));
+  await writeDist(file, file === "legacy.css" ? await generateLegacyCss() : await readSource(file));
 }
 
 const flattenedParts = [

@@ -134,74 +134,614 @@
   .ly-app-aside { grid-area: aside; min-inline-size: 0; }
   .ly-app-footer { grid-area: footer; min-inline-size: 0; }
 
-  /* Old personality hooks remain opt-in markers for the v2 migration window. */
-  :where(
-    [data-layout="minimal-saas"],
-    [data-layout="bento"],
-    [data-layout="maximalist"],
-    [data-layout="bauhaus"],
-    [data-layout="tactile"],
-    [data-layout="neumorphism"],
-    [data-layout="retrofuturism"],
-    [data-layout="brutalism"],
-    [data-layout="cyberpunk"],
-    [data-layout="y2k"],
-    [data-layout="retro-glass"],
-    [data-layout="f-pattern"],
-    [data-layout="z-pattern"],
-    [data-layout="split-screen"],
-    [data-layout="mondrian"],
-    [data-layout="synthwave"],
-    [layout-style="minimal-saas"],
-    [layout-style="bento"],
-    [layout-style="maximalist"],
-    [layout-style="bauhaus"],
-    [layout-style="tactile"],
-    [layout-style="neumorphism"],
-    [layout-style="retrofuturism"],
-    [layout-style="brutalism"],
-    [layout-style="cyberpunk"],
-    [layout-style="y2k"],
-    [layout-style="retro-glass"],
-    [layout-style="f-pattern"],
-    [layout-style="z-pattern"],
-    [layout-style="split-screen"],
-    [layout-style="mondrian"],
-    [layout-style="synthwave"],
-    .ly-layout-minimal-saas,
-    .ly-layout-bento,
-    .ly-layout-maximalist,
-    .ly-layout-bauhaus,
-    .ly-layout-tactile,
-    .ly-layout-neumorphism,
-    .ly-layout-retrofuturism,
-    .ly-layout-brutalism,
-    .ly-layout-cyberpunk,
-    .ly-layout-y2k,
-    .ly-layout-retro-glass,
-    .ly-layout-f-pattern,
-    .ly-layout-z-pattern,
-    .ly-layout-split-screen,
-    .ly-layout-mondrian,
-    .ly-layout-synthwave,
-    .ly-style-minimal-saas,
-    .ly-style-bento,
-    .ly-style-maximalist,
-    .ly-style-bauhaus,
-    .ly-style-tactile,
-    .ly-style-neumorphism,
-    .ly-style-retrofuturism,
-    .ly-style-brutalism,
-    .ly-style-cyberpunk,
-    .ly-style-y2k,
-    .ly-style-retro-glass,
-    .ly-style-f-pattern,
-    .ly-style-z-pattern,
-    .ly-style-split-screen,
-    .ly-style-mondrian,
-    .ly-style-synthwave
-  ) {
-    --ly-legacy-layout-hook: 1;
+  /* The build expands canonical personality rules into functional v1 aliases here. */
+  /* V1 personality aliases for minimal-saas; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) {
+    --ly-recipe-rail: 15rem;
+    --ly-recipe-aside: 16rem;
+    --ly-grid-columns: 4;
+    --ly-grid-min: 16rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) :where(.ly-wrapper) {
+    --ly-wrapper-max: 88rem;
+  }
+
+  /* Named areas rearrange the shell without changing its mobile DOM or focus order. */
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "sidebar footer footer";
+      grid-template-columns:
+        minmax(min(100%, 15rem), 0.24fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 16rem), 0.28fr);
+    }
+
+    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 2;
+    }
+  }
+
+/* V1 personality aliases for bento; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) {
+    --ly-grid-columns: 6;
+    --ly-grid-min: 12rem;
+    --ly-card-grid-min: 13rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) :where(.ly-wrapper) {
+    --ly-wrapper-max: 112rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-app-shell {
+      grid-template-areas:
+        "header header header"
+        "sidebar main main"
+        "aside main main"
+        "footer footer footer";
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.3fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-card-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+    }
+  }
+
+/* V1 personality aliases for maximalist; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) {
+    --ly-grid-columns: 12;
+    --ly-grid-min: 10rem;
+    --ly-card-grid-min: 12rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) :where(.ly-wrapper) {
+    --ly-wrapper-max: 100%;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-shell {
+      grid-template-areas:
+        "header header header header"
+        "main main sidebar aside"
+        "main main footer footer";
+      grid-template-columns:
+        minmax(0, 1.4fr)
+        minmax(0, 0.6fr)
+        minmax(min(100%, 15rem), 0.32fr)
+        minmax(min(100%, 18rem), 0.38fr);
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid > :nth-child(7n + 1) {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+
+    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-gallery > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+/* V1 personality aliases for bauhaus; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) {
+    --ly-recipe-rail: 14rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 13rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) :where(.ly-wrapper) {
+    --ly-wrapper-max: 96rem;
+  }
+
+  /* Cap the fallback rail until the wider personality template is eligible. */
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 14rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header header aside"
+        "sidebar main main aside"
+        "sidebar footer footer footer";
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.24fr)
+        minmax(0, 0.7fr)
+        minmax(0, 1.3fr)
+        minmax(min(100%, 18rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-grid > :nth-child(3n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+/* V1 personality aliases for tactile; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 5;
+    --ly-grid-min: 15rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) :where(.ly-wrapper) {
+    --ly-wrapper-max: 82rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main"
+        "sidebar aside"
+        "sidebar footer";
+      grid-template-columns: minmax(min(100%, 17rem), 0.28fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-grid > :nth-child(5n + 2) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-list-detail {
+      grid-template-columns: minmax(min(100%, 20rem), 0.42fr) minmax(0, 0.58fr);
+    }
+  }
+
+/* V1 personality aliases for neumorphism; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 4;
+    --ly-grid-min: 17rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) :where(.ly-wrapper) {
+    --ly-wrapper-max: 84rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-app-shell {
+      grid-template-areas:
+        "header sidebar"
+        "main sidebar"
+        "aside sidebar"
+        "footer sidebar";
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-list-detail {
+      grid-template-columns: minmax(0, 0.58fr) minmax(min(100%, 19rem), 0.42fr);
+    }
+  }
+
+/* V1 personality aliases for retrofuturism; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) {
+    --ly-recipe-rail: 14rem;
+    --ly-recipe-aside: 17rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) :where(.ly-wrapper) {
+    --ly-wrapper-max: 106rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header aside"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.24fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+    }
+  }
+
+/* V1 personality aliases for brutalism; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) {
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 16rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) :where(.ly-wrapper) {
+    --ly-wrapper-max: 100rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-shell {
+      grid-template-areas:
+        "header header sidebar"
+        "main aside sidebar"
+        "footer footer sidebar";
+      grid-template-columns:
+        minmax(0, 1.3fr)
+        minmax(min(100%, 16rem), 0.7fr)
+        minmax(min(100%, 18rem), 0.34fr);
+    }
+
+    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-grid > :nth-child(3n) {
+      grid-column: span 2;
+    }
+  }
+
+/* V1 personality aliases for cyberpunk; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) {
+    --ly-recipe-rail: 13rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 12rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) :where(.ly-wrapper) {
+    --ly-wrapper-max: 112rem;
+  }
+
+  @container ly-personality (min-width: 44rem) {
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header aside"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-columns:
+        minmax(min(100%, 13rem), 0.2fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 19rem), 0.32fr);
+    }
+
+    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 3;
+    }
+  }
+
+/* V1 personality aliases for y2k; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 5;
+    --ly-grid-min: 13rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) :where(.ly-wrapper) {
+    --ly-wrapper-max: 90rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-app-shell {
+      grid-template-areas:
+        "header header sidebar"
+        "aside main sidebar"
+        "footer footer sidebar";
+      grid-template-columns:
+        minmax(min(100%, 18rem), 0.34fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 16rem), 0.28fr);
+    }
+
+    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-grid > :nth-child(5n + 1) {
+      grid-column: span 3;
+    }
+  }
+
+/* V1 personality aliases for retro-glass; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) {
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 15rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) :where(.ly-wrapper) {
+    --ly-wrapper-max: 104rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-shell {
+      grid-template-areas:
+        "header header sidebar"
+        "main main sidebar"
+        "aside footer footer";
+      grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(0, 0.75fr)
+        minmax(min(100%, 18rem), 0.32fr);
+    }
+
+    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-grid > :nth-child(4n) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+/* V1 personality aliases for f-pattern; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) :where(.ly-wrapper) {
+    --ly-wrapper-max: 92rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 16rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-columns:
+        minmax(min(100%, 16rem), 0.26fr)
+        minmax(0, 1.35fr)
+        minmax(min(100%, 18rem), 0.65fr);
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-grid > :nth-child(3n + 1) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-split-hero {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    }
+  }
+
+/* V1 personality aliases for z-pattern; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 14rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) :where(.ly-wrapper) {
+    --ly-wrapper-max: 108rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 60rem) {
+    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-app-shell {
+      grid-template-areas:
+        "header header sidebar"
+        "main aside sidebar"
+        "footer aside sidebar";
+      grid-template-columns:
+        minmax(0, 1.45fr)
+        minmax(min(100%, 19rem), 0.55fr)
+        minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 2;
+      align-self: end;
+    }
+
+    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-split-hero {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.5fr);
+    }
+  }
+
+/* V1 personality aliases for split-screen; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) {
+    --ly-grid-columns: 2;
+    --ly-grid-min: 20rem;
+    --ly-split-primary: 1fr;
+    --ly-split-secondary: 1fr;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) :where(.ly-wrapper) {
+    --ly-wrapper-max: 100%;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-app-shell {
+      grid-template-areas:
+        "header header"
+        "main sidebar"
+        "aside sidebar"
+        "footer footer";
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) :where(.ly-split, .ly-split-hero, .ly-list-detail) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+/* V1 personality aliases for mondrian; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) {
+    --ly-recipe-rail: 13rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 10;
+    --ly-grid-min: 11rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) :where(.ly-wrapper) {
+    --ly-wrapper-max: 112rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 13rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-shell {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "footer footer aside";
+      grid-template-columns:
+        minmax(min(100%, 13rem), 0.22fr)
+        minmax(0, 1.45fr)
+        minmax(min(100%, 18rem), 0.55fr);
+    }
+
+    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-grid > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+/* V1 personality aliases for synthwave; generated from the canonical v2 source. */
+:where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 12;
+    --ly-grid-min: 14rem;
+    --ly-reel-item-max: 34rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) :where(.ly-wrapper) {
+    --ly-wrapper-max: 112rem;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-shell {
+      grid-template-columns: minmax(min(100%, 16rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 64rem) {
+    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-shell {
+      grid-template-areas:
+        "header header header"
+        "sidebar main aside"
+        "footer footer footer";
+      grid-template-columns:
+        minmax(min(100%, 16rem), 0.28fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 20rem), 0.34fr);
+    }
+
+    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 3;
+    }
+
+    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-reel {
+      grid-auto-columns: minmax(min(100%, 20rem), var(--ly-reel-item-max));
+    }
   }
 
   @container (min-width: 48rem) {

@@ -115,25 +115,6 @@ const requiredDocumentationFiles = [
   "docs/wiki/Contributing.md"
 ];
 
-const requiredStyleClasses = [
-  ".ly-style-minimal-saas",
-  ".ly-style-bento",
-  ".ly-style-maximalist",
-  ".ly-style-bauhaus",
-  ".ly-style-tactile",
-  ".ly-style-neumorphism",
-  ".ly-style-retrofuturism",
-  ".ly-style-brutalism",
-  ".ly-style-cyberpunk",
-  ".ly-style-y2k",
-  ".ly-style-retro-glass",
-  ".ly-style-f-pattern",
-  ".ly-style-z-pattern",
-  ".ly-style-split-screen",
-  ".ly-style-mondrian",
-  ".ly-style-synthwave"
-];
-
 const requiredDataUiSelectors = [
   '[data-ui="minimal-saas"]',
   '[data-ui="bento"]',
@@ -181,57 +162,120 @@ const requiredUiRecipeAliasSuffixes = [
   "carousel"
 ];
 
-const requiredLayoutSelectors = [
-  '[data-layout="minimal-saas"]',
-  '[data-layout="bento"]',
-  '[data-layout="maximalist"]',
-  '[data-layout="bauhaus"]',
-  '[data-layout="tactile"]',
-  '[data-layout="neumorphism"]',
-  '[data-layout="retrofuturism"]',
-  '[data-layout="brutalism"]',
-  '[data-layout="cyberpunk"]',
-  '[data-layout="y2k"]',
-  '[data-layout="retro-glass"]',
-  '[data-layout="f-pattern"]',
-  '[data-layout="z-pattern"]',
-  '[data-layout="split-screen"]',
-  '[data-layout="mondrian"]',
-  '[data-layout="synthwave"]'
-];
-
-const requiredLayoutStyleSelectors = [
-  '[layout-style="minimal-saas"]',
-  '[layout-style="bento"]',
-  '[layout-style="maximalist"]',
-  '[layout-style="bauhaus"]',
-  '[layout-style="tactile"]',
-  '[layout-style="neumorphism"]',
-  '[layout-style="retrofuturism"]',
-  '[layout-style="brutalism"]',
-  '[layout-style="cyberpunk"]',
-  '[layout-style="y2k"]',
-  '[layout-style="retro-glass"]',
-  '[layout-style="f-pattern"]',
-  '[layout-style="z-pattern"]',
-  '[layout-style="split-screen"]',
-  '[layout-style="mondrian"]',
-  '[layout-style="synthwave"]'
-];
-
-const requiredShellPrimitives = [
-  ".ly-app-shell",
-  ".ly-app-sidebar",
-  ".ly-app-main",
-  ".ly-sidebar-layout",
-  ".ly-split",
-  ".ly-panes",
-  ".ly-panes--two",
-  ".ly-panes--three",
-  ".ly-grid--auto",
-  ".ly-container",
-  ".ly-section"
-];
+const personalityContracts = {
+  "minimal-saas": {
+    family: "left-rail",
+    measure: "88rem",
+    threshold: "48rem",
+    areas: '"sidebar header header" "sidebar main aside" "sidebar footer footer"',
+    rhythm: ".ly-grid > :nth-child(4n + 1)"
+  },
+  bauhaus: {
+    family: "left-rail",
+    measure: "96rem",
+    threshold: "52rem",
+    areas: '"sidebar header header aside" "sidebar main main aside" "sidebar footer footer footer"',
+    rhythm: ".ly-grid > :nth-child(3n + 1)"
+  },
+  tactile: {
+    family: "left-rail",
+    measure: "82rem",
+    threshold: "48rem",
+    areas: '"sidebar header" "sidebar main" "sidebar aside" "sidebar footer"',
+    rhythm: ".ly-grid > :nth-child(5n + 2)"
+  },
+  cyberpunk: {
+    family: "left-rail",
+    measure: "112rem",
+    threshold: "44rem",
+    areas: '"sidebar header aside" "sidebar main aside" "sidebar footer aside"',
+    rhythm: ".ly-grid > :nth-child(4n + 2)"
+  },
+  "f-pattern": {
+    family: "left-rail",
+    measure: "92rem",
+    threshold: "56rem",
+    areas: '"sidebar header header" "sidebar main aside" "sidebar footer aside"',
+    rhythm: ".ly-grid > :nth-child(3n + 1)"
+  },
+  brutalism: {
+    family: "right-rail",
+    measure: "100rem",
+    threshold: "48rem",
+    areas: '"header header sidebar" "main aside sidebar" "footer footer sidebar"',
+    rhythm: ".ly-grid > :nth-child(3n)"
+  },
+  neumorphism: {
+    family: "right-rail",
+    measure: "84rem",
+    threshold: "52rem",
+    areas: '"header sidebar" "main sidebar" "aside sidebar" "footer sidebar"',
+    rhythm: ".ly-grid > :nth-child(4n + 1)"
+  },
+  y2k: {
+    family: "right-rail",
+    measure: "90rem",
+    threshold: "48rem",
+    areas: '"header header sidebar" "aside main sidebar" "footer footer sidebar"',
+    rhythm: ".ly-grid > :nth-child(5n + 1)"
+  },
+  "retro-glass": {
+    family: "right-rail",
+    measure: "104rem",
+    threshold: "56rem",
+    areas: '"header header sidebar" "main main sidebar" "aside footer footer"',
+    rhythm: ".ly-grid > :nth-child(4n)"
+  },
+  "z-pattern": {
+    family: "right-rail",
+    measure: "108rem",
+    threshold: "60rem",
+    areas: '"header header sidebar" "main aside sidebar" "footer aside sidebar"',
+    rhythm: ".ly-grid > :nth-child(4n + 2)"
+  },
+  retrofuturism: {
+    family: "three-zone",
+    measure: "106rem",
+    threshold: "48rem",
+    areas: '"sidebar header aside" "sidebar main aside" "sidebar footer aside"',
+    rhythm: ".ly-grid > :nth-child(6n + 1)"
+  },
+  mondrian: {
+    family: "three-zone",
+    measure: "112rem",
+    threshold: "52rem",
+    areas: '"sidebar header header" "sidebar main aside" "footer footer aside"',
+    rhythm: ".ly-grid > :nth-child(5n + 1)"
+  },
+  synthwave: {
+    family: "three-zone",
+    measure: "112rem",
+    threshold: "64rem",
+    areas: '"header header header" "sidebar main aside" "footer footer footer"',
+    rhythm: ".ly-grid > :nth-child(4n + 1)"
+  },
+  bento: {
+    family: "mosaic",
+    measure: "112rem",
+    threshold: "48rem",
+    areas: '"header header header" "sidebar main main" "aside main main" "footer footer footer"',
+    rhythm: ".ly-grid > :nth-child(6n + 1)"
+  },
+  maximalist: {
+    family: "mosaic",
+    measure: "100%",
+    threshold: "56rem",
+    areas: '"header header header header" "main main sidebar aside" "main main footer footer"',
+    rhythm: ".ly-grid > :nth-child(7n + 1)"
+  },
+  "split-screen": {
+    family: "equal-split",
+    measure: "100%",
+    threshold: "48rem",
+    areas: '"header header" "main sidebar" "aside sidebar" "footer footer"',
+    rhythm: "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);"
+  }
+};
 
 const task2WrapperVariants = [
   [".ly-wrapper--compact", "--ly-wrapper-max: 40rem;"],
@@ -347,6 +391,76 @@ function findUnguardedGridTrackFloors(css, file) {
   }
 
   return matches;
+}
+
+function normalizeCssWhitespace(css) {
+  return css.replace(/\s+/g, " ").trim();
+}
+
+function hasRectangularNamedAreas(template) {
+  const rows = [...template.matchAll(/"([^"]+)"/g)].map((match) => match[1].trim().split(/\s+/));
+
+  if (rows.length === 0 || rows.some((row) => row.length !== rows[0].length)) {
+    return false;
+  }
+
+  const names = new Set(rows.flat().filter((name) => name !== "."));
+
+  for (const name of names) {
+    const cells = [];
+
+    for (const [rowIndex, row] of rows.entries()) {
+      for (const [columnIndex, cell] of row.entries()) {
+        if (cell === name) {
+          cells.push([rowIndex, columnIndex]);
+        }
+      }
+    }
+
+    const rowIndexes = cells.map(([rowIndex]) => rowIndex);
+    const columnIndexes = cells.map(([, columnIndex]) => columnIndex);
+    const rowStart = Math.min(...rowIndexes);
+    const rowEnd = Math.max(...rowIndexes);
+    const columnStart = Math.min(...columnIndexes);
+    const columnEnd = Math.max(...columnIndexes);
+
+    for (let rowIndex = rowStart; rowIndex <= rowEnd; rowIndex += 1) {
+      for (let columnIndex = columnStart; columnIndex <= columnEnd; columnIndex += 1) {
+        if (rows[rowIndex][columnIndex] !== name) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+function hasExpectedFamilyShape(family, template) {
+  const rows = [...template.matchAll(/"([^"]+)"/g)].map((match) => match[1].trim().split(/\s+/));
+
+  if (family === "left-rail") {
+    return rows[0][0] === "sidebar" && rows.filter((row) => row[0] === "sidebar").length >= 2;
+  }
+  if (family === "right-rail") {
+    return (
+      rows[0].at(-1) === "sidebar" && rows.filter((row) => row.at(-1) === "sidebar").length >= 2
+    );
+  }
+  if (family === "three-zone") {
+    return rows.some((row) => row[0] === "sidebar" && row.at(-1) === "aside");
+  }
+  if (family === "mosaic") {
+    return (
+      rows[0].every((area) => area === "header") &&
+      rows.some((row) => row.includes("main") && new Set(row).size < row.length)
+    );
+  }
+
+  return (
+    family === "equal-split" &&
+    rows.some((row) => row.length === 2 && row[0] === "main" && row[1] === "sidebar")
+  );
 }
 
 function extractRuleBody(css, selector) {
@@ -469,13 +583,21 @@ for (const file of requiredSourceFiles) {
   const sourcePath = join(styles, file);
   const distPath = join(dist, file);
   const sourceCss = readFileSync(sourcePath, "utf8");
+  const distCss = readFileSync(distPath, "utf8");
 
   assert(existsSync(sourcePath), `Missing source CSS ${file}`);
-  assert.equal(
-    readFileSync(distPath, "utf8"),
-    sourceCss,
-    `${file} must be generated from styles/${file}`
-  );
+  if (file === "legacy.css") {
+    const marker = "/* @generated-personality-aliases */";
+    const [beforeAliases, afterAliases] = sourceCss.split(marker);
+
+    assert(sourceCss.includes(marker), "styles/legacy.css must own the generated alias marker");
+    assert(
+      distCss.startsWith(beforeAliases) && distCss.endsWith(afterAliases),
+      "legacy.css must preserve authored source around its generated personality aliases"
+    );
+  } else {
+    assert.equal(distCss, sourceCss, `${file} must be generated from styles/${file}`);
+  }
   assert(
     sourceCss.startsWith(cascadeLayerPrelude),
     `${file} must begin with the shared cascade-layer prelude`
@@ -625,88 +747,78 @@ assert(
   "Wrapper reset must keep padded wrappers inside their assigned inline size"
 );
 
-for (const className of requiredStyleClasses) {
-  const styleName = className.replace(".ly-style-", "");
-  const path = join(dist, "personalities", `${styleName}.css`);
+assert.deepEqual(
+  Object.keys(personalityContracts).sort(),
+  personalityNames.toSorted(),
+  "Personality contracts must enumerate the exact sixteen public data-ly-layout values"
+);
+const personalityFamilyCounts = Object.values(personalityContracts).reduce((counts, { family }) => {
+  counts[family] = (counts[family] ?? 0) + 1;
+  return counts;
+}, {});
+assert.deepEqual(
+  personalityFamilyCounts,
+  { "left-rail": 5, "right-rail": 5, "three-zone": 3, mosaic: 2, "equal-split": 1 },
+  "Personality contracts must preserve the five public spatial families"
+);
+
+for (const [name, contract] of Object.entries(personalityContracts)) {
+  const path = join(dist, "personalities", `${name}.css`);
   const css = readFileSync(path, "utf8");
+  const normalizedCss = normalizeCssWhitespace(css);
+  const canonicalRoot = `.ly-root[data-ly-layout="${name}"]`;
+
+  assert(
+    hasRectangularNamedAreas(contract.areas),
+    `${name} must define valid rectangular CSS grid named areas`
+  );
+  assert(
+    hasExpectedFamilyShape(contract.family, contract.areas),
+    `${name} must preserve the ${contract.family} family geometry`
+  );
+  assert(css.includes(canonicalRoot), `${path} missing its canonical ${canonicalRoot} hook`);
+  assert(!css.includes("[data-layout="), `${path} must not ship the v1 data-layout hook`);
+  assert(!css.includes("[layout-style="), `${path} must not ship the v1 layout-style hook`);
+  assert(!css.includes(".ly-layout-"), `${path} must not ship v1 ly-layout-* classes`);
+  assert(!css.includes(".ly-style-"), `${path} must not ship v1 ly-style-* classes`);
+  assert(!css.includes("[data-ui="), `${path} must not couple layout personalities to data-ui`);
+  assert(!css.includes("@media"), `${path} must respond to containers instead of the viewport`);
+  assert(
+    css.includes("container-name: ly-personality;") && css.includes("container-type: inline-size;"),
+    `${path} must establish the personality containment scope`
+  );
+  assert(
+    normalizedCss.includes(
+      normalizeCssWhitespace(`@container ly-personality (min-width: ${contract.threshold})`)
+    ),
+    `${path} must enhance at its ${contract.threshold} personality threshold`
+  );
+  assert(
+    normalizedCss.includes(normalizeCssWhitespace(`--ly-wrapper-max: ${contract.measure};`)),
+    `${path} must own its ${contract.measure} wrapper measure signature`
+  );
+  assert(
+    normalizedCss.includes(normalizeCssWhitespace(`grid-template-areas: ${contract.areas};`)),
+    `${path} must implement its ${contract.family} named-area signature`
+  );
+  assert(
+    normalizedCss.includes(normalizeCssWhitespace(contract.rhythm)),
+    `${path} must implement a second spatial signature through grid/span rhythm`
+  );
   assert.deepEqual(
     findOwnedVisualDeclarations(css),
     [],
     `${path} must leave visual properties to ui-style-kit-css`
   );
-  assert(!visualLayoutTokensOwnedByUiKit.test(css), `${path} must not define visual layout tokens`);
-  assert(css.includes(className), `${path} missing ${className}`);
-  assert(css.includes(`.ly-layout-${styleName}`), `${path} missing .ly-layout-${styleName}`);
-  assert(css.includes(`[data-layout="${styleName}"]`), `${path} missing data-layout selector`);
-  assert(css.includes(`[layout-style="${styleName}"]`), `${path} missing layout-style selector`);
-  assert(!css.includes(`[data-ui="${styleName}"]`), `${path} must not be coupled to data-ui`);
-  assert(css.includes("@media"), `${path} must include responsive media rules`);
-  assert(!css.includes("position: fixed"), `${path} must keep app shell regions in normal layout flow`);
-
-  for (const primitive of requiredShellPrimitives) {
-    assert(css.includes(primitive), `${path} missing shell primitive ${primitive}`);
-  }
-}
-
-const y2kCss = readFileSync(join(dist, "personalities", "y2k.css"), "utf8");
-assert(y2kCss.includes('"main sidebar"'), "Y2K layout must keep the sidebar as a shell region");
-
-const cyberpunkCss = readFileSync(join(dist, "personalities", "cyberpunk.css"), "utf8");
-assert(!cyberpunkCss.includes("4.75rem"), "Cyberpunk rail must remain usable with shared sidebar markup");
-
-const maximalistCss = readFileSync(join(dist, "personalities", "maximalist.css"), "utf8");
-assert(
-  maximalistCss.includes("grid-template-columns: 1fr;"),
-  "Maximalist layout must keep the tablet hero split stacked before the wide editorial shell"
-);
-
-const retroGlassCss = readFileSync(join(dist, "personalities", "retro-glass.css"), "utf8");
-assert(
-  retroGlassCss.includes("grid-template-columns: 1fr;"),
-  "Retro Glass layout must keep the tablet hero split stacked before the floating rail shell"
-);
-
-const newLayoutStructuralContracts = [
-  {
-    file: "f-pattern.css",
-    snippets: ['"header header"\n        "sidebar main"', "grid-column: span 2;"]
-  },
-  {
-    file: "z-pattern.css",
-    snippets: ['"header header"\n        "main sidebar"', "align-items: end;"]
-  },
-  {
-    file: "split-screen.css",
-    snippets: ['"header header"\n        "main sidebar"', "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);"]
-  },
-  {
-    file: "mondrian.css",
-    snippets: ['"sidebar header header"', "grid-row: span 2;"]
-  },
-  {
-    file: "synthwave.css",
-    snippets: ['"main main"\n        "sidebar sidebar"', "--ly-carousel-item-max: 34rem;"]
-  }
-];
-
-for (const { file, snippets } of newLayoutStructuralContracts) {
-  const css = readFileSync(join(dist, "personalities", file), "utf8").replace(/\r\n/g, "\n");
-
-  for (const snippet of snippets) {
-    assert(css.includes(snippet), `${file} should preserve its distinct layout behavior: ${snippet}`);
-  }
-}
-
-for (const dataLayout of requiredLayoutSelectors) {
-  const styleName = dataLayout.match(/"(.+)"/)[1];
-  const css = readFileSync(join(dist, "personalities", `${styleName}.css`), "utf8");
-  assert(css.includes(dataLayout), `Layout style missing ${dataLayout}`);
-}
-
-for (const layoutStyle of requiredLayoutStyleSelectors) {
-  const styleName = layoutStyle.match(/"(.+)"/)[1];
-  const css = readFileSync(join(dist, "personalities", `${styleName}.css`), "utf8");
-  assert(css.includes(layoutStyle), `Layout style missing ${layoutStyle}`);
+  assert(
+    !/(?:^|[;{}\n\r])\s*(?:animation|backdrop-filter|border-radius|cursor|outline|text-decoration|transition)\s*:/.test(
+      css
+    ),
+    `${path} must not own decorative or interactive presentation`
+  );
+  assert(!visualLayoutTokensOwnedByUiKit.test(css), `${path} must not define visual tokens`);
+  assert(!/(?:^|[;{}\n\r])\s*order\s*:/.test(css), `${path} must preserve DOM and focus order`);
+  assert(!css.includes("position: fixed"), `${path} must keep shell regions in normal flow`);
 }
 
 const bridge = readFileSync(join(dist, "integrations", "ui-style-kit.css"), "utf8");
@@ -836,6 +948,29 @@ for (const name of personalityNames) {
     assert(legacyLayer.includes(selector), `legacy.css missing old root hook ${selector}`);
   }
 }
+const normalizedLegacy = normalizeCssWhitespace(legacyLayer);
+for (const [name, contract] of Object.entries(personalityContracts)) {
+  const legacyRoot = `:where(.ly-root[data-layout="${name}"], .ly-root[layout-style="${name}"], .ly-root.ly-layout-${name}, .ly-root.ly-style-${name})`;
+
+  assert(
+    normalizedLegacy.includes(
+      normalizeCssWhitespace(
+        `${legacyRoot} .ly-app-shell { grid-template-areas: ${contract.areas};`
+      )
+    ),
+    `legacy.css must give ${name} root hooks the same functional named-area behavior as data-ly-layout`
+  );
+  assert(
+    normalizedLegacy.includes(
+      normalizeCssWhitespace(`${legacyRoot} :where(.ly-wrapper) { --ly-wrapper-max: ${contract.measure};`)
+    ),
+    `legacy.css must give ${name} root hooks the same wrapper measure as data-ly-layout`
+  );
+}
+assert(
+  !legacy.includes("@generated-personality-aliases"),
+  "dist/legacy.css must replace its build-time personality alias marker"
+);
 for (let column = 1; column <= 12; column += 1) {
   assert(legacyLayer.includes(`.ly-col-${column}`), `legacy.css missing .ly-col-${column}`);
 }
@@ -911,6 +1046,9 @@ assert(
   !flattened.includes("@import"),
   "Flattened layout-style-css.css must not depend on CSS @import"
 );
+for (const oldHook of ["[data-layout=", "[layout-style=", ".ly-layout-", ".ly-style-"]) {
+  assert(!flattened.includes(oldHook), `Default bundle must not include the v1 personality hook ${oldHook}`);
+}
 assert.deepEqual(
   findOwnedVisualDeclarations(flattened),
   [],
