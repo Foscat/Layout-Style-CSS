@@ -62,6 +62,31 @@ const controlValues = {
   personalitySelect: personalities,
   containerSelect: ["auto", "40rem", "47rem", "49rem", "63rem", "65rem", "80rem"],
   densitySelect: ["compact", "comfortable", "spacious"],
+  uiSelect: [
+    "minimal-saas",
+    "bento",
+    "maximalist",
+    "bauhaus",
+    "tactile",
+    "neumorphism",
+    "retrofuturism",
+    "brutalism",
+    "cyberpunk",
+    "y2k",
+    "retro-glass"
+  ],
+  themeSelect: [
+    "arctic-indigo",
+    "ocean-steel",
+    "graphite-cyan",
+    "forest-moss",
+    "rose-quartz",
+    "desert-sage",
+    "midnight-gold",
+    "cyber-lime",
+    "sunset-ember"
+  ],
+  modeSelect: ["light", "dark", "contrast"],
   ecosystemSelect: ["layout-only", "layout-ui", "all-three"]
 };
 const recipeAreas = {
@@ -78,6 +103,63 @@ const recipeSequence = {
   gallery: ["item-1", "item-2", "item-3", "item-4", "item-5"],
   "card-grid": ["item-1", "item-2", "item-3", "item-4", "item-5", "item-6"]
 };
+const personalitySignatures = {
+  "minimal-saas": { gridColumns: "4", gridMin: "16rem", wrapperMax: "88rem" },
+  bauhaus: { gridColumns: "6", gridMin: "13rem", wrapperMax: "96rem" },
+  tactile: { gridColumns: "5", gridMin: "15rem", wrapperMax: "82rem" },
+  cyberpunk: { gridColumns: "8", gridMin: "12rem", wrapperMax: "112rem" },
+  "f-pattern": { gridColumns: "6", gridMin: "14rem", wrapperMax: "92rem" },
+  brutalism: { gridColumns: "6", gridMin: "14rem", wrapperMax: "100rem" },
+  neumorphism: { gridColumns: "4", gridMin: "17rem", wrapperMax: "84rem" },
+  y2k: { gridColumns: "5", gridMin: "13rem", wrapperMax: "90rem" },
+  "retro-glass": { gridColumns: "8", gridMin: "15rem", wrapperMax: "104rem" },
+  "z-pattern": { gridColumns: "8", gridMin: "14rem", wrapperMax: "108rem" },
+  retrofuturism: { gridColumns: "6", gridMin: "14rem", wrapperMax: "106rem" },
+  mondrian: { gridColumns: "10", gridMin: "11rem", wrapperMax: "112rem" },
+  synthwave: { gridColumns: "12", gridMin: "14rem", wrapperMax: "112rem" },
+  bento: { gridColumns: "6", gridMin: "12rem", wrapperMax: "112rem" },
+  maximalist: { gridColumns: "12", gridMin: "10rem", wrapperMax: "100%" },
+  "split-screen": { gridColumns: "2", gridMin: "20rem", wrapperMax: "100%" }
+};
+const personalityShellAreas = {
+  "minimal-saas": '"sidebar header header" "sidebar main aside" "sidebar footer footer"',
+  bauhaus: '"sidebar header header aside" "sidebar main main aside" "sidebar footer footer footer"',
+  tactile: '"sidebar header" "sidebar main" "sidebar aside" "sidebar footer"',
+  cyberpunk: '"sidebar header aside" "sidebar main aside" "sidebar footer aside"',
+  "f-pattern": '"sidebar header header" "sidebar main aside" "sidebar footer aside"',
+  brutalism: '"header header sidebar" "main aside sidebar" "footer footer sidebar"',
+  neumorphism: '"header sidebar" "main sidebar" "aside sidebar" "footer sidebar"',
+  y2k: '"header header sidebar" "aside main sidebar" "footer footer sidebar"',
+  "retro-glass": '"header header sidebar" "main main sidebar" "aside footer footer"',
+  "z-pattern": '"header header sidebar" "main aside sidebar" "footer aside sidebar"',
+  retrofuturism: '"sidebar header aside" "sidebar main aside" "sidebar footer aside"',
+  mondrian: '"sidebar header header" "sidebar main aside" "footer footer aside"',
+  synthwave: '"header header header" "sidebar main aside" "footer footer footer"',
+  bento: '"header header header" "sidebar main main" "aside main main" "footer footer footer"',
+  maximalist: '"header header header header" "main main sidebar aside" "main main footer footer"',
+  "split-screen": '"header header" "main sidebar" "aside sidebar" "footer footer"'
+};
+const personalityShellThresholds = {
+  "minimal-saas": 48,
+  bauhaus: 52,
+  tactile: 48,
+  cyberpunk: 44,
+  "f-pattern": 56,
+  brutalism: 48,
+  neumorphism: 52,
+  y2k: 48,
+  "retro-glass": 56,
+  "z-pattern": 60,
+  retrofuturism: 48,
+  mondrian: 52,
+  synthwave: 64,
+  bento: 48,
+  maximalist: 56,
+  "split-screen": 48
+};
+const mobileAppShellAreas = '"header" "sidebar" "main" "aside" "footer"';
+const mediumAppShellAreas = '"header header" "sidebar main" "aside main" "footer footer"';
+const largeAppShellAreas = '"sidebar header header" "sidebar main aside" "sidebar footer footer"';
 const viewports = [
   { width: 375, height: 667 },
   { width: 768, height: 1024 },
@@ -252,6 +334,20 @@ async function selectDemoOption(page, id, value) {
   }, value);
 }
 
+function expectedAppShellAreas(personality, inlineSize) {
+  const sizeInRem = inlineSize / 16;
+
+  if (sizeInRem >= personalityShellThresholds[personality]) {
+    return personalityShellAreas[personality];
+  }
+
+  if (sizeInRem < 48) {
+    return mobileAppShellAreas;
+  }
+
+  return sizeInRem < 64 ? mediumAppShellAreas : largeAppShellAreas;
+}
+
 async function verifyQueryAndEcosystem(page, baseUrl) {
   const restoredUrl =
     `${baseUrl}?wrapper=prose&recipe=docs&personality=synthwave&container=49rem` +
@@ -409,6 +505,19 @@ async function verifyQueryAndEcosystem(page, baseUrl) {
     (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n"),
     restored.imports
   );
+
+  const currentMarkup = await page.locator("#markupSnippet").textContent();
+  await page.click("#copyMarkup");
+  await page.waitForFunction(
+    () =>
+      document.querySelector("#copyStatus")?.dataset.copyState === "success" &&
+      document.querySelector("#copyStatus")?.textContent.includes("markup")
+  );
+  assert.match(await page.locator("#copyStatus").textContent(), /Copied markup/i);
+  assert.equal(
+    (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n"),
+    currentMarkup
+  );
 }
 
 async function verifyMobileDrawer(page, baseUrl, viewport) {
@@ -464,6 +573,19 @@ async function verifyMobileDrawer(page, baseUrl, viewport) {
   assert(open.drawerRect.left >= -1 && open.drawerRect.right <= viewport.width + 1);
   assert(open.controlSize[1] >= 44, "Drawer controls need usable touch targets");
 
+  await page.keyboard.press("Shift+Tab");
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.id),
+    "ecosystemSelect",
+    "Shift+Tab from the first drawer control must wrap to the last control"
+  );
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.id),
+    "demoControlsClose",
+    "Tab from the last drawer control must wrap to the first control"
+  );
+
   await page.keyboard.press("Escape");
   assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
   assert.equal(await page.evaluate(() => document.activeElement?.id), "demoControlsToggle");
@@ -492,44 +614,74 @@ async function verifyRecipeAndPersonalityMatrix(page, baseUrl) {
 
     for (const recipe of recipes) {
       await selectDemoOption(page, "recipeSelect", recipe);
-      const geometry = await page.locator("#recipePreview").evaluate((rootElement) => {
-        const rootRect = rootElement.getBoundingClientRect();
-        const frame = document.querySelector("#previewFrame");
-        return {
-          recipe: rootElement.dataset.lyRecipe,
-          areas: [...rootElement.children].map((element) => element.dataset.lyArea).filter(Boolean),
-          sequence: [...rootElement.children].map((element) => element.dataset.demoSequence),
-          rootRect: rootRect.toJSON(),
-          display: getComputedStyle(rootElement).display,
-          gridAreas: getComputedStyle(rootElement).gridTemplateAreas,
-          rootOverflow: rootElement.scrollWidth - rootElement.clientWidth,
-          frameOverflow: frame.scrollWidth - frame.clientWidth,
-          pageOverflow: document.documentElement.scrollWidth - innerWidth
-        };
-      });
-      assert.equal(geometry.recipe, recipe);
-      assert.deepEqual(geometry.areas, recipeAreas[recipe], `${recipe} semantic area order drifted`);
-      assert.deepEqual(geometry.sequence, recipeSequence[recipe], `${recipe} DOM order drifted`);
-      assert.equal(geometry.display, "grid", `${recipe} should render as a grid recipe`);
-      assert(geometry.rootRect.width > 0 && geometry.rootRect.height > 0, `${recipe} should be visible`);
-      assert(geometry.rootOverflow <= 4, `${recipe} root overflowed by ${geometry.rootOverflow}px`);
-      assert(geometry.frameOverflow <= 4, `${recipe} frame overflowed by ${geometry.frameOverflow}px`);
-      assert(geometry.pageOverflow <= 4, `${recipe} page overflowed by ${geometry.pageOverflow}px`);
-    }
+      const snapshots = await page.evaluate((personalityNames) => {
+        const personalityControl = document.querySelector("#personalitySelect");
 
-    await selectDemoOption(page, "recipeSelect", "app-shell");
-    for (const personality of matrixPersonalities) {
-      await selectDemoOption(page, "personalitySelect", personality);
-      const geometry = await page.locator("#recipePreview").evaluate((rootElement) => ({
-        personality: document.querySelector("#previewRoot")?.dataset.lyLayout,
-        areas: [...rootElement.children].map((element) => element.dataset.lyArea).filter(Boolean),
-        rect: rootElement.getBoundingClientRect().toJSON(),
-        pageOverflow: document.documentElement.scrollWidth - innerWidth
-      }));
-      assert.equal(geometry.personality, personality);
-      assert.deepEqual(geometry.areas, recipeAreas["app-shell"], `${personality} changed DOM order`);
-      assert(geometry.rect.width > 0 && geometry.rect.height > 0, `${personality} should be visible`);
-      assert(geometry.pageOverflow <= 4, `${personality} overflowed by ${geometry.pageOverflow}px`);
+        return personalityNames.map((personality) => {
+          personalityControl.value = personality;
+          personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
+
+          const recipeRoot = document.querySelector("#recipePreview");
+          const previewRoot = document.querySelector("#previewRoot");
+          const wrapper = document.querySelector("#previewWrapper");
+          const frame = document.querySelector("#previewFrame");
+          const rootStyle = getComputedStyle(previewRoot);
+          const recipeStyle = getComputedStyle(recipeRoot);
+
+          return {
+            personality,
+            appliedPersonality: previewRoot.dataset.lyLayout,
+            recipe: recipeRoot.dataset.lyRecipe,
+            areas: [...recipeRoot.children]
+              .map((element) => element.dataset.lyArea)
+              .filter(Boolean),
+            sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
+            rect: recipeRoot.getBoundingClientRect().toJSON(),
+            display: recipeStyle.display,
+            gridAreas: recipeStyle.gridTemplateAreas,
+            personalityInlineSize: previewRoot.getBoundingClientRect().width,
+            signature: {
+              gridColumns: rootStyle.getPropertyValue("--ly-grid-columns").trim(),
+              gridMin: rootStyle.getPropertyValue("--ly-grid-min").trim(),
+              wrapperMax: getComputedStyle(wrapper).getPropertyValue("--ly-wrapper-max").trim()
+            },
+            overflow: {
+              recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
+              wrapper: wrapper.scrollWidth - wrapper.clientWidth,
+              previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
+              frame: frame.scrollWidth - frame.clientWidth,
+              page: document.documentElement.scrollWidth - innerWidth
+            }
+          };
+        });
+      }, matrixPersonalities);
+
+      for (const snapshot of snapshots) {
+        const context = `${recipe} + ${snapshot.personality} at ${viewport.width}px`;
+        assert.equal(snapshot.appliedPersonality, snapshot.personality, `${context} personality hook drifted`);
+        assert.equal(snapshot.recipe, recipe, `${context} recipe hook drifted`);
+        assert.deepEqual(
+          snapshot.signature,
+          personalitySignatures[snapshot.personality],
+          `${context} must apply authored personality spatial tokens`
+        );
+        assert.deepEqual(snapshot.areas, recipeAreas[recipe], `${context} semantic area order drifted`);
+        assert.deepEqual(snapshot.sequence, recipeSequence[recipe], `${context} DOM order drifted`);
+        assert.equal(snapshot.display, "grid", `${context} should render as a grid recipe`);
+        assert(snapshot.rect.width > 0 && snapshot.rect.height > 0, `${context} should be visible`);
+
+        for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
+          assert(overflow <= 4, `${context} ${scope} overflowed internally by ${overflow}px`);
+        }
+
+        if (recipe === "app-shell") {
+          assert.equal(
+            snapshot.gridAreas,
+            expectedAppShellAreas(snapshot.personality, snapshot.personalityInlineSize),
+            `${context} must apply the correct core or personality named-area signature`
+          );
+        }
+      }
     }
   }
 }
@@ -542,41 +694,172 @@ async function verifyNestedThresholdsAndFocus(page, baseUrl) {
   );
   await waitForReady(page);
 
-  const snapshots = new Map();
-  for (const width of ["47rem", "49rem", "63rem", "65rem"]) {
+  const thresholdWidths = ["47rem", "49rem", "63rem", "65rem"];
+
+  for (const recipe of recipes) {
+    await selectDemoOption(page, "recipeSelect", recipe);
+    const snapshots = await page.evaluate((widths) => {
+      const containerControl = document.querySelector("#containerSelect");
+
+      return widths.map((width) => {
+        containerControl.value = width;
+        containerControl.dispatchEvent(new Event("change", { bubbles: true }));
+
+        // Core threshold proof isolates recipe queries from personality overrides.
+        document.body.removeAttribute("data-ly-layout");
+        document.querySelector("#previewRoot").removeAttribute("data-ly-layout");
+
+        const recipeRoot = document.querySelector("#recipePreview");
+        const wrapper = document.querySelector("#previewWrapper");
+        const previewRoot = document.querySelector("#previewRoot");
+        const frame = document.querySelector("#previewFrame");
+        const style = getComputedStyle(recipeRoot);
+        const tracks = [...style.gridTemplateColumns.matchAll(/([\d.]+)px/g)].map((match) =>
+          Number.parseFloat(match[1])
+        );
+
+        return {
+          width,
+          frameWidth: frame.getBoundingClientRect().width,
+          areas: style.gridTemplateAreas,
+          columns: style.gridTemplateColumns,
+          trackRatio: tracks.length >= 2 ? tracks[0] / tracks[1] : null,
+          galleryMin: style.getPropertyValue("--ly-gallery-min").trim(),
+          cardGridMin: style.getPropertyValue("--ly-card-grid-min").trim(),
+          sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
+          overflow: {
+            recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
+            wrapper: wrapper.scrollWidth - wrapper.clientWidth,
+            previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
+            frame: frame.scrollWidth - frame.clientWidth
+          }
+        };
+      });
+    }, thresholdWidths);
+    const byWidth = Object.fromEntries(snapshots.map((snapshot) => [snapshot.width, snapshot]));
+
+    assert(byWidth["47rem"].frameWidth < 48 * 16, `${recipe} 47rem fixture must be below medium`);
+    assert(byWidth["49rem"].frameWidth > 48 * 16, `${recipe} 49rem fixture must be above medium`);
+    assert(byWidth["63rem"].frameWidth < 64 * 16, `${recipe} 63rem fixture must be below large`);
+    assert(byWidth["65rem"].frameWidth > 64 * 16, `${recipe} 65rem fixture must be above large`);
+
+    for (const snapshot of snapshots) {
+      assert.deepEqual(
+        snapshot.sequence,
+        recipeSequence[recipe],
+        `${recipe} at ${snapshot.width} must preserve authoritative DOM order`
+      );
+      for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
+        assert(overflow <= 4, `${recipe} at ${snapshot.width} ${scope} overflowed by ${overflow}px`);
+      }
+    }
+
+    if (recipe === "gallery") {
+      assert.deepEqual(
+        snapshots.map(({ galleryMin }) => galleryMin),
+        ["12rem", "14rem", "14rem", "16rem"],
+        "Gallery must cross both authored container thresholds"
+      );
+    } else if (recipe === "card-grid") {
+      assert.deepEqual(
+        snapshots.map(({ cardGridMin }) => cardGridMin),
+        ["16rem", "18rem", "18rem", "20rem"],
+        "Card grid must cross both authored container thresholds"
+      );
+    } else {
+      assert.notEqual(
+        byWidth["47rem"].areas,
+        byWidth["49rem"].areas,
+        `${recipe} must change named areas across the 48rem threshold`
+      );
+
+      if (["app-shell", "dashboard", "docs"].includes(recipe)) {
+        assert.notEqual(
+          byWidth["63rem"].areas,
+          byWidth["65rem"].areas,
+          `${recipe} must change named areas across the 64rem threshold`
+        );
+      } else {
+        assert(
+          Math.abs(byWidth["63rem"].trackRatio - byWidth["65rem"].trackRatio) > 0.1,
+          `${recipe} must change track rhythm across the 64rem threshold; ` +
+            `received ${byWidth["63rem"].columns} and ${byWidth["65rem"].columns}`
+        );
+      }
+    }
+  }
+
+  await selectDemoOption(page, "recipeSelect", "app-shell");
+  for (const width of thresholdWidths) {
     await selectDemoOption(page, "containerSelect", width);
-    await page.waitForFunction(
-      (expected) => document.querySelector("#previewFrame")?.dataset.containerWidth === expected,
-      width
-    );
-    snapshots.set(
-      width,
-      await page.locator("#recipePreview").evaluate((rootElement) => ({
-        areas: getComputedStyle(rootElement).gridTemplateAreas,
-        sequence: [...rootElement.children].map((element) => element.dataset.demoSequence),
-        frameWidth: document.querySelector("#previewFrame")?.getBoundingClientRect().width
-      }))
-    );
+    const snapshots = await page.evaluate((personalityNames) => {
+      const personalityControl = document.querySelector("#personalitySelect");
+
+      return personalityNames.map((personality) => {
+        personalityControl.value = personality;
+        personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
+
+        const recipeRoot = document.querySelector("#recipePreview");
+        const previewRoot = document.querySelector("#previewRoot");
+        const wrapper = document.querySelector("#previewWrapper");
+        const frame = document.querySelector("#previewFrame");
+        const rootStyle = getComputedStyle(previewRoot);
+
+        return {
+          personality,
+          frameWidth: frame.getBoundingClientRect().width,
+          areas: getComputedStyle(recipeRoot).gridTemplateAreas,
+          sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
+          signature: {
+            gridColumns: rootStyle.getPropertyValue("--ly-grid-columns").trim(),
+            gridMin: rootStyle.getPropertyValue("--ly-grid-min").trim(),
+            wrapperMax: getComputedStyle(wrapper).getPropertyValue("--ly-wrapper-max").trim()
+          },
+          overflow: {
+            recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
+            wrapper: wrapper.scrollWidth - wrapper.clientWidth,
+            previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
+            frame: frame.scrollWidth - frame.clientWidth
+          }
+        };
+      });
+    }, personalities);
+
+    for (const snapshot of snapshots) {
+      const context = `${snapshot.personality} app-shell at nested ${width}`;
+      assert.deepEqual(
+        snapshot.signature,
+        personalitySignatures[snapshot.personality],
+        `${context} spatial tokens drifted`
+      );
+      assert.deepEqual(snapshot.sequence, recipeSequence["app-shell"], `${context} DOM order drifted`);
+      assert.equal(
+        snapshot.areas,
+        expectedAppShellAreas(snapshot.personality, snapshot.frameWidth),
+        `${context} named-area transition drifted`
+      );
+      for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
+        assert(overflow <= 4, `${context} ${scope} overflowed by ${overflow}px`);
+      }
+    }
   }
 
-  assert(snapshots.get("47rem").frameWidth < 48 * 16);
-  assert(snapshots.get("49rem").frameWidth > 48 * 16);
-  assert(snapshots.get("63rem").frameWidth < 64 * 16);
-  assert(snapshots.get("65rem").frameWidth > 64 * 16);
-  assert.notEqual(snapshots.get("47rem").areas, snapshots.get("49rem").areas);
-  assert.notEqual(snapshots.get("63rem").areas, snapshots.get("65rem").areas);
-  for (const snapshot of snapshots.values()) {
-    assert.deepEqual(snapshot.sequence, recipeSequence.dashboard, "Container queries must preserve DOM order");
+  await selectDemoOption(page, "recipeSelect", "dashboard");
+  await selectDemoOption(page, "personalitySelect", "minimal-saas");
+  for (const width of ["47rem", "65rem"]) {
+    await selectDemoOption(page, "containerSelect", width);
+    await page.locator("#recipePreview [data-demo-focus]").first().focus();
+    const tabOrder = [];
+    for (let index = 0; index < recipeSequence.dashboard.length; index += 1) {
+      tabOrder.push(await page.evaluate(() => document.activeElement?.dataset.demoFocus));
+      await page.keyboard.press("Tab");
+    }
+    assert.deepEqual(
+      tabOrder,
+      recipeSequence.dashboard,
+      `Keyboard order at ${width} must follow the authoritative mobile DOM order`
+    );
   }
-
-  await selectDemoOption(page, "containerSelect", "47rem");
-  await page.locator("#recipePreview [data-demo-focus]").first().focus();
-  const tabOrder = [];
-  for (let index = 0; index < recipeSequence.dashboard.length; index += 1) {
-    tabOrder.push(await page.evaluate(() => document.activeElement?.dataset.demoFocus));
-    await page.keyboard.press("Tab");
-  }
-  assert.deepEqual(tabOrder, recipeSequence.dashboard, "Keyboard order must follow the mobile DOM order");
 
   await selectDemoOption(page, "recipeSelect", "list-detail");
   const scroll = await page.locator(".ly-scroll").evaluate((element) => ({
