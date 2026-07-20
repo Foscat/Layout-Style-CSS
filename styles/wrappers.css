@@ -1,3 +1,173 @@
 @layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
 
-@layer ly.wrappers;
+/*
+  Shared structural tokens and wrapper geometry. Theme, type, borders, shadows,
+  and interactive states remain outside Layout Style's ownership boundary.
+*/
+
+@layer ly.tokens {
+  :where(.ly-root) {
+    --ly-space-0: 0;
+    --ly-space-1: 0.25rem;
+    --ly-space-2: 0.5rem;
+    --ly-space-3: 0.75rem;
+    --ly-space-4: 1rem;
+    --ly-space-5: 1.5rem;
+    --ly-space-6: 2rem;
+    --ly-space-7: 3rem;
+    --ly-space-8: 4rem;
+    --ly-space-9: 6rem;
+
+    --ly-wrapper-compact: 40rem;
+    --ly-wrapper-prose: 68ch;
+    --ly-wrapper-content: 72rem;
+    --ly-wrapper-wide: 112rem;
+    --ly-wrapper-max: var(--ly-wrapper-content);
+    --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-safe-area-inline: max(
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    --ly-wrapper-gutter: max(var(--ly-page-padding-inline), var(--ly-safe-area-inline));
+
+    --ly-section-padding-block: clamp(3rem, 7vw, 6rem);
+    --ly-gap: var(--ly-space-5);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: var(--ly-space-4);
+    --ly-cluster-gap: var(--ly-space-3);
+    --ly-cover-min: 100svh;
+    --ly-switcher-threshold: 42rem;
+    --ly-sidebar-size: 18rem;
+    --ly-sidebar-content-min: 50%;
+    --ly-grid-columns: 12;
+    --ly-grid-min: 16rem;
+    --ly-pane-size: 22rem;
+    --ly-media-size: 14rem;
+    --ly-reel-item-min: 16rem;
+    --ly-reel-item-max: 28rem;
+    --ly-scroll-max: 70svh;
+    --ly-frame-ratio: 16 / 9;
+
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 22rem;
+    --ly-card-grid-min: 16rem;
+    --ly-gallery-min: 12rem;
+    --ly-card-size-sm: 10rem;
+    --ly-card-size-md: 14rem;
+    --ly-card-size-lg: 18rem;
+    --ly-header-height: 4.5rem;
+    --ly-z-header: 20;
+
+    /* V1 token aliases remain available so legacy selectors can preserve sizing. */
+    --ly-container-sm: var(--ly-wrapper-compact);
+    --ly-container-md: 56rem;
+    --ly-container-lg: var(--ly-wrapper-content);
+    --ly-container-xl: 88rem;
+    --ly-container-wide: var(--ly-wrapper-wide);
+    --ly-container-max: var(--ly-container-lg);
+    --ly-content-readable: var(--ly-wrapper-prose);
+    --ly-carousel-item-min: var(--ly-reel-item-min);
+    --ly-carousel-item-max: var(--ly-reel-item-max);
+    --ly-sidebar-min: 14rem;
+    --ly-sidebar-width: var(--ly-recipe-rail);
+    --ly-sidebar-max: var(--ly-recipe-aside);
+    --ly-pane-fixed: var(--ly-pane-size);
+    --ly-z-sidebar: 10;
+  }
+}
+
+@layer ly.reset {
+  :where(.ly-root),
+  :where(.ly-root *) {
+    box-sizing: border-box;
+  }
+
+  :where(.ly-root) {
+    min-inline-size: 0;
+    margin: 0;
+  }
+
+  :where(.ly-root img),
+  :where(.ly-root svg),
+  :where(.ly-root video),
+  :where(.ly-root canvas) {
+    max-inline-size: 100%;
+  }
+}
+
+@layer ly.wrappers {
+  .ly-wrapper {
+    --ly-wrapper-max: var(--ly-wrapper-content);
+
+    /* Symmetric safe-area compensation keeps logical gutters stable in either direction. */
+    container-name: ly-wrapper;
+    container-type: inline-size;
+    inline-size: min(100%, calc(var(--ly-wrapper-max) + (var(--ly-wrapper-gutter) * 2)));
+    margin-inline: auto;
+    padding-inline: var(--ly-wrapper-gutter);
+  }
+
+  .ly-wrapper--compact {
+    --ly-wrapper-max: 40rem;
+  }
+
+  .ly-wrapper--prose {
+    --ly-wrapper-max: 68ch;
+  }
+
+  .ly-wrapper--content {
+    --ly-wrapper-max: 72rem;
+  }
+
+  .ly-wrapper--wide {
+    --ly-wrapper-max: 112rem;
+  }
+
+  .ly-wrapper--full {
+    --ly-wrapper-max: 100%;
+  }
+
+  .ly-wrapper--breakout {
+    --ly-breakout-content-size: min(
+      var(--ly-wrapper-content),
+      calc(100% - (var(--ly-wrapper-gutter) * 2))
+    );
+    --ly-breakout-feature-size: min(
+      var(--ly-wrapper-wide),
+      calc(100% - (var(--ly-wrapper-gutter) * 2))
+    );
+
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(min(100%, var(--ly-wrapper-gutter)), 1fr)
+      [feature-start] minmax(
+        0,
+        calc((var(--ly-breakout-feature-size) - var(--ly-breakout-content-size)) / 2)
+      )
+      [content-start] minmax(0, var(--ly-breakout-content-size)) [content-end]
+      minmax(
+        0,
+        calc((var(--ly-breakout-feature-size) - var(--ly-breakout-content-size)) / 2)
+      )
+      [feature-end] minmax(min(100%, var(--ly-wrapper-gutter)), 1fr) [full-end];
+    inline-size: 100%;
+    padding-inline: 0;
+  }
+
+  .ly-wrapper--breakout > * {
+    grid-column: content;
+    min-inline-size: 0;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--content, [data-ly-lane="content"]) {
+    grid-column: content;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--feature, [data-ly-lane="feature"]) {
+    grid-column: feature;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--full, [data-ly-lane="full"]) {
+    grid-column: full;
+  }
+}

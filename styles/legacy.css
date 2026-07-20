@@ -3,26 +3,36 @@
 @import url("./layout-style-css.css");
 
 @layer ly.legacy {
-  /* Preserve v1 container sizing while applications migrate to v2 wrapper names. */
+  /* Preserve v1 wrapper measures while applications migrate to semantic v2 names. */
   .ly-container {
+    container-name: ly-wrapper;
+    container-type: inline-size;
     width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
     margin-inline: auto;
   }
 
-  .ly-container--sm {
+  .ly-container--sm,
+  .ly-wrapper--sm {
     --ly-container-max: var(--ly-container-sm);
+    --ly-wrapper-max: 40rem;
   }
 
-  .ly-container--md {
+  .ly-container--md,
+  .ly-wrapper--md {
     --ly-container-max: var(--ly-container-md);
+    --ly-wrapper-max: 56rem;
   }
 
-  .ly-container--lg {
+  .ly-container--lg,
+  .ly-wrapper--lg {
     --ly-container-max: var(--ly-container-lg);
+    --ly-wrapper-max: 72rem;
   }
 
-  .ly-container--xl {
+  .ly-container--xl,
+  .ly-wrapper--xl {
     --ly-container-max: var(--ly-container-xl);
+    --ly-wrapper-max: 88rem;
   }
 
   .ly-container--wide {
@@ -32,6 +42,187 @@
   .ly-container--fluid {
     width: 100%;
     max-width: none;
-    padding-inline: var(--ly-page-padding-inline);
+    padding-inline: var(--ly-wrapper-gutter);
+  }
+
+  .ly-wrapper--fluid {
+    --ly-wrapper-max: 100%;
+  }
+
+  .ly-wrapper--readable {
+    --ly-wrapper-max: 68ch;
+  }
+
+  .ly-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gutter, var(--ly-gap));
+  }
+
+  .ly-col {
+    flex: 1 1 0;
+    min-inline-size: 0;
+  }
+
+  .ly-col-1 { flex: 0 0 8.333333%; }
+  .ly-col-2 { flex: 0 0 16.666667%; }
+  .ly-col-3 { flex: 0 0 25%; }
+  .ly-col-4 { flex: 0 0 33.333333%; }
+  .ly-col-5 { flex: 0 0 41.666667%; }
+  .ly-col-6 { flex: 0 0 50%; }
+  .ly-col-7 { flex: 0 0 58.333333%; }
+  .ly-col-8 { flex: 0 0 66.666667%; }
+  .ly-col-9 { flex: 0 0 75%; }
+  .ly-col-10 { flex: 0 0 83.333333%; }
+  .ly-col-11 { flex: 0 0 91.666667%; }
+  .ly-col-12 { flex: 0 0 100%; }
+
+  .ly-carousel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min(100%, var(--ly-reel-item-min)), var(--ly-reel-item-max));
+    gap: var(--ly-grid-gap);
+    overflow-x: auto;
+    overflow-inline: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+  }
+
+  .ly-carousel > * {
+    min-inline-size: 0;
+    scroll-snap-align: start;
+  }
+
+  .ly-button-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+  }
+
+  .ly-button-group > * {
+    flex: 0 1 auto;
+    min-inline-size: min(100%, var(--ly-button-min, 8rem));
+  }
+
+  .ly-sidebar-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+  }
+
+  .ly-sidebar-layout > * {
+    min-inline-size: 0;
+  }
+
+  .ly-card-sm { min-block-size: var(--ly-card-size-sm); }
+  .ly-card-md { min-block-size: var(--ly-card-size-md); }
+  .ly-card-lg { min-block-size: var(--ly-card-size-lg); }
+
+  .ly-scroll-area {
+    min-block-size: 0;
+    max-block-size: var(--ly-scroll-max);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .ly-app-header { grid-area: header; min-inline-size: 0; }
+  .ly-app-sidebar { grid-area: sidebar; min-inline-size: 0; }
+  .ly-app-main { grid-area: main; min-inline-size: 0; }
+  .ly-app-aside { grid-area: aside; min-inline-size: 0; }
+  .ly-app-footer { grid-area: footer; min-inline-size: 0; }
+
+  /* Old personality hooks remain opt-in markers for the v2 migration window. */
+  :where(
+    [data-layout="minimal-saas"],
+    [data-layout="bento"],
+    [data-layout="maximalist"],
+    [data-layout="bauhaus"],
+    [data-layout="tactile"],
+    [data-layout="neumorphism"],
+    [data-layout="retrofuturism"],
+    [data-layout="brutalism"],
+    [data-layout="cyberpunk"],
+    [data-layout="y2k"],
+    [data-layout="retro-glass"],
+    [data-layout="f-pattern"],
+    [data-layout="z-pattern"],
+    [data-layout="split-screen"],
+    [data-layout="mondrian"],
+    [data-layout="synthwave"],
+    [layout-style="minimal-saas"],
+    [layout-style="bento"],
+    [layout-style="maximalist"],
+    [layout-style="bauhaus"],
+    [layout-style="tactile"],
+    [layout-style="neumorphism"],
+    [layout-style="retrofuturism"],
+    [layout-style="brutalism"],
+    [layout-style="cyberpunk"],
+    [layout-style="y2k"],
+    [layout-style="retro-glass"],
+    [layout-style="f-pattern"],
+    [layout-style="z-pattern"],
+    [layout-style="split-screen"],
+    [layout-style="mondrian"],
+    [layout-style="synthwave"],
+    .ly-layout-minimal-saas,
+    .ly-layout-bento,
+    .ly-layout-maximalist,
+    .ly-layout-bauhaus,
+    .ly-layout-tactile,
+    .ly-layout-neumorphism,
+    .ly-layout-retrofuturism,
+    .ly-layout-brutalism,
+    .ly-layout-cyberpunk,
+    .ly-layout-y2k,
+    .ly-layout-retro-glass,
+    .ly-layout-f-pattern,
+    .ly-layout-z-pattern,
+    .ly-layout-split-screen,
+    .ly-layout-mondrian,
+    .ly-layout-synthwave,
+    .ly-style-minimal-saas,
+    .ly-style-bento,
+    .ly-style-maximalist,
+    .ly-style-bauhaus,
+    .ly-style-tactile,
+    .ly-style-neumorphism,
+    .ly-style-retrofuturism,
+    .ly-style-brutalism,
+    .ly-style-cyberpunk,
+    .ly-style-y2k,
+    .ly-style-retro-glass,
+    .ly-style-f-pattern,
+    .ly-style-z-pattern,
+    .ly-style-split-screen,
+    .ly-style-mondrian,
+    .ly-style-synthwave
+  ) {
+    --ly-legacy-layout-hook: 1;
+  }
+
+  @container (min-width: 48rem) {
+    .ly-sidebar-layout {
+      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max)) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .ly-sidebar-layout--right {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max));
+    }
+
+    .ly-panes--two {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-pane-size)), 0.7fr);
+    }
+  }
+
+  @container (min-width: 64rem) {
+    .ly-panes--three {
+      grid-template-columns:
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr);
+    }
   }
 }

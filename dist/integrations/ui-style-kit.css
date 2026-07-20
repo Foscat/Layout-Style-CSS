@@ -3,7 +3,7 @@
 /*
   Compatibility bridge for ui-style-kit-css.
   This bridge intentionally does not map color, type, border, or shadow tokens.
-  ui-style-kit-css owns those visuals; layout-style-library owns structure.
+  ui-style-kit-css owns those visuals; layout-style-css owns structure.
 */
 
 @layer ly.integrations.ui_style_kit {
@@ -67,8 +67,11 @@
 
   :where(.saas-container, .bento-container, .max-container, .bau-container, .tactile-container, .neo-container, .retro-container, .brutal-container, .cyber-container, .y2k-container, .rg-container) {
     /* UI Style Kit naming can opt into layout sizing without taking over visual paint. */
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+    container-name: ly-wrapper;
+    container-type: inline-size;
+    inline-size: min(100%, calc(var(--ly-wrapper-max) + (var(--ly-wrapper-gutter) * 2)));
     margin-inline: auto;
+    padding-inline: var(--ly-wrapper-gutter);
   }
 
   :where(.saas-section, .bento-section, .max-section, .bau-section, .tactile-section, .neo-section, .retro-section, .brutal-section, .cyber-section, .y2k-section, .rg-section) {
@@ -164,7 +167,7 @@
     scroll-snap-align: start;
   }
 
-  @media (min-width: 48rem) {
+  @container (min-width: 48rem) {
     :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
       grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
     }

@@ -115,45 +115,6 @@ const requiredDocumentationFiles = [
   "docs/wiki/Contributing.md"
 ];
 
-const requiredBaseClasses = [
-  ".ly-root",
-  ".ly-page",
-  ".ly-wrapper",
-  ".ly-container",
-  ".ly-section",
-  ".ly-stack",
-  ".ly-cluster",
-  ".ly-grid",
-  ".ly-row",
-  ".ly-col",
-  ".ly-app-shell",
-  ".ly-sidebar-layout",
-  ".ly-split",
-  ".ly-panes",
-  ".ly-surface"
-];
-
-const requiredWrapperClasses = [
-  ".ly-wrapper",
-  ".ly-wrapper--sm",
-  ".ly-wrapper--md",
-  ".ly-wrapper--lg",
-  ".ly-wrapper--xl",
-  ".ly-wrapper--wide",
-  ".ly-wrapper--fluid",
-  ".ly-wrapper--readable"
-];
-
-const requiredRecipeClasses = [
-  ".ly-button-group",
-  ".ly-card-grid",
-  ".ly-card-sm",
-  ".ly-card-md",
-  ".ly-card-lg",
-  ".ly-gallery",
-  ".ly-carousel"
-];
-
 const requiredStyleClasses = [
   ".ly-style-minimal-saas",
   ".ly-style-bento",
@@ -272,6 +233,54 @@ const requiredShellPrimitives = [
   ".ly-section"
 ];
 
+const task2WrapperVariants = [
+  [".ly-wrapper--compact", "--ly-wrapper-max: 40rem;"],
+  [".ly-wrapper--prose", "--ly-wrapper-max: 68ch;"],
+  [".ly-wrapper--content", "--ly-wrapper-max: 72rem;"],
+  [".ly-wrapper--wide", "--ly-wrapper-max: 112rem;"],
+  [".ly-wrapper--full", "--ly-wrapper-max: 100%;"],
+  [".ly-wrapper--breakout", "display: grid;"]
+];
+
+const task2CompositionPrimitives = [
+  ".ly-stack",
+  ".ly-cluster",
+  ".ly-center",
+  ".ly-cover",
+  ".ly-switcher",
+  ".ly-sidebar",
+  ".ly-grid",
+  ".ly-split",
+  ".ly-panes",
+  ".ly-media",
+  ".ly-reel",
+  ".ly-frame",
+  ".ly-scroll"
+];
+
+const task2RecipeRoots = [
+  ".ly-app-shell",
+  ".ly-dashboard",
+  ".ly-docs",
+  ".ly-list-detail",
+  ".ly-split-hero",
+  ".ly-gallery",
+  ".ly-card-grid"
+];
+
+const task2AreaNames = [
+  "header",
+  "nav",
+  "main",
+  "aside",
+  "footer",
+  "content",
+  "media",
+  "actions",
+  "primary",
+  "secondary"
+];
+
 const visualPropertiesOwnedByUiKit = new Set([
   "background",
   "background-color",
@@ -328,7 +337,7 @@ function findUnguardedGridTrackFloors(css, file) {
 
   while (match) {
     const value = match[1].trim();
-    const unguardedFloor = /minmax\(\s*(?!0\s*,|min\(\s*100%)/;
+    const unguardedFloor = /minmax\((?!\s*(?:0\s*,|min\(\s*100%))/;
 
     if (unguardedFloor.test(value)) {
       matches.push(`${file}: ${value}`);
@@ -468,6 +477,114 @@ for (const file of requiredSourceFiles) {
   );
 }
 
+const wrappers = readFileSync(join(dist, "wrappers.css"), "utf8").replace(/\r\n/g, "\n");
+const primitives = readFileSync(join(dist, "primitives.css"), "utf8").replace(/\r\n/g, "\n");
+const recipes = readFileSync(join(dist, "recipes.css"), "utf8").replace(/\r\n/g, "\n");
+const utilities = readFileSync(join(dist, "utilities.css"), "utf8").replace(/\r\n/g, "\n");
+
+assert(wrappers.includes(".ly-wrapper {"), "wrappers.css must own the semantic .ly-wrapper API");
+assert(
+  wrappers.includes("container-type: inline-size;") && wrappers.includes("container-name: ly-wrapper;"),
+  ".ly-wrapper must establish a named inline-size container"
+);
+assert(
+  wrappers.includes("inline-size:") &&
+    wrappers.includes("margin-inline: auto;") &&
+    wrappers.includes("padding-inline:") &&
+    wrappers.includes("env(safe-area-inset-left, 0px)") &&
+    wrappers.includes("env(safe-area-inset-right, 0px)"),
+  "All wrappers must use logical sizing with fluid, safe-area-aware inline gutters"
+);
+for (const [selector, declaration] of task2WrapperVariants) {
+  assert(wrappers.includes(selector), `wrappers.css missing ${selector}`);
+  assert(wrappers.includes(declaration), `${selector} must preserve ${declaration}`);
+}
+for (const lane of ["content", "feature", "full"]) {
+  assert(
+    wrappers.includes(`[data-ly-lane="${lane}"]`) && wrappers.includes(`grid-column: ${lane};`),
+    `Breakout wrapper must expose the ${lane} lane`
+  );
+}
+
+const primitiveMobileFallback = primitives.slice(0, primitives.indexOf("@container"));
+for (const selector of task2CompositionPrimitives) {
+  assert(primitives.includes(selector), `primitives.css missing composition primitive ${selector}`);
+  assert(
+    primitiveMobileFallback.includes(selector),
+    `${selector} must have a mobile-first fallback before container enhancements`
+  );
+}
+assert(
+  primitives.includes("@container (min-width: 48rem)") &&
+    primitives.includes("@container (min-width: 64rem)"),
+  "Composition primitives must enhance at 48rem and 64rem container thresholds"
+);
+assert(
+  primitives.includes("overflow-inline: auto;") && primitives.includes("max-block-size:"),
+  "Reel and bounded-scroll primitives must constrain overflow structurally"
+);
+
+const recipeMobileFallback = recipes.slice(0, recipes.indexOf("@container"));
+for (const selector of task2RecipeRoots) {
+  assert(recipes.includes(selector), `recipes.css missing recipe root ${selector}`);
+  assert(
+    recipeMobileFallback.includes(selector),
+    `${selector} must define its DOM-order mobile fallback before container enhancements`
+  );
+}
+assert(
+  recipes.includes("container-type: inline-size;") && recipes.includes("container-name: ly-recipe;"),
+  "Recipe roots must establish named inline-size containers"
+);
+assert(
+  recipes.includes("@container (min-width: 48rem)") && recipes.includes("@container (min-width: 64rem)"),
+  "Recipes must enhance at 48rem and 64rem container thresholds"
+);
+assert(recipes.includes("grid-template-areas:"), "Recipes must use named grid areas");
+assert(
+  !/(?:^|[;{}\n\r])\s*order\s*:/.test(recipes),
+  "Built-in recipes must preserve DOM order and never declare CSS order"
+);
+for (const area of task2AreaNames) {
+  assert(
+    recipes.includes(`.ly-area--${area}`) && recipes.includes(`[data-ly-area="${area}"]`),
+    `recipes.css missing class and data hooks for the ${area} area`
+  );
+}
+for (const hook of ["header", "sidebar", "main"]) {
+  assert(
+    recipes.includes(`.ly-app-${hook}`) && recipes.includes(`grid-area: ${hook};`),
+    `App shell must preserve its semantic .ly-app-${hook} area hook`
+  );
+}
+
+for (const prefix of ["", "md-", "lg-"]) {
+  for (const value of ["first", "normal", "last", "1", "2", "3", "4", "5", "6"]) {
+    assert(
+      utilities.includes(`.ly-${prefix}order-${value}`),
+      `utilities.css missing explicit escape hatch .ly-${prefix}order-${value}`
+    );
+  }
+}
+assert(
+  utilities.includes("@container (min-width: 48rem)") &&
+    utilities.includes("@container (min-width: 64rem)"),
+  "Responsive order utilities must follow container size rather than the viewport"
+);
+
+for (const [file, css] of [
+  ["wrappers.css", wrappers],
+  ["primitives.css", primitives],
+  ["recipes.css", recipes],
+  ["utilities.css", utilities]
+]) {
+  assert.deepEqual(
+    findOwnedVisualDeclarations(css),
+    [],
+    `${file} must keep the v2 core structural-only`
+  );
+}
+
 for (const asset of requiredDemoAssets) {
   assert(existsSync(join(root, asset)), `Missing demo asset ${asset}`);
 }
@@ -478,44 +595,24 @@ for (const file of requiredDocumentationFiles) {
 
 assert(existsSync(join(root, "demo", "index.html")), "Demo must live at demo/index.html");
 
-const base = readFileSync(join(dist, "primitives.css"), "utf8");
-const normalizedBase = base.replace(/\r\n/g, "\n");
 assert.deepEqual(
-  findOwnedVisualDeclarations(base),
+  findOwnedVisualDeclarations(primitives),
   [],
   "primitives.css must leave visual properties to ui-style-kit-css"
 );
 assert(
-  !visualLayoutTokensOwnedByUiKit.test(base),
+  !visualLayoutTokensOwnedByUiKit.test(primitives),
   "primitives.css must not define visual layout tokens"
 );
-for (const className of requiredBaseClasses) {
-  assert(base.includes(className), `Base contract missing ${className}`);
-}
 assert(
-  base.includes("grid-template-columns: minmax(0, 1fr);"),
-  "Base app shell must define a mobile-safe single grid column"
+  primitives.includes("grid-template-columns: minmax(0, 1fr);"),
+  "Composition primitives must define mobile-safe single-column fallbacks"
 );
-assert(base.includes(".ly-split > *"), "Base split children must allow shrinkage");
-assert(base.includes(".ly-panes > *"), "Base pane children must allow shrinkage");
-assert(base.includes(".ly-sidebar-layout > *"), "Base sidebar layout children must allow shrinkage");
-for (const className of requiredWrapperClasses) {
-  assert(base.includes(className), `Base responsive wrapper contract missing ${className}`);
-}
-for (const className of requiredRecipeClasses) {
-  assert(base.includes(className), `Base layout recipe contract missing ${className}`);
-}
+assert(primitives.includes(".ly-split > *"), "Split children must allow shrinkage");
+assert(primitives.includes(".ly-panes > *"), "Pane children must allow shrinkage");
 assert(
-  normalizedBase.includes(".ly-container,\n  .ly-wrapper"),
-  "Base wrapper sizing should be shared by .ly-container and .ly-wrapper"
-);
-assert(
-  normalizedBase.includes(".ly-container--wide,\n  .ly-wrapper--wide"),
-  "Wide wrapper sizing should be shared by container and wrapper modifiers"
-);
-assert(
-  normalizedBase.includes(":where(.ly-root),\n  :where(.ly-root *) {\n    box-sizing: border-box;"),
-  "Base reset must keep padded fluid wrappers inside their assigned inline size"
+  wrappers.includes(":where(.ly-root),\n  :where(.ly-root *) {\n    box-sizing: border-box;"),
+  "Wrapper reset must keep padded wrappers inside their assigned inline size"
 );
 
 for (const className of requiredStyleClasses) {
@@ -603,6 +700,7 @@ for (const layoutStyle of requiredLayoutStyleSelectors) {
 }
 
 const bridge = readFileSync(join(dist, "integrations", "ui-style-kit.css"), "utf8");
+assert(!bridge.includes("@import"), "UI Style Kit integration must contain mappings only");
 for (const dataUi of requiredDataUiSelectors) {
   assert(bridge.includes(dataUi), `Bridge missing ${dataUi}`);
 }
@@ -653,14 +751,26 @@ const legacyWrapperContracts = [
       "margin-inline: auto;"
     ]
   ],
-  [".ly-container--sm {", ["--ly-container-max: var(--ly-container-sm);"]],
-  [".ly-container--md {", ["--ly-container-max: var(--ly-container-md);"]],
-  [".ly-container--lg {", ["--ly-container-max: var(--ly-container-lg);"]],
-  [".ly-container--xl {", ["--ly-container-max: var(--ly-container-xl);"]],
+  [
+    ".ly-container--sm,",
+    ["--ly-container-max: var(--ly-container-sm);", "--ly-wrapper-max: 40rem;"]
+  ],
+  [
+    ".ly-container--md,",
+    ["--ly-container-max: var(--ly-container-md);", "--ly-wrapper-max: 56rem;"]
+  ],
+  [
+    ".ly-container--lg,",
+    ["--ly-container-max: var(--ly-container-lg);", "--ly-wrapper-max: 72rem;"]
+  ],
+  [
+    ".ly-container--xl,",
+    ["--ly-container-max: var(--ly-container-xl);", "--ly-wrapper-max: 88rem;"]
+  ],
   [".ly-container--wide {", ["--ly-container-max: var(--ly-container-wide);"]],
   [
     ".ly-container--fluid {",
-    ["width: 100%;", "max-width: none;", "padding-inline: var(--ly-page-padding-inline);"]
+    ["width: 100%;", "max-width: none;", "padding-inline: var(--ly-wrapper-gutter);"]
   ]
 ];
 
@@ -678,6 +788,56 @@ for (const [selector, declarations] of legacyWrapperContracts) {
   }
 }
 
+const requiredLegacyAliases = [
+  ".ly-wrapper--sm",
+  ".ly-wrapper--md",
+  ".ly-wrapper--lg",
+  ".ly-wrapper--xl",
+  ".ly-wrapper--fluid",
+  ".ly-wrapper--readable",
+  ".ly-row",
+  ".ly-col",
+  ".ly-col-1",
+  ".ly-col-12",
+  ".ly-carousel",
+  ".ly-sidebar-layout",
+  ".ly-button-group",
+  ".ly-card-sm",
+  ".ly-card-md",
+  ".ly-card-lg",
+  ".ly-panes--two",
+  ".ly-panes--three",
+  '[data-layout="minimal-saas"]',
+  '[layout-style="minimal-saas"]',
+  ".ly-layout-minimal-saas",
+  ".ly-style-minimal-saas"
+];
+
+for (const selector of requiredLegacyAliases) {
+  assert(legacyLayer.includes(selector), `legacy.css missing v1 alias ${selector}`);
+}
+for (const name of personalityNames) {
+  for (const selector of [
+    `[data-layout="${name}"]`,
+    `[layout-style="${name}"]`,
+    `.ly-layout-${name}`,
+    `.ly-style-${name}`
+  ]) {
+    assert(legacyLayer.includes(selector), `legacy.css missing old root hook ${selector}`);
+  }
+}
+for (let column = 1; column <= 12; column += 1) {
+  assert(legacyLayer.includes(`.ly-col-${column}`), `legacy.css missing .ly-col-${column}`);
+}
+assert(
+  legacyLayer.includes(".ly-app-sidebar { grid-area: sidebar;"),
+  "Legacy app-sidebar alias must preserve the v1 named sidebar area"
+);
+assert(
+  !/@import[^;]*(?:ui-style-kit-css|interactive-surface-css)/.test(legacy),
+  "legacy.css must not restore removed companion imports"
+);
+
 for (const file of requiredFiles) {
   const css = readFileSync(join(dist, file), "utf8");
   assert(
@@ -692,7 +852,8 @@ assert(
   "Flattened bundle must include a generated bundle header"
 );
 assert(
-  flattened.includes("Layout Style Library base primitives") &&
+  flattened.includes("Shared structural tokens and wrapper geometry") &&
+    flattened.includes("Reusable composition primitives") &&
     flattened.includes("Layout style: retro-glass.") &&
     flattened.includes("Layout style: synthwave."),
   "Flattened bundle must include core and every layout personality"

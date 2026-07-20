@@ -3,13 +3,9 @@
 /* layout-style-css bundle. Generated from focused styles/ modules by scripts/build.mjs. */
 
 /* wrappers.css */
-@layer ly.wrappers;
-
-/* primitives.css */
 /*
-  Layout Style Library base primitives.
-  This file owns spatial composition only. Visual paint, typography, borders,
-  shadows, and theme color are intentionally delegated to ui-style-kit-css.
+  Shared structural tokens and wrapper geometry. Theme, type, borders, shadows,
+  and interactive states remain outside Layout Style's ownership boundary.
 */
 
 @layer ly.tokens {
@@ -25,42 +21,60 @@
     --ly-space-8: 4rem;
     --ly-space-9: 6rem;
 
-    --ly-container-sm: 40rem;
-    --ly-container-md: 56rem;
-    --ly-container-lg: 72rem;
-    --ly-container-xl: 88rem;
-    --ly-container-wide: 112rem;
-    --ly-container-max: var(--ly-container-lg);
-    --ly-content-readable: 68ch;
-
+    --ly-wrapper-compact: 40rem;
+    --ly-wrapper-prose: 68ch;
+    --ly-wrapper-content: 72rem;
+    --ly-wrapper-wide: 112rem;
+    --ly-wrapper-max: var(--ly-wrapper-content);
     --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-safe-area-inline: max(
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    --ly-wrapper-gutter: max(var(--ly-page-padding-inline), var(--ly-safe-area-inline));
+
     --ly-section-padding-block: clamp(3rem, 7vw, 6rem);
     --ly-gap: var(--ly-space-5);
     --ly-grid-gap: var(--ly-gap);
     --ly-stack-gap: var(--ly-space-4);
     --ly-cluster-gap: var(--ly-space-3);
-
+    --ly-cover-min: 100svh;
+    --ly-switcher-threshold: 42rem;
+    --ly-sidebar-size: 18rem;
+    --ly-sidebar-content-min: 50%;
     --ly-grid-columns: 12;
     --ly-grid-min: 16rem;
+    --ly-pane-size: 22rem;
+    --ly-media-size: 14rem;
+    --ly-reel-item-min: 16rem;
+    --ly-reel-item-max: 28rem;
+    --ly-scroll-max: 70svh;
+    --ly-frame-ratio: 16 / 9;
+
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 22rem;
     --ly-card-grid-min: 16rem;
+    --ly-gallery-min: 12rem;
     --ly-card-size-sm: 10rem;
     --ly-card-size-md: 14rem;
     --ly-card-size-lg: 18rem;
-    --ly-gallery-min: 12rem;
-    --ly-carousel-item-min: 16rem;
-    --ly-carousel-item-max: 28rem;
-    --ly-sidebar-min: 14rem;
-    --ly-sidebar-width: 18rem;
-    --ly-sidebar-max: 22rem;
-    --ly-pane-fixed: 22rem;
     --ly-header-height: 4.5rem;
-
-    --ly-radius-sm: 0.5rem;
-    --ly-radius: 0.875rem;
-    --ly-radius-lg: 1.5rem;
-    --ly-radius-xl: 2.25rem;
-
     --ly-z-header: 20;
+
+    /* V1 token aliases remain available so legacy selectors can preserve sizing. */
+    --ly-container-sm: var(--ly-wrapper-compact);
+    --ly-container-md: 56rem;
+    --ly-container-lg: var(--ly-wrapper-content);
+    --ly-container-xl: 88rem;
+    --ly-container-wide: var(--ly-wrapper-wide);
+    --ly-container-max: var(--ly-container-lg);
+    --ly-content-readable: var(--ly-wrapper-prose);
+    --ly-carousel-item-min: var(--ly-reel-item-min);
+    --ly-carousel-item-max: var(--ly-reel-item-max);
+    --ly-sidebar-min: 14rem;
+    --ly-sidebar-width: var(--ly-recipe-rail);
+    --ly-sidebar-max: var(--ly-recipe-aside);
+    --ly-pane-fixed: var(--ly-pane-size);
     --ly-z-sidebar: 10;
   }
 }
@@ -72,7 +86,7 @@
   }
 
   :where(.ly-root) {
-    min-width: 0;
+    min-inline-size: 0;
     margin: 0;
   }
 
@@ -80,79 +94,112 @@
   :where(.ly-root svg),
   :where(.ly-root video),
   :where(.ly-root canvas) {
-    max-width: 100%;
+    max-inline-size: 100%;
   }
 }
 
+@layer ly.wrappers {
+  .ly-wrapper {
+    --ly-wrapper-max: var(--ly-wrapper-content);
+
+    /* Symmetric safe-area compensation keeps logical gutters stable in either direction. */
+    container-name: ly-wrapper;
+    container-type: inline-size;
+    inline-size: min(100%, calc(var(--ly-wrapper-max) + (var(--ly-wrapper-gutter) * 2)));
+    margin-inline: auto;
+    padding-inline: var(--ly-wrapper-gutter);
+  }
+
+  .ly-wrapper--compact {
+    --ly-wrapper-max: 40rem;
+  }
+
+  .ly-wrapper--prose {
+    --ly-wrapper-max: 68ch;
+  }
+
+  .ly-wrapper--content {
+    --ly-wrapper-max: 72rem;
+  }
+
+  .ly-wrapper--wide {
+    --ly-wrapper-max: 112rem;
+  }
+
+  .ly-wrapper--full {
+    --ly-wrapper-max: 100%;
+  }
+
+  .ly-wrapper--breakout {
+    --ly-breakout-content-size: min(
+      var(--ly-wrapper-content),
+      calc(100% - (var(--ly-wrapper-gutter) * 2))
+    );
+    --ly-breakout-feature-size: min(
+      var(--ly-wrapper-wide),
+      calc(100% - (var(--ly-wrapper-gutter) * 2))
+    );
+
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(min(100%, var(--ly-wrapper-gutter)), 1fr)
+      [feature-start] minmax(
+        0,
+        calc((var(--ly-breakout-feature-size) - var(--ly-breakout-content-size)) / 2)
+      )
+      [content-start] minmax(0, var(--ly-breakout-content-size)) [content-end]
+      minmax(
+        0,
+        calc((var(--ly-breakout-feature-size) - var(--ly-breakout-content-size)) / 2)
+      )
+      [feature-end] minmax(min(100%, var(--ly-wrapper-gutter)), 1fr) [full-end];
+    inline-size: 100%;
+    padding-inline: 0;
+  }
+
+  .ly-wrapper--breakout > * {
+    grid-column: content;
+    min-inline-size: 0;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--content, [data-ly-lane="content"]) {
+    grid-column: content;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--feature, [data-ly-lane="feature"]) {
+    grid-column: feature;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--full, [data-ly-lane="full"]) {
+    grid-column: full;
+  }
+}
+
+/* primitives.css */
+/* Reusable composition primitives own flow and sizing only. */
+
 @layer ly.primitives {
   .ly-page {
-    min-height: 100svh;
+    min-block-size: 100svh;
   }
 
   .ly-header,
   .ly-footer,
   .ly-main,
-  .ly-wrapper,
   .ly-section,
   .ly-surface {
-    min-width: 0;
+    min-inline-size: 0;
+    min-block-size: 0;
   }
 
   .ly-header {
-    min-height: var(--ly-header-height);
+    min-block-size: var(--ly-header-height);
   }
 
   .ly-header--sticky {
     position: sticky;
-    top: 0;
+    inset-block-start: 0;
     z-index: var(--ly-z-header);
-  }
-
-  .ly-container,
-  .ly-wrapper {
-    /* Keep wrappers resilient during viewport resizing without owning visual paint. */
-    width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
-    margin-inline: auto;
-  }
-
-  .ly-container--sm,
-  .ly-wrapper--sm {
-    --ly-container-max: var(--ly-container-sm);
-  }
-
-  .ly-container--md,
-  .ly-wrapper--md {
-    --ly-container-max: var(--ly-container-md);
-  }
-
-  .ly-container--lg,
-  .ly-wrapper--lg {
-    --ly-container-max: var(--ly-container-lg);
-  }
-
-  .ly-container--xl,
-  .ly-wrapper--xl {
-    --ly-container-max: var(--ly-container-xl);
-  }
-
-  .ly-container--wide,
-  .ly-wrapper--wide {
-    --ly-container-max: var(--ly-container-wide);
-  }
-
-  .ly-container--fluid,
-  .ly-wrapper--fluid {
-    width: 100%;
-    max-width: none;
-    padding-inline: var(--ly-page-padding-inline);
-  }
-
-  .ly-wrapper--readable {
-    --ly-container-max: var(--ly-content-readable);
-  }
-
-  .ly-readable {
-    max-width: var(--ly-content-readable);
   }
 
   .ly-section {
@@ -165,6 +212,10 @@
 
   .ly-section--flush {
     --ly-section-padding-block: 0;
+  }
+
+  .ly-readable {
+    max-inline-size: var(--ly-wrapper-prose);
   }
 
   .ly-stack {
@@ -180,17 +231,49 @@
     gap: var(--ly-cluster-gap);
   }
 
-  .ly-button-group {
-    /* Button groups provide flow only; UI libraries keep button paint and states. */
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--ly-cluster-gap);
+  .ly-center {
+    inline-size: min(100%, var(--ly-center-max, var(--ly-wrapper-content)));
+    margin-inline: auto;
   }
 
-  .ly-button-group > * {
-    flex: 0 1 auto;
-    min-width: min(100%, var(--ly-button-min, 8rem));
+  .ly-cover {
+    display: flex;
+    flex-direction: column;
+    min-block-size: var(--ly-cover-min);
+    padding-block: var(--ly-cover-padding, var(--ly-space-5));
+  }
+
+  .ly-cover > :where(.ly-cover__center, [data-ly-cover-center]) {
+    margin-block: auto;
+  }
+
+  .ly-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gap);
+  }
+
+  .ly-switcher > * {
+    flex-basis: calc((var(--ly-switcher-threshold) - 100%) * 999);
+    flex-grow: 1;
+    min-inline-size: 0;
+  }
+
+  .ly-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gap);
+  }
+
+  .ly-sidebar > :where(.ly-sidebar__side, [data-ly-sidebar="side"]) {
+    flex-basis: var(--ly-sidebar-size);
+    flex-grow: 1;
+  }
+
+  .ly-sidebar > :where(.ly-sidebar__content, [data-ly-sidebar="content"]) {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-inline-size: min(100%, var(--ly-sidebar-content-min));
   }
 
   .ly-grid {
@@ -203,219 +286,384 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
   }
 
-  .ly-card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  .ly-card-grid > * {
-    min-width: 0;
-  }
-
-  .ly-card-sm {
-    min-block-size: var(--ly-card-size-sm);
-  }
-
-  .ly-card-md {
-    min-block-size: var(--ly-card-size-md);
-  }
-
-  .ly-card-lg {
-    min-block-size: var(--ly-card-size-lg);
-  }
-
-  .ly-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  .ly-gallery > * {
-    min-width: 0;
-  }
-
-  .ly-carousel {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(min(100%, var(--ly-carousel-item-min)), var(--ly-carousel-item-max));
-    gap: var(--ly-grid-gap);
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-  }
-
-  .ly-carousel > * {
-    min-width: 0;
-    scroll-snap-align: start;
-  }
-
-  .ly-row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-inline: calc(var(--ly-gutter, var(--ly-gap)) * -0.5);
-  }
-
-  .ly-col {
-    flex: 1 1 0;
-    min-width: 0;
-    padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5);
-  }
-
-  .ly-sidebar-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--ly-gap);
-  }
-
-  .ly-sidebar-layout > * {
-    min-width: 0;
-  }
-
-  .ly-sidebar {
-    min-width: 0;
-  }
-
-  .ly-content {
-    min-width: 0;
+  .ly-grid > *,
+  .ly-split > *,
+  .ly-panes > *,
+  .ly-media > * {
+    min-inline-size: 0;
   }
 
   .ly-split {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--ly-gap);
     align-items: var(--ly-split-align, center);
   }
 
-  .ly-split > * {
-    min-width: 0;
-  }
-
   .ly-panes {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--ly-gap);
   }
 
-  .ly-panes > * {
-    min-width: 0;
+  .ly-media {
+    display: grid;
+    grid-template-areas:
+      "media"
+      "content"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+    align-items: var(--ly-media-align, start);
   }
 
-  .ly-surface {
-    border-radius: var(--ly-radius);
+  .ly-media > :where(.ly-media__asset, [data-ly-media="asset"]) {
+    grid-area: media;
   }
 
-  .ly-surface--raised {
-    border-radius: var(--ly-radius-lg);
+  .ly-media > :where(.ly-media__content, [data-ly-media="content"]) {
+    grid-area: content;
   }
 
-  .ly-divider {
-    min-height: 1px;
-    margin-block: var(--ly-space-5);
+  .ly-media > :where(.ly-media__actions, [data-ly-media="actions"]) {
+    grid-area: actions;
+  }
+
+  .ly-reel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min(100%, var(--ly-reel-item-min)), var(--ly-reel-item-max));
+    gap: var(--ly-grid-gap);
+    overflow-x: auto;
+    overflow-inline: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+  }
+
+  .ly-reel > * {
+    min-inline-size: 0;
+    scroll-snap-align: start;
   }
 
   .ly-frame {
-    aspect-ratio: var(--ly-frame-ratio, 16 / 9);
+    aspect-ratio: var(--ly-frame-ratio);
     overflow: hidden;
   }
 
   .ly-frame > * {
-    width: 100%;
-    height: 100%;
+    inline-size: 100%;
+    block-size: 100%;
     object-fit: cover;
   }
 
-  .ly-scroll-area {
-    min-height: 0;
+  .ly-scroll {
+    min-block-size: 0;
+    max-block-size: var(--ly-scroll-max);
     overflow: auto;
+    overscroll-behavior: contain;
   }
 
-  .ly-app-shell {
-    min-height: 100svh;
-    display: grid;
-    grid-template-areas:
-      "header"
-      "main";
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .ly-app-header {
-    grid-area: header;
-    min-width: 0;
-  }
-
-  .ly-app-sidebar {
-    grid-area: sidebar;
-    display: none;
-    min-width: 0;
-  }
-
-  .ly-app-main {
-    grid-area: main;
-    min-width: 0;
-  }
-
-  .ly-visually-hidden {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    clip-path: inset(50%) !important;
-    white-space: nowrap !important;
-  }
+  /* Unsupported container-query browsers retain this safe DOM-order stack. */
 }
 
 @layer ly.primitives {
-  @media (min-width: 48rem) {
-    /*
-      Fixed support tracks are capped against their container so nested layouts
-      can compress instead of forcing horizontal page overflow.
-    */
-    .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-width)) minmax(0, 1fr);
-    }
-
-    .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      z-index: var(--ly-z-sidebar);
-      height: 100svh;
-      overflow: auto;
-    }
-
-    .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max)) minmax(0, 1fr);
-      align-items: start;
-    }
-
-    .ly-sidebar-layout--right {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max));
-    }
-
+  @container (min-width: 48rem) {
     .ly-split {
       grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
     }
 
-    .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-pane-fixed)), 0.7fr);
+    .ly-panes--2 {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-pane-size)), 0.7fr);
+    }
+
+    .ly-media {
+      grid-template-areas:
+        "media content"
+        "media actions";
+      grid-template-columns: minmax(min(100%, var(--ly-media-size)), auto) minmax(0, 1fr);
     }
   }
 
-  @media (min-width: 64rem) {
-    .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 14rem), 0.35fr) minmax(0, 1fr) minmax(min(100%, 14rem), 0.35fr);
+  @container (min-width: 64rem) {
+    .ly-panes--3 {
+      grid-template-columns:
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr);
     }
   }
 }
 
+/* recipes.css */
+/*
+  Built-in recipes follow semantic mobile DOM order. Wider arrangements use
+  named areas so visual placement never changes keyboard or reading order.
+*/
+
+@layer ly.recipes {
+  .ly-app-shell,
+  .ly-dashboard,
+  .ly-docs,
+  .ly-list-detail,
+  .ly-split-hero,
+  .ly-gallery,
+  .ly-card-grid {
+    container-name: ly-recipe;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  .ly-app-shell,
+  .ly-dashboard,
+  .ly-docs,
+  .ly-list-detail,
+  .ly-split-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+  }
+
+  .ly-app-shell {
+    min-block-size: 100svh;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main"
+      "aside"
+      "footer";
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  }
+
+  .ly-dashboard {
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "aside"
+      "footer";
+  }
+
+  .ly-docs {
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "aside"
+      "footer";
+  }
+
+  .ly-list-detail {
+    grid-template-areas:
+      "primary"
+      "secondary"
+      "actions";
+  }
+
+  .ly-split-hero {
+    grid-template-areas:
+      "content"
+      "media"
+      "actions";
+    align-items: var(--ly-split-hero-align, center);
+  }
+
+  .ly-gallery,
+  .ly-card-grid {
+    display: grid;
+    gap: var(--ly-grid-gap);
+  }
+
+  .ly-gallery {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
+  }
+
+  .ly-card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
+  }
+
+  .ly-gallery > *,
+  .ly-card-grid > * {
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--header, [data-ly-area="header"]) {
+    grid-area: header;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--nav, [data-ly-area="nav"]) {
+    grid-area: nav;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--main, [data-ly-area="main"]) {
+    grid-area: main;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--aside, [data-ly-area="aside"]) {
+    grid-area: aside;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--footer, [data-ly-area="footer"]) {
+    grid-area: footer;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--content, [data-ly-area="content"]) {
+    grid-area: content;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--media, [data-ly-area="media"]) {
+    grid-area: media;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--actions, [data-ly-area="actions"]) {
+    grid-area: actions;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--primary, [data-ly-area="primary"]) {
+    grid-area: primary;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--secondary, [data-ly-area="secondary"]) {
+    grid-area: secondary;
+    min-inline-size: 0;
+  }
+
+  .ly-app-header {
+    grid-area: header;
+    min-inline-size: 0;
+  }
+
+  .ly-app-sidebar {
+    grid-area: sidebar;
+    min-inline-size: 0;
+  }
+
+  .ly-app-main {
+    grid-area: main;
+    min-inline-size: 0;
+  }
+
+  .ly-app-aside {
+    grid-area: aside;
+    min-inline-size: 0;
+  }
+
+  .ly-app-footer {
+    grid-area: footer;
+    min-inline-size: 0;
+  }
+
+  .ly-app-shell > :where(.ly-area--nav, [data-ly-area="nav"]) {
+    grid-area: sidebar;
+  }
+
+  /*
+    A recipe responds to its nearest ancestor container and then becomes the
+    containment scope for nested compositions. Standalone roots keep the safe
+    mobile template when no ancestor container is present.
+  */
+  @container (min-width: 48rem) {
+    .ly-app-shell {
+      grid-template-areas:
+        "header header"
+        "sidebar main"
+        "aside main"
+        "footer footer";
+      grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
+    }
+
+    .ly-dashboard {
+      grid-template-areas:
+        "header header"
+        "nav nav"
+        "main aside"
+        "footer footer";
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    .ly-docs {
+      grid-template-areas:
+        "header header"
+        "nav main"
+        "nav aside"
+        "footer footer";
+      grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
+    }
+
+    .ly-list-detail {
+      grid-template-areas:
+        "primary secondary"
+        "actions actions";
+      grid-template-columns: minmax(min(100%, var(--ly-pane-size)), 0.7fr) minmax(0, 1fr);
+    }
+
+    .ly-split-hero {
+      grid-template-areas:
+        "content media"
+        "actions media";
+      grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
+    }
+
+    .ly-gallery {
+      --ly-gallery-min: 14rem;
+    }
+
+    .ly-card-grid {
+      --ly-card-grid-min: 18rem;
+    }
+  }
+
+  @container (min-width: 64rem) {
+    .ly-app-shell {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "sidebar footer footer";
+      grid-template-columns:
+        minmax(min(100%, var(--ly-recipe-rail)), auto)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    .ly-dashboard,
+    .ly-docs {
+      grid-template-areas:
+        "nav header header"
+        "nav main aside"
+        "nav footer footer";
+      grid-template-columns:
+        minmax(min(100%, var(--ly-recipe-rail)), auto)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    .ly-list-detail {
+      grid-template-columns: minmax(min(100%, var(--ly-pane-size)), 0.45fr) minmax(0, 1fr);
+    }
+
+    .ly-split-hero {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    }
+
+    .ly-gallery {
+      --ly-gallery-min: 16rem;
+    }
+
+    .ly-card-grid {
+      --ly-card-grid-min: 20rem;
+    }
+  }
+}
+
+/* utilities.css */
 @layer ly.utilities {
   .ly-cols-1 { --ly-grid-columns: 1; }
   .ly-cols-2 { --ly-grid-columns: 2; }
@@ -449,19 +697,6 @@
   .ly-span-16 { grid-column: span 16; }
   .ly-span-full { grid-column: 1 / -1; }
 
-  .ly-col-1 { flex: 0 0 auto; width: 8.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-2 { flex: 0 0 auto; width: 16.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-3 { flex: 0 0 auto; width: 25%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-4 { flex: 0 0 auto; width: 33.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-5 { flex: 0 0 auto; width: 41.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-6 { flex: 0 0 auto; width: 50%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-7 { flex: 0 0 auto; width: 58.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-8 { flex: 0 0 auto; width: 66.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-9 { flex: 0 0 auto; width: 75%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-10 { flex: 0 0 auto; width: 83.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-11 { flex: 0 0 auto; width: 91.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-12 { flex: 0 0 auto; width: 100%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-
   .ly-gap-0 { --ly-gap: var(--ly-space-0); --ly-grid-gap: var(--ly-space-0); --ly-stack-gap: var(--ly-space-0); --ly-cluster-gap: var(--ly-space-0); }
   .ly-gap-1 { --ly-gap: var(--ly-space-1); --ly-grid-gap: var(--ly-space-1); --ly-stack-gap: var(--ly-space-1); --ly-cluster-gap: var(--ly-space-1); }
   .ly-gap-2 { --ly-gap: var(--ly-space-2); --ly-grid-gap: var(--ly-space-2); --ly-stack-gap: var(--ly-space-2); --ly-cluster-gap: var(--ly-space-2); }
@@ -492,10 +727,10 @@
   .ly-py-8 { padding-block: var(--ly-space-8); }
 
   .ly-mx-auto { margin-inline: auto; }
-  .ly-w-full { width: 100%; }
-  .ly-h-full { height: 100%; }
-  .ly-min-h-screen { min-height: 100svh; }
-  .ly-bleed { width: 100vw; margin-inline: calc(50% - 50vw); }
+  .ly-w-full { inline-size: 100%; }
+  .ly-h-full { block-size: 100%; }
+  .ly-min-h-screen { min-block-size: 100svh; }
+  .ly-bleed { inline-size: 100vw; margin-inline: calc(50% - 50vw); }
   .ly-overflow-auto { overflow: auto; }
   .ly-overflow-hidden { overflow: hidden; }
 
@@ -516,12 +751,36 @@
   .ly-frame-21x9 { --ly-frame-ratio: 21 / 9; }
 
   .ly-hidden { display: none !important; }
+
   .ly-show-md-up,
   .ly-show-lg-up {
     display: none !important;
   }
 
-  @media (min-width: 48rem) {
+  .ly-visually-hidden {
+    position: absolute !important;
+    inline-size: 1px !important;
+    block-size: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
+  /* Explicit escape hatches require consumers to verify focus and reading order. */
+  .ly-order-first { order: -1; }
+  .ly-order-normal { order: 0; }
+  .ly-order-last { order: 999; }
+  .ly-order-1 { order: 1; }
+  .ly-order-2 { order: 2; }
+  .ly-order-3 { order: 3; }
+  .ly-order-4 { order: 4; }
+  .ly-order-5 { order: 5; }
+  .ly-order-6 { order: 6; }
+
+  @container (min-width: 48rem) {
     .ly-md-cols-1 { --ly-grid-columns: 1; }
     .ly-md-cols-2 { --ly-grid-columns: 2; }
     .ly-md-cols-3 { --ly-grid-columns: 3; }
@@ -531,9 +790,19 @@
     .ly-md-cols-12 { --ly-grid-columns: 12; }
     .ly-md-cols-16 { --ly-grid-columns: 16; }
     .ly-show-md-up { display: revert !important; }
+
+    .ly-md-order-first { order: -1; }
+    .ly-md-order-normal { order: 0; }
+    .ly-md-order-last { order: 999; }
+    .ly-md-order-1 { order: 1; }
+    .ly-md-order-2 { order: 2; }
+    .ly-md-order-3 { order: 3; }
+    .ly-md-order-4 { order: 4; }
+    .ly-md-order-5 { order: 5; }
+    .ly-md-order-6 { order: 6; }
   }
 
-  @media (min-width: 64rem) {
+  @container (min-width: 64rem) {
     .ly-lg-cols-1 { --ly-grid-columns: 1; }
     .ly-lg-cols-2 { --ly-grid-columns: 2; }
     .ly-lg-cols-3 { --ly-grid-columns: 3; }
@@ -543,14 +812,18 @@
     .ly-lg-cols-12 { --ly-grid-columns: 12; }
     .ly-lg-cols-16 { --ly-grid-columns: 16; }
     .ly-show-lg-up { display: revert !important; }
+
+    .ly-lg-order-first { order: -1; }
+    .ly-lg-order-normal { order: 0; }
+    .ly-lg-order-last { order: 999; }
+    .ly-lg-order-1 { order: 1; }
+    .ly-lg-order-2 { order: 2; }
+    .ly-lg-order-3 { order: 3; }
+    .ly-lg-order-4 { order: 4; }
+    .ly-lg-order-5 { order: 5; }
+    .ly-lg-order-6 { order: 6; }
   }
 }
-
-/* recipes.css */
-@layer ly.recipes;
-
-/* utilities.css */
-@layer ly.utilities;
 
 /* personalities/minimal-saas.css */
 /*
