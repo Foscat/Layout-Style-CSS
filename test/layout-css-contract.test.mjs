@@ -463,6 +463,19 @@ function hasExpectedFamilyShape(family, template) {
   );
 }
 
+function expectedPersonalityRows(template) {
+  const rowCount = [...template.matchAll(/"[^"]+"/g)].length;
+
+  if (rowCount === 3) {
+    return "auto minmax(0, 1fr) auto";
+  }
+  if (rowCount === 4) {
+    return "auto minmax(0, 1fr) auto auto";
+  }
+
+  throw new Error(`Unsupported personality row count: ${rowCount}`);
+}
+
 function extractRuleBody(css, selector) {
   const ruleStart = css.indexOf(`${selector} {`);
   assert.notEqual(ruleStart, -1, `Missing rule ${selector}`);
@@ -802,6 +815,12 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
     `${path} must implement its ${contract.family} named-area signature`
   );
   assert(
+    normalizedCss.includes(
+      normalizeCssWhitespace(`grid-template-rows: ${expectedPersonalityRows(contract.areas)};`)
+    ),
+    `${path} must explicitly match its named-area row count`
+  );
+  assert(
     normalizedCss.includes(normalizeCssWhitespace(contract.rhythm)),
     `${path} must implement a second spatial signature through grid/span rhythm`
   );
@@ -955,10 +974,10 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
   assert(
     normalizedLegacy.includes(
       normalizeCssWhitespace(
-        `${legacyRoot} .ly-app-shell { grid-template-areas: ${contract.areas};`
+        `${legacyRoot} .ly-app-shell { grid-template-areas: ${contract.areas}; grid-template-rows: ${expectedPersonalityRows(contract.areas)};`
       )
     ),
-    `legacy.css must give ${name} root hooks the same functional named-area behavior as data-ly-layout`
+    `legacy.css must give ${name} root hooks the same named-area and row-track behavior as data-ly-layout`
   );
   assert(
     normalizedLegacy.includes(

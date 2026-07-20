@@ -851,6 +851,7 @@
         "sidebar header header"
         "sidebar main aside"
         "sidebar footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 15rem), 0.24fr)
         minmax(0, 1fr)
@@ -888,6 +889,7 @@
         "sidebar main main"
         "aside main main"
         "footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-columns:
         minmax(min(100%, 14rem), 0.3fr)
         minmax(0, 1fr)
@@ -935,6 +937,7 @@
         "header header header header"
         "main main sidebar aside"
         "main main footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(0, 1.4fr)
         minmax(0, 0.6fr)
@@ -986,6 +989,7 @@
         "sidebar header header aside"
         "sidebar main main aside"
         "sidebar footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 14rem), 0.24fr)
         minmax(0, 0.7fr)
@@ -1026,6 +1030,7 @@
         "sidebar main"
         "sidebar aside"
         "sidebar footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-columns: minmax(min(100%, 17rem), 0.28fr) minmax(0, 1fr);
     }
 
@@ -1071,6 +1076,7 @@
         "main sidebar"
         "aside sidebar"
         "footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.3fr);
     }
 
@@ -1109,6 +1115,7 @@
         "sidebar header aside"
         "sidebar main aside"
         "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 14rem), 0.24fr)
         minmax(0, 1fr)
@@ -1146,6 +1153,7 @@
         "header header sidebar"
         "main aside sidebar"
         "footer footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(0, 1.3fr)
         minmax(min(100%, 16rem), 0.7fr)
@@ -1183,6 +1191,7 @@
         "sidebar header aside"
         "sidebar main aside"
         "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 13rem), 0.2fr)
         minmax(0, 1fr)
@@ -1220,6 +1229,7 @@
         "header header sidebar"
         "aside main sidebar"
         "footer footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 18rem), 0.34fr)
         minmax(0, 1fr)
@@ -1263,6 +1273,7 @@
         "header header sidebar"
         "main main sidebar"
         "aside footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(0, 1.25fr)
         minmax(0, 0.75fr)
@@ -1307,6 +1318,7 @@
         "sidebar header header"
         "sidebar main aside"
         "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 16rem), 0.26fr)
         minmax(0, 1.35fr)
@@ -1354,6 +1366,7 @@
         "header header sidebar"
         "main aside sidebar"
         "footer aside sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(0, 1.45fr)
         minmax(min(100%, 19rem), 0.55fr)
@@ -1397,6 +1410,7 @@
         "main sidebar"
         "aside sidebar"
         "footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
@@ -1437,6 +1451,7 @@
         "sidebar header header"
         "sidebar main aside"
         "footer footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 13rem), 0.22fr)
         minmax(0, 1.45fr)
@@ -1482,6 +1497,7 @@
         "header header header"
         "sidebar main aside"
         "footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 16rem), 0.28fr)
         minmax(0, 1fr)

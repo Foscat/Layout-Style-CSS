@@ -29,6 +29,7 @@
         "header header header header"
         "main main sidebar aside"
         "main main footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(0, 1.4fr)
         minmax(0, 0.6fr)

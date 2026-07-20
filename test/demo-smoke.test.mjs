@@ -287,6 +287,54 @@ async function verifyMobileControlsDrawer(page, baseUrl, viewport) {
   );
 }
 
+async function verifyPersonalityShellRows(page, baseUrl, personalityNames) {
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  for (const name of personalityNames) {
+    await page.goto(baseUrl, { waitUntil: "networkidle" });
+    const geometry = await page.evaluate((personality) => {
+      document.body.dataset.lyLayout = personality;
+
+      const shell = document.querySelector(".ly-app-shell");
+      const main = document.querySelector(".ly-app-main");
+      const footer = document.createElement("footer");
+      footer.className = "ly-app-footer";
+      footer.textContent = "Personality row contract fixture";
+      shell?.append(footer);
+
+      const shellStyle = shell ? getComputedStyle(shell) : null;
+      const areaRows = shellStyle?.gridTemplateAreas.match(/"[^"]+"/g) ?? [];
+      const rowTracks = shellStyle?.gridTemplateRows.trim().split(/\s+/).filter(Boolean) ?? [];
+
+      return {
+        areaRows,
+        rowTracks,
+        shell: shell?.getBoundingClientRect().toJSON(),
+        main: main?.getBoundingClientRect().toJSON(),
+        footer: footer.getBoundingClientRect().toJSON()
+      };
+    }, name);
+
+    assert.equal(
+      geometry.rowTracks.length,
+      geometry.areaRows.length,
+      `${name} must explicitly match ${geometry.areaRows.length} named-area rows; received ${geometry.rowTracks.join(" ")}`
+    );
+    assert(
+      geometry.main?.height > Math.max(100, geometry.footer.height * 2),
+      `${name} main track must remain the primary work region; main ${geometry.main?.height}px, footer ${geometry.footer.height}px`
+    );
+    assert(
+      geometry.footer.height > 0 && geometry.footer.height < geometry.shell.height / 3,
+      `${name} footer track must remain content-sized; footer ${geometry.footer.height}px, shell ${geometry.shell?.height}px`
+    );
+    assert(
+      geometry.main.top < geometry.footer.top && geometry.footer.bottom <= geometry.shell.bottom + 1,
+      `${name} footer must follow the main region within the shell geometry`
+    );
+  }
+}
+
 assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
 assert(existsSync(uiKitCssPath), "Demo smoke test requires ui-style-kit-css dev dependency");
 
@@ -490,6 +538,12 @@ try {
       await verifyDemoState(page, preset.path, preset.state, viewport);
     }
   }
+
+  await verifyPersonalityShellRows(
+    page,
+    baseUrl,
+    [...new Set(presets.map(({ state }) => state.layout))]
+  );
 
   await verifyMobileControlsDrawer(page, baseUrl, { width: 375, height: 667 });
   await verifyMobileControlsDrawer(page, baseUrl, { width: 667, height: 375 });

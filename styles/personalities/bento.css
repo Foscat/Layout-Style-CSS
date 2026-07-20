@@ -24,6 +24,7 @@
         "sidebar main main"
         "aside main main"
         "footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-columns:
         minmax(min(100%, 14rem), 0.3fr)
         minmax(0, 1fr)

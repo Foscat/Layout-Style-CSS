@@ -30,6 +30,7 @@
         "sidebar header header"
         "sidebar main aside"
         "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-columns:
         minmax(min(100%, 16rem), 0.26fr)
         minmax(0, 1.35fr)
