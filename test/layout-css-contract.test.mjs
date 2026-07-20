@@ -1435,14 +1435,18 @@ assert(
   "npm publish workflow should expose a manual recovery dispatch with an explicit release tag"
 );
 assert(
-  npmPublishWorkflow.includes("ref: ${{ github.event.inputs.release_tag || github.event.release.tag_name }}"),
-  "npm publish workflow should check out the selected release tag"
+  npmPublishWorkflow.includes(
+    "ref: refs/tags/${{ github.event.inputs.release_tag || github.event.release.tag_name }}"
+  ) &&
+    npmPublishWorkflow.includes("fetch-depth: 0") &&
+    npmPublishWorkflow.includes("persist-credentials: false"),
+  "npm publish workflow should check out the exact selected tag without persisted credentials"
 );
 assert(
   npmPublishWorkflow.includes('node-version: 22') &&
     npmPublishWorkflow.includes("npm run release:verify") &&
     npmPublishWorkflow.includes("playwright install --with-deps chromium firefox webkit") &&
-    npmPublishWorkflow.includes("npm publish --access public"),
+    npmPublishWorkflow.includes("npm publish --access public --provenance"),
   "npm publish workflow should verify all engines and publish with the supported Node runtime"
 );
 assert(

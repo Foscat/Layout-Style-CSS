@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createReadStream, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, sep } from "node:path";
@@ -28,6 +29,10 @@ const uiKitUrl =
   "https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css";
 const interactiveSurfaceUrl =
   "https://unpkg.com/interactive-surface-css@1.4.0/state-core.css";
+const fixtureIntegrity = (path) =>
+  `sha384-${createHash("sha384").update(readFileSync(path)).digest("base64")}`;
+const uiKitIntegrity = fixtureIntegrity(uiKitCssPath);
+const interactiveSurfaceIntegrity = fixtureIntegrity(interactiveSurfaceCssPath);
 
 const recipes = [
   "app-shell",
@@ -298,6 +303,15 @@ function assertStaticContract() {
   );
   assert(html.includes(uiKitUrl), "Demo must pin ui-style-kit-css@2.0.1");
   assert(html.includes(interactiveSurfaceUrl), "Demo must pin interactive-surface-css@1.4.0");
+  for (const [id, integrity] of [
+    ["uiKitStylesheet", uiKitIntegrity],
+    ["interactiveSurfaceStylesheet", interactiveSurfaceIntegrity]
+  ]) {
+    const link = html.match(new RegExp(`<link[^>]*id="${id}"[^>]*>`))?.[0] ?? "";
+
+    assert(link.includes(`integrity="${integrity}"`), `${id} must pin its local fixture SHA-384`);
+    assert(link.includes('crossorigin="anonymous"'), `${id} must use anonymous CORS for SRI`);
+  }
   assert(html.includes("../dist/integrations/ui-style-kit.css"), "Demo must load the integration bridge");
   assert(html.includes("../dist/layout-style-css.css"), "Demo must load the default v2 bundle");
   assert(!html.includes("data-layout="), "V2 demo markup must not use the legacy data-layout hook");
@@ -433,21 +447,32 @@ async function verifyQueryAndEcosystem(page, baseUrl) {
     { waitUntil: "networkidle" }
   );
   await waitForReady(page);
-  const rejected = await page.evaluate(() => ({
-    values: [
-      document.querySelector("#wrapperSelect")?.value,
-      document.querySelector("#recipeSelect")?.value,
-      document.querySelector("#personalitySelect")?.value,
-      document.querySelector("#containerSelect")?.value,
-      document.querySelector("#densitySelect")?.value,
-      document.querySelector("#uiSelect")?.value,
-      document.querySelector("#themeSelect")?.value,
-      document.querySelector("#modeSelect")?.value,
-      document.querySelector("#ecosystemSelect")?.value
-    ],
-    search: window.location.search,
-    injected: document.querySelector("script script") !== null
-  }));
+  const rejected = await page.evaluate(() => {
+    const expectedModuleUrl = new URL("./demo.js", window.location.href).href;
+    const unexpectedScripts = [...document.scripts].filter((script) => {
+      const isStructuredData = script.type === "application/ld+json" && script.src === "";
+      const isDemoModule = script.type === "module" && script.src === expectedModuleUrl;
+
+      return !isStructuredData && !isDemoModule;
+    });
+
+    return {
+      values: [
+        document.querySelector("#wrapperSelect")?.value,
+        document.querySelector("#recipeSelect")?.value,
+        document.querySelector("#personalitySelect")?.value,
+        document.querySelector("#containerSelect")?.value,
+        document.querySelector("#densitySelect")?.value,
+        document.querySelector("#uiSelect")?.value,
+        document.querySelector("#themeSelect")?.value,
+        document.querySelector("#modeSelect")?.value,
+        document.querySelector("#ecosystemSelect")?.value
+      ],
+      search: window.location.search,
+      scriptCount: document.scripts.length,
+      unexpectedScriptCount: unexpectedScripts.length
+    };
+  });
   assert.deepEqual(rejected.values, [
     "default",
     "app-shell",
@@ -461,7 +486,8 @@ async function verifyQueryAndEcosystem(page, baseUrl) {
   ]);
   assert(!rejected.search.includes("javascript"));
   assert(!rejected.search.includes("script"));
-  assert.equal(rejected.injected, false);
+  assert.equal(rejected.scriptCount, 2, "Demo must retain only its structured data and module scripts");
+  assert.equal(rejected.unexpectedScriptCount, 0, "Rejected query values must not add ordinary scripts");
 
   await page.selectOption("#ecosystemSelect", "layout-only");
   await page.waitForFunction(() => new URLSearchParams(location.search).get("ecosystem") === "layout-only");
@@ -918,9 +944,21 @@ page.on("console", (message) => {
   }
 });
 page.on("pageerror", (error) => pageErrors.push(error.message));
-await page.route(uiKitUrl, (route) => route.fulfill({ path: uiKitCssPath, contentType: "text/css" }));
+const corsHeaders = { "access-control-allow-origin": "*" };
+
+await page.route(uiKitUrl, (route) =>
+  route.fulfill({
+    path: uiKitCssPath,
+    contentType: "text/css",
+    headers: corsHeaders
+  })
+);
 await page.route(interactiveSurfaceUrl, (route) =>
-  route.fulfill({ path: interactiveSurfaceCssPath, contentType: "text/css" })
+  route.fulfill({
+    path: interactiveSurfaceCssPath,
+    contentType: "text/css",
+    headers: corsHeaders
+  })
 );
 
 try {

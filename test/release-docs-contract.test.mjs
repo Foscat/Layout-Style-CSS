@@ -168,6 +168,62 @@ const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
 assert(publishWorkflow.includes("for example v2.0.0"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(publishWorkflow.includes("npm run release:verify"));
+assert(
+  publishWorkflow.includes("environment:") && publishWorkflow.includes("name: npm"),
+  "Publish job must use the protected npm GitHub Environment"
+);
+assert(
+  publishWorkflow.includes("contents: read") && publishWorkflow.includes("id-token: write"),
+  "Publish job must grant only read contents and provenance identity permissions"
+);
+assert(
+  publishWorkflow.includes("Validate release tag format") &&
+    publishWorkflow.includes("^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)"),
+  "Release tag input must pass strict v-semver validation"
+);
+assert(
+  publishWorkflow.includes("ref: refs/tags/${{ github.event.inputs.release_tag || github.event.release.tag_name }}") &&
+    publishWorkflow.includes("fetch-depth: 0") &&
+    publishWorkflow.includes("persist-credentials: false"),
+  "Checkout must use the exact tag namespace, full history, and no persisted credentials"
+);
+const formatValidationStep = publishWorkflow.indexOf("Validate release tag format");
+const checkoutStep = publishWorkflow.indexOf("Check out exact release tag");
+const dependencyInstallStep = publishWorkflow.indexOf("Install dependencies");
+assert(
+  formatValidationStep >= 0 &&
+    formatValidationStep < checkoutStep &&
+    checkoutStep < dependencyInstallStep,
+  "Tag format and exact checkout must occur before npm lifecycle code"
+);
+for (const trustCheck of [
+  'git rev-parse "${TAG_REF}^{commit}"',
+  'git rev-parse HEAD',
+  "refs/remotes/origin/main",
+  "git merge-base --is-ancestor",
+  '"v${PACKAGE_VERSION}" != "$RELEASE_TAG"'
+]) {
+  assert(publishWorkflow.includes(trustCheck), `Publish workflow missing trust check: ${trustCheck}`);
+}
+assert(
+  publishWorkflow.includes("npm publish --access public --provenance"),
+  "npm publish must emit registry provenance"
+);
+assert.equal(
+  (publishWorkflow.match(/NODE_AUTH_TOKEN:/g) ?? []).length,
+  1,
+  "The npm token must exist only on the publish step"
+);
+for (const securityNote of [
+  "required reviewers",
+  "trusted publishing",
+  "immutable commit sha"
+]) {
+  assert(
+    `${release}\n${support}`.toLowerCase().includes(securityNote),
+    `Release security docs must cover ${securityNote}`
+  );
+}
 
 const pagesWorkflow = read(".github", "workflows", "pages.yml");
 assert(pagesWorkflow.includes("playwright install --with-deps chromium"));

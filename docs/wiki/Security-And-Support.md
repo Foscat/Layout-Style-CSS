@@ -31,3 +31,6 @@ npm run release:verify
 
 The release gate checks authored/generated parity, structural ownership, documentation, tarball contents, Pages output, and the Chromium, Firefox, and WebKit rendered matrices.
 
+The npm publish workflow also enforces a strict tag namespace, exact tag/HEAD identity, protected-main ancestry, package-version alignment, an `npm` GitHub Environment with required reviewers, and npm provenance. The registry token is scoped to the final publish step. Replacing it with npm trusted publishing and pinning GitHub Actions to an immutable commit SHA remain explicit hardening follow-ups.
+
+The demo protects its two exact-version companion CDN fixtures with SHA-384 subresource integrity and anonymous CORS; rendered tests recompute those hashes from the pinned local fixtures.

@@ -56,7 +56,19 @@ Publishing the `v2.0.0` GitHub release triggers the npm workflow. A separately a
 
 ## Workflow Safety
 
-The workflow installs Chromium, Firefox, and WebKit before full release verification. It validates the tag before package verification and requires the standard `NPM_TOKEN` secret only for the final publish step. Do not bypass a failed version, browser, audit, tarball, or documentation contract.
+Create a GitHub Environment named `npm` and configure required reviewers before enabling the publish job. Environment approval is the final human authorization boundary for npm releases.
+
+Before `npm ci` can execute package lifecycle code, the workflow:
+
+1. rejects release inputs that are not strict `v`-prefixed semantic-version tags;
+2. checks out the exact `refs/tags/<release_tag>` namespace without persisted credentials;
+3. verifies `HEAD` equals the tag's peeled commit;
+4. fetches `origin/main` and requires the tag commit to be reachable from protected main; and
+5. requires the package version to equal the tag.
+
+The workflow installs Chromium, Firefox, and WebKit, runs full release verification, and publishes with npm provenance. `NODE_AUTH_TOKEN` exists only on the final publish step. Migrating to npm trusted publishing should remove that long-lived secret in a follow-up.
+
+The workflow actions remain major-version references. Pinning every third-party action to an immutable commit SHA is a documented security follow-up and should be performed with an automated update process. Do not bypass a failed trust, version, browser, audit, tarball, or documentation contract.
 
 ## Wiki Mirror
 

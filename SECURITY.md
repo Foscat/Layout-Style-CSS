@@ -44,3 +44,7 @@ npm audit --audit-level=moderate
 
 The package also uses `npm run release:verify` to run build, lint, static, Pages, cross-browser, pack dry-run, and publish dry-run checks.
 
+The npm workflow validates a strict tag, exact peeled commit, protected-main ancestry, and package version before dependency lifecycle code runs. Publishing requires the protected `npm` GitHub Environment, emits npm provenance, and exposes `NODE_AUTH_TOKEN` only to the publish step. npm trusted publishing and immutable commit SHA pins for GitHub Actions remain follow-up hardening work.
+
+The demo's two exact-version companion CDN fixtures use SHA-384 subresource integrity with anonymous CORS. Their hashes are derived from the pinned local development fixtures and enforced by the rendered smoke contract.
+
