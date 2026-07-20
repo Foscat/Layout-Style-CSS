@@ -1,7 +1,7 @@
 {
   "name": "layout-style-css",
   "short_name": "Layout CSS",
-  "description": "Shell-first CSS layout library demo for ui-style-kit-css integrations.",
+  "description": "Container-first layout-style-css 2.0 lab for wrappers, recipes, personalities, and optional ecosystem integrations.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111827",

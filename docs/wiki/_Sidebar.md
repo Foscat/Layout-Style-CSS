@@ -7,6 +7,7 @@
 - [Layout Recipes](Layout-Recipes.md)
 - [Layout Styles](Layout-Styles.md)
 - [UI Style Kit Compatibility](UI-Style-Kit-Compatibility.md)
+- [Migrating To 2.0](Migrating-To-2.0.md)
 - [Demo And GitHub Pages](Demo-And-GitHub-Pages.md)
 - [Release And Publishing](Release-And-Publishing.md)
 - [Security And Support](Security-And-Support.md)

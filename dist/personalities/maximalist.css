@@ -1,0 +1,51 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: maximalist. A full-bleed four-track mosaic favors dramatic spans. */
+
+@layer ly.personalities.maximalist {
+  :where(.ly-root[data-ly-layout="maximalist"]) {
+    --ly-grid-columns: 12;
+    --ly-grid-min: 10rem;
+    --ly-personality-wrapper-max: 100%;
+    --ly-card-grid-min: 12rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header header header"
+        "main main sidebar aside"
+        "main main footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.4fr)
+        minmax(0, 0.6fr)
+        minmax(min(100%, 15rem), 0.32fr)
+        minmax(min(100%, 18rem), 0.38fr);
+    }
+
+    :where(.ly-root[data-ly-layout="maximalist"]) .ly-grid > :nth-child(7n + 1) {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-gallery, [data-ly-recipe="gallery"])
+      > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}

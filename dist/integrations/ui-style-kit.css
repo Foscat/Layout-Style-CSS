@@ -1,0 +1,175 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/*
+  Compatibility bridge for ui-style-kit-css.
+  This bridge intentionally does not map color, type, border, or shadow tokens.
+  ui-style-kit-css owns those visuals; layout-style-css owns structure.
+*/
+
+@layer ly.integrations.ui_style_kit {
+  :where(.ly-root[data-ui][data-theme][data-mode], [data-ui][data-theme][data-mode] .ly-root) {
+    --ly-ui-style-kit-bridge: 1;
+
+    /*
+      Normalize UI kit root background geometry without redefining its paint.
+      Patterned theme layers should fill the viewport once instead of tiling.
+    */
+    min-block-size: 100svh;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+
+  :where(.ly-root[data-ui="minimal-saas"], [data-ui="minimal-saas"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: minimal-saas;
+  }
+
+  :where(.ly-root[data-ui="bento"], [data-ui="bento"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: bento;
+  }
+
+  :where(.ly-root[data-ui="maximalist"], [data-ui="maximalist"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: maximalist;
+  }
+
+  :where(.ly-root[data-ui="bauhaus"], [data-ui="bauhaus"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: bauhaus;
+  }
+
+  :where(.ly-root[data-ui="tactile"], [data-ui="tactile"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: tactile;
+  }
+
+  :where(.ly-root[data-ui="neumorphism"], [data-ui="neumorphism"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: neumorphism;
+  }
+
+  :where(.ly-root[data-ui="retrofuturism"], [data-ui="retrofuturism"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: retrofuturism;
+  }
+
+  :where(.ly-root[data-ui="brutalism"], [data-ui="brutalism"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: brutalism;
+  }
+
+  :where(.ly-root[data-ui="cyberpunk"], [data-ui="cyberpunk"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: cyberpunk;
+  }
+
+  :where(.ly-root[data-ui="y2k"], [data-ui="y2k"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: y2k;
+  }
+
+  :where(.ly-root[data-ui="retro-glass"], [data-ui="retro-glass"] .ly-root) {
+    --ly-ui-style-kit-bridge-style: retro-glass;
+  }
+
+  :where(.saas-container, .bento-container, .max-container, .bau-container, .tactile-container, .neo-container, .retro-container, .brutal-container, .cyber-container, .y2k-container, .rg-container) {
+    /* UI Style Kit naming can opt into layout sizing without taking over visual paint. */
+    container-name: ly-wrapper;
+    container-type: inline-size;
+    inline-size: min(100%, calc(var(--ly-wrapper-max) + (var(--ly-wrapper-gutter) * 2)));
+    margin-inline: auto;
+    padding-inline: var(--ly-wrapper-gutter);
+  }
+
+  :where(.saas-section, .bento-section, .max-section, .bau-section, .tactile-section, .neo-section, .retro-section, .brutal-section, .cyber-section, .y2k-section, .rg-section) {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  :where(.saas-stack, .bento-stack, .max-stack, .bau-stack, .tactile-stack, .neo-stack, .retro-stack, .brutal-stack, .cyber-stack, .y2k-stack, .rg-stack) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ly-stack-gap);
+  }
+
+  :where(.saas-cluster, .bento-cluster, .max-cluster, .bau-cluster, .tactile-cluster, .neo-cluster, .retro-cluster, .brutal-cluster, .cyber-cluster, .y2k-cluster, .rg-cluster) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+  }
+
+  :where(.saas-grid, .bento-grid, .max-grid, .bau-grid, .tactile-grid, .neo-grid, .retro-grid, .brutal-grid, .cyber-grid, .y2k-grid, .rg-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
+    gap: var(--ly-grid-gap);
+  }
+
+  :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--ly-gap);
+    align-items: var(--ly-split-align, center);
+  }
+
+  :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) > * {
+    min-width: 0;
+  }
+
+  :where(.saas-button-group, .bento-button-group, .max-button-group, .bau-button-group, .tactile-button-group, .neo-button-group, .retro-button-group, .brutal-button-group, .cyber-button-group, .y2k-button-group, .rg-button-group) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+  }
+
+  :where(.saas-button-group, .bento-button-group, .max-button-group, .bau-button-group, .tactile-button-group, .neo-button-group, .retro-button-group, .brutal-button-group, .cyber-button-group, .y2k-button-group, .rg-button-group) > * {
+    flex: 0 1 auto;
+    min-width: min(100%, var(--ly-button-min, 8rem));
+  }
+
+  :where(.saas-card-grid, .bento-card-grid, .max-card-grid, .bau-card-grid, .tactile-card-grid, .neo-card-grid, .retro-card-grid, .brutal-card-grid, .cyber-card-grid, .y2k-card-grid, .rg-card-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
+    gap: var(--ly-grid-gap);
+  }
+
+  :where(.saas-card-grid, .bento-card-grid, .max-card-grid, .bau-card-grid, .tactile-card-grid, .neo-card-grid, .retro-card-grid, .brutal-card-grid, .cyber-card-grid, .y2k-card-grid, .rg-card-grid) > * {
+    min-width: 0;
+  }
+
+  :where(.saas-card-sm, .bento-card-sm, .max-card-sm, .bau-card-sm, .tactile-card-sm, .neo-card-sm, .retro-card-sm, .brutal-card-sm, .cyber-card-sm, .y2k-card-sm, .rg-card-sm) {
+    min-block-size: var(--ly-card-size-sm);
+  }
+
+  :where(.saas-card-md, .bento-card-md, .max-card-md, .bau-card-md, .tactile-card-md, .neo-card-md, .retro-card-md, .brutal-card-md, .cyber-card-md, .y2k-card-md, .rg-card-md) {
+    min-block-size: var(--ly-card-size-md);
+  }
+
+  :where(.saas-card-lg, .bento-card-lg, .max-card-lg, .bau-card-lg, .tactile-card-lg, .neo-card-lg, .retro-card-lg, .brutal-card-lg, .cyber-card-lg, .y2k-card-lg, .rg-card-lg) {
+    min-block-size: var(--ly-card-size-lg);
+  }
+
+  :where(.saas-gallery, .bento-gallery, .max-gallery, .bau-gallery, .tactile-gallery, .neo-gallery, .retro-gallery, .brutal-gallery, .cyber-gallery, .y2k-gallery, .rg-gallery) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
+    gap: var(--ly-grid-gap);
+  }
+
+  :where(.saas-gallery, .bento-gallery, .max-gallery, .bau-gallery, .tactile-gallery, .neo-gallery, .retro-gallery, .brutal-gallery, .cyber-gallery, .y2k-gallery, .rg-gallery) > * {
+    min-width: 0;
+  }
+
+  :where(.saas-carousel, .bento-carousel, .max-carousel, .bau-carousel, .tactile-carousel, .neo-carousel, .retro-carousel, .brutal-carousel, .cyber-carousel, .y2k-carousel, .rg-carousel) {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min(100%, var(--ly-carousel-item-min)), var(--ly-carousel-item-max));
+    gap: var(--ly-grid-gap);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  :where(.saas-carousel, .bento-carousel, .max-carousel, .bau-carousel, .tactile-carousel, .neo-carousel, .retro-carousel, .brutal-carousel, .cyber-carousel, .y2k-carousel, .rg-carousel) > * {
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  @container (min-width: 48rem) {
+    :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
+      grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
+    }
+  }
+}

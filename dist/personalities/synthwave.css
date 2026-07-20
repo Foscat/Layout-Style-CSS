@@ -1,0 +1,48 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: synthwave. A cinematic center stage sits between support zones. */
+
+@layer ly.personalities.synthwave {
+  :where(.ly-root[data-ly-layout="synthwave"]) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 12;
+    --ly-grid-min: 14rem;
+    --ly-reel-item-max: 34rem;
+    --ly-personality-wrapper-max: 112rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="synthwave"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 16rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 64rem) {
+    :where(.ly-root[data-ly-layout="synthwave"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header header"
+        "sidebar main aside"
+        "footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 16rem), 0.28fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 20rem), 0.34fr);
+    }
+
+    :where(.ly-root[data-ly-layout="synthwave"]) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 3;
+    }
+
+    :where(.ly-root[data-ly-layout="synthwave"]) .ly-reel {
+      grid-auto-columns: minmax(min(100%, 20rem), var(--ly-reel-item-max));
+    }
+  }
+}

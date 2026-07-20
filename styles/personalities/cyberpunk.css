@@ -1,0 +1,36 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: cyberpunk. A narrow command rail fronts a dense three-lane shell. */
+
+@layer ly.personalities.cyberpunk {
+  :where(.ly-root[data-ly-layout="cyberpunk"]) {
+    --ly-recipe-rail: 13rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 12rem;
+    --ly-personality-wrapper-max: 112rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 44rem) {
+    :where(.ly-root[data-ly-layout="cyberpunk"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header aside"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 13rem), 0.2fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 19rem), 0.32fr);
+    }
+
+    :where(.ly-root[data-ly-layout="cyberpunk"]) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 3;
+    }
+  }
+}

@@ -1,68 +1,51 @@
 # Getting Started
 
-Use `layout-style-css` when an application needs predictable page structure without duplicating a visual design system.
+Layout Style CSS 2.0 provides structural layout without prescribing theme or component paint.
 
 ## Install
 
-```bash
-npm install layout-style-css ui-style-kit-css@2.0.1
-```
-
-Optional Interactive Surface pairing:
+Node.js 20 or newer is required for development scripts.
 
 ```bash
-npm install interactive-surface-css@1.2.5
+npm install layout-style-css@2.0.0
 ```
 
-## First Import
-
-Use the layout-only package entry when the app already imports UI styles:
+## Import
 
 ```js
-import "ui-style-kit-css/dist/ui-style-kit.css";
 import "layout-style-css";
 ```
 
-Use the aggregate import when the project wants UI Style Kit and all layouts from one package entry:
+The package is dependency-free. Optional UI and interaction layers are installed and imported explicitly; see [Installation And CDN](Installation-And-CDN.md).
 
-```js
-import "layout-style-css/all-with-ui-kit.css";
-```
+## First Recipe
 
-## First Shell
+Place the recipe inside a `.ly-wrapper`. The wrapper supplies inline-size containment, fluid logical gutters, and safe-area compensation.
 
 ```html
-<body class="ly-root" data-ui="minimal-saas" data-layout="minimal-saas" data-theme="arctic-indigo" data-mode="light">
-  <div class="ly-app-shell">
-    <aside class="ly-app-sidebar ly-pad-6">Navigation</aside>
-    <header class="ly-app-header ly-pad-4">Toolbar</header>
-    <main class="ly-app-main">
-      <section class="ly-wrapper ly-wrapper--wide ly-section ly-stack">
-        <h1>Workspace</h1>
-        <div class="ly-card-grid">
-          <article class="ly-surface ly-card-md ly-pad-6">Metric</article>
-          <article class="ly-surface ly-card-md ly-pad-6">Metric</article>
-          <article class="ly-surface ly-card-md ly-pad-6">Metric</article>
-        </div>
-      </section>
-    </main>
+<body class="ly-root" data-ly-layout="minimal-saas">
+  <div class="ly-wrapper ly-wrapper--wide">
+    <section class="ly-dashboard" data-ly-recipe="dashboard">
+      <header data-ly-area="header">Dashboard</header>
+      <nav data-ly-area="nav" aria-label="Dashboard">Navigation</nav>
+      <main data-ly-area="main">Workspace</main>
+      <aside data-ly-area="aside">Details</aside>
+      <footer data-ly-area="footer">Status</footer>
+    </section>
   </div>
 </body>
 ```
 
-## Switch Layout Personality
+The single-column DOM order is authoritative for mobile reading and keyboard focus. Core named grid areas rearrange at `48rem` and `64rem` container widths without changing source order; a selected personality may apply its own personality-specific enhancement threshold.
 
-Layout styles are selected independently from UI styles:
+## Switch Personality
 
 ```js
-const root = document.body;
-
-root.dataset.ui = "cyberpunk";
-root.dataset.layout = "synthwave";
-root.setAttribute("layout-style", "synthwave");
-root.dataset.theme = "cyber-lime";
-root.dataset.mode = "dark";
+document.querySelector(".ly-root").dataset.lyLayout = "synthwave";
 ```
 
-This lets a product test different spatial systems without rewriting the component paint layer.
+`data-ly-layout` accepts one of the sixteen values listed in [Layout Styles](Layout-Styles.md). UI attributes such as `data-ui`, `data-theme`, and `data-mode` remain independent.
 
+## Migrate Existing Markup
+
+Do not copy v1 root hooks or size-based wrappers into new code. Follow [Migrating To 2.0](Migrating-To-2.0.md), or use `layout-style-css/legacy.css` temporarily while converting an application.

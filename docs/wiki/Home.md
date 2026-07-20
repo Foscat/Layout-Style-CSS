@@ -1,48 +1,33 @@
 # Layout Style CSS Wiki
 
-Version 1.1.2 documents the professional library contract for `layout-style-css`: install paths, package exports, layout primitives, recipes, UI Style Kit compatibility, demo deployment, security, and release workflow.
+Version 2.0.0 is a container-first, dependency-free layout library. It ships semantic wrappers, composition primitives, seven recipes, sixteen layout personalities, focused exports, and a v2-only compatibility bundle.
 
 ## Start Here
 
 | Page | Purpose |
 | --- | --- |
-| [Getting Started](Getting-Started.md) | First install, first shell, and switching layout personalities. |
-| [Installation And CDN](Installation-And-CDN.md) | npm, bundler, CDN, and export guidance. |
-| [Layout Primitives](Layout-Primitives.md) | Core `ly-*` wrappers, grids, panes, frames, and utilities. |
-| [Layout Recipes](Layout-Recipes.md) | Copyable patterns for common application surfaces. |
-| [Layout Styles](Layout-Styles.md) | All layout personalities and when to use them. |
-| [UI Style Kit Compatibility](UI-Style-Kit-Compatibility.md) | Prefix aliases and ownership boundaries. |
-| [Demo And GitHub Pages](Demo-And-GitHub-Pages.md) | Demo QA and Pages deployment. |
-| [Release And Publishing](Release-And-Publishing.md) | npm v1.1.2 verification and publish checklist. |
-| [Security And Support](Security-And-Support.md) | Security model, supported versions, and reporting path. |
-| [Contributing](Contributing.md) | Contribution workflow and review expectations. |
+| [Getting Started](Getting-Started.md) | First wrapper, recipe, and personality. |
+| [Installation And CDN](Installation-And-CDN.md) | Exact package exports and ecosystem import order. |
+| [Layout Primitives](Layout-Primitives.md) | Wrappers and composition primitives. |
+| [Layout Recipes](Layout-Recipes.md) | Named recipes, areas, and mobile ordering. |
+| [Layout Styles](Layout-Styles.md) | Sixteen spatial personalities. |
+| [UI Style Kit Compatibility](UI-Style-Kit-Compatibility.md) | Structural bridge and ownership boundaries. |
+| [Migrating To 2.0](Migrating-To-2.0.md) | Complete 1.x selector and export mapping. |
+| [Demo And GitHub Pages](Demo-And-GitHub-Pages.md) | Interactive lab, browser matrix, and Pages artifact. |
+| [Release And Publishing](Release-And-Publishing.md) | Release verification and separately approved publish steps. |
+| [Security And Support](Security-And-Support.md) | Supported versions and reporting. |
+| [Contributing](Contributing.md) | Source, generated output, testing, and review rules. |
 
-## Library Positioning
+## Ownership
 
-`layout-style-css` is the spatial layer for front-end products. It owns wrappers, spacing, shells, grids, split views, panes, layout recipes, and switchable layout personalities. It does not own paint, typography, component borders, shadows, native controls, focus states, themes, or modes.
+Layout Style CSS owns spatial behavior: containment, wrappers, flow, grids, areas, spans, sizing, and responsive arrangement. UI Style Kit owns visual paint. Interactive Surface owns interaction-state styling.
 
-The recommended pairing is:
+The package has no runtime or peer dependencies. `ui-style-kit-css@2.0.1` and `interactive-surface-css@1.4.0` are development fixtures used to prove optional integration.
 
-```js
-import "ui-style-kit-css/with-bridge.css";
-import "layout-style-css/all.css";
-```
+## Supported Baseline
 
-Use the three-library path only when a project also needs Interactive Surface behavior:
+- Node.js 20 or newer for package development
+- Current evergreen Chromium, Firefox, and WebKit
+- Mobile-first DOM order with core thresholds at `48rem` and `64rem`, plus tested personality-specific overrides
 
-```js
-import "layout-style-css/all-with-ui-kit-and-interactive-surface.css";
-```
-
-## Wiki Source
-
-This `docs/wiki` directory is the versioned source for the GitHub Wiki. Keeping it in the main repository makes docs reviewable with code changes and keeps npm package documentation aligned with the release.
-
-When GitHub Wiki is enabled, mirror these files into the wiki repository:
-
-```bash
-git clone https://github.com/Foscat/Layout-Style-CSS.wiki.git layout-style-css-wiki
-```
-
-Copy the Markdown files from `docs/wiki/`, commit, and push from the wiki clone.
-
+The UI Style Kit revision is a documented follow-up, not part of this 2.0 release.

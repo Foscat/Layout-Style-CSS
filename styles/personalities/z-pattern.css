@@ -1,0 +1,49 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: z-pattern. A right rail closes a diagonal reading progression. */
+
+@layer ly.personalities.z_pattern {
+  :where(.ly-root[data-ly-layout="z-pattern"]) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 108rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 60rem) {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "main aside sidebar"
+        "footer aside sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.45fr)
+        minmax(min(100%, 19rem), 0.55fr)
+        minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="z-pattern"]) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 2;
+      align-self: end;
+    }
+
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.5fr);
+    }
+  }
+}

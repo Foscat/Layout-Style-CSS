@@ -6,8 +6,9 @@
 
 | Version | Supported |
 | --- | --- |
-| `1.1.x` | Yes |
-| `1.0.x` | Security fixes only when practical |
+| `2.x` | Yes |
+| `1.1.x` | Migration support only |
+| `1.0.x` | No |
 
 ## Reporting A Vulnerability
 
@@ -31,7 +32,7 @@ The primary security risks for this package are supply-chain and documentation r
 - package contents that include secrets, build caches, or unrelated local files
 - CSS that hides important controls or breaks keyboard-visible flows in the demo
 
-The release gate verifies package contents, README imports, documentation links, CSS contracts, rendered demo behavior, and GitHub Pages artifact structure.
+The release gate verifies package contents, README imports, documentation links, CSS contracts, GitHub Pages artifact structure, and rendered behavior in Chromium, Firefox, and WebKit.
 
 ## Dependency Checks
 
@@ -41,5 +42,9 @@ Run the local dependency audit before publishing:
 npm audit --audit-level=moderate
 ```
 
-The package also uses `npm run release:verify` to run build, lint, tests, pack dry-run, and publish dry-run checks.
+The package also uses `npm run release:verify` to run build, lint, static, Pages, cross-browser, pack dry-run, and publish dry-run checks.
+
+The npm workflow validates a strict tag, exact peeled commit, protected-main ancestry, and package version before dependency lifecycle code runs. Publishing requires the protected `npm` GitHub Environment, emits npm provenance, and exposes `NODE_AUTH_TOKEN` only to the publish step. npm trusted publishing and immutable commit SHA pins for GitHub Actions remain follow-up hardening work.
+
+The demo's two exact-version companion CDN fixtures use SHA-384 subresource integrity with anonymous CORS. Their hashes are derived from the pinned local development fixtures and enforced by the rendered smoke contract.
 

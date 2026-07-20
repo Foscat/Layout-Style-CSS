@@ -1,0 +1,36 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: brutalism. A blunt right rail counters a broad primary plane. */
+
+@layer ly.personalities.brutalism {
+  :where(.ly-root[data-ly-layout="brutalism"]) {
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 16rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 100rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="brutalism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "main aside sidebar"
+        "footer footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.3fr)
+        minmax(min(100%, 16rem), 0.7fr)
+        minmax(min(100%, 18rem), 0.34fr);
+    }
+
+    :where(.ly-root[data-ly-layout="brutalism"]) .ly-grid > :nth-child(3n) {
+      grid-column: span 2;
+    }
+  }
+}

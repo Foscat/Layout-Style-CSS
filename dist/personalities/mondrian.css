@@ -1,0 +1,44 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: mondrian. Unequal zones and spanning blocks create a strict mosaic. */
+
+@layer ly.personalities.mondrian {
+  :where(.ly-root[data-ly-layout="mondrian"]) {
+    --ly-recipe-rail: 13rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 10;
+    --ly-grid-min: 11rem;
+    --ly-personality-wrapper-max: 112rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="mondrian"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 13rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="mondrian"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "footer footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 13rem), 0.22fr)
+        minmax(0, 1.45fr)
+        minmax(min(100%, 18rem), 0.55fr);
+    }
+
+    :where(.ly-root[data-ly-layout="mondrian"]) .ly-grid > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}

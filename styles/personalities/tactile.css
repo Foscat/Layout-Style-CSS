@@ -1,0 +1,39 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: tactile. A compact left rail leaves a broad, steady work lane. */
+
+@layer ly.personalities.tactile {
+  :where(.ly-root[data-ly-layout="tactile"]) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 5;
+    --ly-grid-min: 15rem;
+    --ly-personality-wrapper-max: 82rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="tactile"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main"
+        "sidebar aside"
+        "sidebar footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(min(100%, 17rem), 0.28fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-ly-layout="tactile"]) .ly-grid > :nth-child(5n + 2) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="tactile"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+      grid-template-columns: minmax(min(100%, 20rem), 0.42fr) minmax(0, 0.58fr);
+    }
+  }
+}

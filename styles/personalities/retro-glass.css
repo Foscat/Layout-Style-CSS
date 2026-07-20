@@ -1,0 +1,44 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: retro-glass. A stepped right rail floats beside a wide stage. */
+
+@layer ly.personalities.retro_glass {
+  :where(.ly-root[data-ly-layout="retro-glass"]) {
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 15rem;
+    --ly-personality-wrapper-max: 104rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="retro-glass"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-ly-layout="retro-glass"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "main main sidebar"
+        "aside footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(0, 0.75fr)
+        minmax(min(100%, 18rem), 0.32fr);
+    }
+
+    :where(.ly-root[data-ly-layout="retro-glass"]) .ly-grid > :nth-child(4n) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}

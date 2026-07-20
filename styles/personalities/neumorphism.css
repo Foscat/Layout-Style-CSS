@@ -1,0 +1,46 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: neumorphism. A calm right rail preserves a compact workspace. */
+
+@layer ly.personalities.neumorphism {
+  :where(.ly-root[data-ly-layout="neumorphism"]) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 4;
+    --ly-grid-min: 17rem;
+    --ly-personality-wrapper-max: 84rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header sidebar"
+        "main sidebar"
+        "aside sidebar"
+        "footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="neumorphism"]) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+      grid-template-columns: minmax(0, 0.58fr) minmax(min(100%, 19rem), 0.42fr);
+    }
+  }
+}

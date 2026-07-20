@@ -1,0 +1,36 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: y2k. A tall right rail frames a reversed supporting workspace. */
+
+@layer ly.personalities.y2k {
+  :where(.ly-root[data-ly-layout="y2k"]) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 5;
+    --ly-grid-min: 13rem;
+    --ly-personality-wrapper-max: 90rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="y2k"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "aside main sidebar"
+        "footer footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 18rem), 0.34fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 16rem), 0.28fr);
+    }
+
+    :where(.ly-root[data-ly-layout="y2k"]) .ly-grid > :nth-child(5n + 1) {
+      grid-column: span 3;
+    }
+  }
+}

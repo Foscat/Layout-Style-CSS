@@ -1,54 +1,50 @@
 # UI Style Kit Compatibility
 
-`layout-style-css` is built to pair with `ui-style-kit-css@2.0.1` while keeping each package responsible for one layer.
+Layout Style CSS is dependency-free. `ui-style-kit-css@2.0.1` is an exact development fixture used to verify the optional bridge; it is not a runtime or peer dependency. The UI Style Kit revision is a follow-up, not part of this release.
 
 ## Ownership Boundary
 
 | Package | Owns |
 | --- | --- |
-| `ui-style-kit-css` | colors, typography, borders, shadows, native controls, component paint, focus states, themes, modes |
-| `layout-style-css` | wrappers, shells, grid behavior, panes, sidebars, spacing, layout recipes, layout personalities |
+| `layout-style-css` | Wrappers, containment, flow, areas, grids, spans, recipes, and spatial personalities. |
+| `ui-style-kit-css` | Color, typography, borders, shadows, native controls, component paint, themes, and modes. |
+| `interactive-surface-css` | Interaction-state styling. |
 
-## One Import Pairing
+## Explicit Imports
+
+Layout plus UI:
 
 ```js
-import "layout-style-css/all-with-ui-kit.css";
+import "ui-style-kit-css/with-bridge.css";
+import "layout-style-css/integrations/ui-style-kit.css";
+import "layout-style-css";
 ```
 
-This imports UI Style Kit and all layout files. Use `layout-style-css/all-with-ui-kit-and-interactive-surface.css` when Interactive Surface is also required.
+All three libraries:
 
-## Prefix Aliases
-
-The bridge maps UI-style structural names to layout primitives for these prefixes:
-
-```txt
-saas, bento, max, bau, tactile, neo, retro, brutal, cyber, y2k, rg
+```js
+import "ui-style-kit-css/with-bridge.css";
+import "interactive-surface-css/state-core.css";
+import "layout-style-css/integrations/ui-style-kit.css";
+import "layout-style-css";
 ```
 
-| Alias pattern | Layout primitive |
-| --- | --- |
-| `<prefix>-container` | `.ly-wrapper` |
-| `<prefix>-section` | `.ly-section` |
-| `<prefix>-stack` | `.ly-stack` |
-| `<prefix>-cluster` | `.ly-cluster` |
-| `<prefix>-grid` | `.ly-grid` |
-| `<prefix>-split` | `.ly-split` |
-| `<prefix>-button-group` | `.ly-button-group` |
-| `<prefix>-card-grid` | `.ly-card-grid` |
-| `<prefix>-card-sm`, `<prefix>-card-md`, `<prefix>-card-lg` | `.ly-card-sm`, `.ly-card-md`, `.ly-card-lg` |
-| `<prefix>-gallery` | `.ly-gallery` |
-| `<prefix>-carousel` | `.ly-carousel` |
+The Layout integration bridge contains structural mappings but no package imports. The removed `all-with-ui-kit*` aggregates have no v2 replacement because dependency ownership stays with the application.
 
-Visual component aliases such as `<prefix>-button`, `<prefix>-card`, and `<prefix>-panel` remain owned by UI Style Kit.
+## Structural Aliases
 
-## Integration Example
+The bridge supports the `saas`, `bento`, `max`, `bau`, `tactile`, `neo`, `retro`, `brutal`, `cyber`, `y2k`, and `rg` prefixes for container, section, stack, cluster, grid, split, button-group, card-grid, card-size, gallery, and carousel structure.
 
-```html
-<section class="saas-container saas-section">
-  <div class="saas-card-grid">
-    <article class="saas-card saas-card-md">Plan</article>
-    <article class="saas-card saas-card-md">Plan</article>
-  </div>
-</section>
-```
+Visual component names remain owned by UI Style Kit. The bridge does not map color, typography, border, shadow, theme, or interaction tokens.
 
+The removed v1 `.ly-surface--raised` selector is not restored by `legacy.css`; its radius and raised paint belong to UI Style Kit or application theme styling. Likewise, the legacy `.ly-divider` alias supplies structural size and spacing only, leaving the visible separator to the UI layer.
+
+## Compatibility Baseline
+
+| Library | Verified fixture | Consumer requirement |
+| --- | --- | --- |
+| Layout Style CSS | `2.0.0` | Required for this API |
+| UI Style Kit CSS | `2.0.1` | Optional |
+| Interactive Surface CSS | `1.4.0` `state-core.css` | Optional |
+
+Current evergreen Chromium, Firefox, and WebKit are covered by the release gate.

@@ -1,69 +1,75 @@
 # Release And Publishing
 
-This page is the release checklist for `layout-style-css@1.1.2`.
+This checklist prepares `layout-style-css@2.0.0`. Publishing, tagging, pushing, and creating a GitHub release require separate explicit approval.
 
 ## Version Contract
 
-- `package.json` version is `1.1.2`.
-- `package-lock.json` is synchronized with `1.1.2`.
-- `CHANGELOG.md` contains a `1.1.2` entry.
-- README and wiki docs link to the current public API.
+- `package.json` and `package-lock.json` identify `2.0.0`.
+- Node.js 20 and 22 pass standalone CI.
+- `CHANGELOG.md` contains the dated breaking-release entry.
+- README, migration guide, wiki, demo, exports, and tarball describe the same v2 API.
+- No peer or runtime dependencies are present.
 
-## Verification
+## Local Verification
 
-Run:
+Install all Playwright engines once:
+
+```bash
+npx playwright install chromium firefox webkit
+```
+
+Then run:
 
 ```bash
 npm run build
 npm run lint
-npm test
-npm run check
+npm run check:demo-js
+npm run test:static
+npm run test:demo:quick
+npm run test:demo:all
+npm run test:pages
+npm run pack:dry-run
 npm run release:verify
-npm audit --audit-level=moderate
 git diff --check
 ```
 
-Expected result: every command exits with status `0`. `git diff --check` may print line-ending warnings on Windows, but it must not report whitespace errors.
+`release:verify` runs build, lint, JavaScript syntax, static contracts, the Pages artifact, Chromium, Firefox, WebKit, the intentional tarball listing, `npm audit --audit-level=moderate`, and an npm publish dry run. It does not publish.
 
-## Publish
+## Tag And Version Validation
 
-Before publishing, confirm npm does not already have the target version:
+The publish workflow checks out the selected tag and fails unless it equals `v${package.version}`. For this release the only valid tag is `v2.0.0`.
 
-```bash
-npm view layout-style-css@1.1.2 version --json
-```
-
-Publish:
+After separate approval, an operator may check registry availability:
 
 ```bash
-npm login
-npm publish --access public
+npm view layout-style-css@2.0.0 version --json
 ```
 
-Verify:
+The eventual release sequence is:
 
 ```bash
-npm view layout-style-css@1.1.2
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
-## Tag
+Publishing the `v2.0.0` GitHub release triggers the npm workflow. A separately approved recovery run may use `release_tag` set to `v2.0.0`.
 
-Tag the release:
+## Workflow Safety
 
-```bash
-git tag v1.1.2
-git push origin v1.1.2
-```
+Create a GitHub Environment named `npm` and configure required reviewers before enabling the publish job. Environment approval is the final human authorization boundary for npm releases.
 
-The npm publish workflow runs when the `v1.1.2` GitHub release is published. If the release event needs to be replayed, run the `Node.js Package` workflow manually from the default branch with `release_tag` set to `v1.1.2`.
+Before `npm ci` can execute package lifecycle code, the workflow:
 
-## GitHub Wiki Mirror
+1. rejects release inputs that are not strict `v`-prefixed semantic-version tags;
+2. checks out the exact `refs/tags/<release_tag>` namespace without persisted credentials;
+3. verifies `HEAD` equals the tag's peeled commit;
+4. fetches `origin/main` and requires the tag commit to be reachable from protected main; and
+5. requires the package version to equal the tag.
 
-If the repository wiki is enabled, mirror `docs/wiki/*.md` into:
+The workflow installs Chromium, Firefox, and WebKit, runs full release verification, and publishes with npm provenance. `NODE_AUTH_TOKEN` exists only on the final publish step. Migrating to npm trusted publishing should remove that long-lived secret in a follow-up.
 
-```txt
-https://github.com/Foscat/Layout-Style-CSS.wiki.git
-```
+The workflow actions remain major-version references. Pinning every third-party action to an immutable commit SHA is a documented security follow-up and should be performed with an automated update process. Do not bypass a failed trust, version, browser, audit, tarball, or documentation contract.
 
-The wiki remote was not available during local preparation, so the versioned source remains the authoritative documentation until the remote is initialized.
+## Wiki Mirror
 
+The versioned `docs/wiki/` source is authoritative. If GitHub Wiki is enabled, mirror these Markdown files only after the release documentation has passed the local contract suite.

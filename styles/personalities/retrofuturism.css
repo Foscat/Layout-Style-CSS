@@ -1,0 +1,36 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: retrofuturism. Twin rails frame a focused central work zone. */
+
+@layer ly.personalities.retrofuturism {
+  :where(.ly-root[data-ly-layout="retrofuturism"]) {
+    --ly-recipe-rail: 14rem;
+    --ly-recipe-aside: 17rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 106rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="retrofuturism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header aside"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.24fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="retrofuturism"]) .ly-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+    }
+  }
+}

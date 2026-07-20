@@ -1,0 +1,219 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Reusable composition primitives own flow and sizing only. */
+
+@layer ly.primitives {
+  .ly-page {
+    min-block-size: 100svh;
+  }
+
+  .ly-header,
+  .ly-footer,
+  .ly-main,
+  .ly-section,
+  .ly-surface {
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
+  .ly-header {
+    min-block-size: var(--ly-header-height);
+  }
+
+  .ly-header--sticky {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--ly-z-header);
+  }
+
+  .ly-section {
+    padding-block: var(--ly-section-padding-block);
+  }
+
+  .ly-section--compact {
+    --ly-section-padding-block: var(--ly-space-7);
+  }
+
+  .ly-section--flush {
+    --ly-section-padding-block: 0;
+  }
+
+  .ly-readable {
+    max-inline-size: var(--ly-wrapper-prose);
+  }
+
+  .ly-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ly-stack-gap);
+  }
+
+  .ly-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+  }
+
+  .ly-center {
+    inline-size: min(100%, var(--ly-center-max, var(--ly-wrapper-content)));
+    margin-inline: auto;
+  }
+
+  .ly-cover {
+    display: flex;
+    flex-direction: column;
+    min-block-size: var(--ly-cover-min);
+    padding-block: var(--ly-cover-padding, var(--ly-space-5));
+  }
+
+  .ly-cover > :where(.ly-cover__center, [data-ly-cover-center]) {
+    margin-block: auto;
+  }
+
+  .ly-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gap);
+  }
+
+  .ly-switcher > * {
+    flex-basis: calc((var(--ly-switcher-threshold) - 100%) * 999);
+    flex-grow: 1;
+    min-inline-size: 0;
+  }
+
+  .ly-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gap);
+  }
+
+  .ly-sidebar > :where(.ly-sidebar__side, [data-ly-sidebar="side"]) {
+    flex-basis: var(--ly-sidebar-size);
+    flex-grow: 1;
+  }
+
+  .ly-sidebar > :where(.ly-sidebar__content, [data-ly-sidebar="content"]) {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-inline-size: min(100%, var(--ly-sidebar-content-min));
+  }
+
+  .ly-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--ly-grid-columns), minmax(0, 1fr));
+    gap: var(--ly-grid-gap);
+  }
+
+  .ly-grid--auto {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
+  }
+
+  .ly-grid > *,
+  .ly-split > *,
+  .ly-panes > *,
+  .ly-media > * {
+    min-inline-size: 0;
+  }
+
+  .ly-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+    align-items: var(--ly-split-align, center);
+  }
+
+  .ly-panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+  }
+
+  .ly-media {
+    display: grid;
+    grid-template-areas:
+      "media"
+      "content"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+    align-items: var(--ly-media-align, start);
+  }
+
+  .ly-media > :where(.ly-media__asset, [data-ly-media="asset"]) {
+    grid-area: media;
+  }
+
+  .ly-media > :where(.ly-media__content, [data-ly-media="content"]) {
+    grid-area: content;
+  }
+
+  .ly-media > :where(.ly-media__actions, [data-ly-media="actions"]) {
+    grid-area: actions;
+  }
+
+  .ly-reel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min(100%, var(--ly-reel-item-min)), var(--ly-reel-item-max));
+    gap: var(--ly-grid-gap);
+    overflow-x: auto;
+    overflow-inline: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+  }
+
+  .ly-reel > * {
+    min-inline-size: 0;
+    scroll-snap-align: start;
+  }
+
+  .ly-frame {
+    aspect-ratio: var(--ly-frame-ratio);
+    overflow: hidden;
+  }
+
+  .ly-frame > * {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .ly-scroll {
+    min-block-size: 0;
+    max-block-size: var(--ly-scroll-max);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Unsupported container-query browsers retain this safe DOM-order stack. */
+}
+
+@layer ly.primitives {
+  @container (min-width: 48rem) {
+    .ly-split {
+      grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
+    }
+
+    .ly-panes--2 {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-pane-size)), 0.7fr);
+    }
+
+    .ly-media {
+      grid-template-areas:
+        "media content"
+        "media actions";
+      grid-template-columns: minmax(min(100%, var(--ly-media-size)), auto) minmax(0, 1fr);
+    }
+  }
+
+  @container (min-width: 64rem) {
+    .ly-panes--3 {
+      grid-template-columns:
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr);
+    }
+  }
+}

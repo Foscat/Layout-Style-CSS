@@ -1,0 +1,46 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
+
+/* Layout style: bauhaus. A left rail anchors an intentionally asymmetric grid. */
+
+@layer ly.personalities.bauhaus {
+  :where(.ly-root[data-ly-layout="bauhaus"]) {
+    --ly-recipe-rail: 14rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 13rem;
+    --ly-personality-wrapper-max: 96rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  /* Cap the fallback rail until the wider personality template is eligible. */
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="bauhaus"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 14rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="bauhaus"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header header aside"
+        "sidebar main main aside"
+        "sidebar footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.24fr)
+        minmax(0, 0.7fr)
+        minmax(0, 1.3fr)
+        minmax(min(100%, 18rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="bauhaus"]) .ly-grid > :nth-child(3n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}

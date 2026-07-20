@@ -1,10 +1,11 @@
-/* layout-style-css bundle. Generated from styles/ by scripts/build.mjs. */
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.integrations, ly.legacy;
 
-/* layout-base.css */
+/* layout-style-css bundle. Generated from focused styles/ modules by scripts/build.mjs. */
+
+/* wrappers.css */
 /*
-  Layout Style Library base primitives.
-  This file owns spatial composition only. Visual paint, typography, borders,
-  shadows, and theme color are intentionally delegated to ui-style-kit-css.
+  Shared structural tokens and wrapper geometry. Theme, type, borders, shadows,
+  and interactive states remain outside Layout Style's ownership boundary.
 */
 
 @layer ly.tokens {
@@ -20,42 +21,60 @@
     --ly-space-8: 4rem;
     --ly-space-9: 6rem;
 
-    --ly-container-sm: 40rem;
-    --ly-container-md: 56rem;
-    --ly-container-lg: 72rem;
-    --ly-container-xl: 88rem;
-    --ly-container-wide: 112rem;
-    --ly-container-max: var(--ly-container-lg);
-    --ly-content-readable: 68ch;
-
+    --ly-wrapper-compact: 40rem;
+    --ly-wrapper-prose: 68ch;
+    --ly-wrapper-content: 72rem;
+    --ly-wrapper-wide: 112rem;
+    --ly-wrapper-max: var(--ly-wrapper-content);
     --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-safe-area-inline: max(
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    --ly-wrapper-gutter: max(var(--ly-page-padding-inline), var(--ly-safe-area-inline));
+
     --ly-section-padding-block: clamp(3rem, 7vw, 6rem);
     --ly-gap: var(--ly-space-5);
     --ly-grid-gap: var(--ly-gap);
     --ly-stack-gap: var(--ly-space-4);
     --ly-cluster-gap: var(--ly-space-3);
-
+    --ly-cover-min: 100svh;
+    --ly-switcher-threshold: 42rem;
+    --ly-sidebar-size: 18rem;
+    --ly-sidebar-content-min: 50%;
     --ly-grid-columns: 12;
     --ly-grid-min: 16rem;
+    --ly-pane-size: 22rem;
+    --ly-media-size: 14rem;
+    --ly-reel-item-min: 16rem;
+    --ly-reel-item-max: 28rem;
+    --ly-scroll-max: 70svh;
+    --ly-frame-ratio: 16 / 9;
+
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 22rem;
     --ly-card-grid-min: 16rem;
+    --ly-gallery-min: 12rem;
     --ly-card-size-sm: 10rem;
     --ly-card-size-md: 14rem;
     --ly-card-size-lg: 18rem;
-    --ly-gallery-min: 12rem;
-    --ly-carousel-item-min: 16rem;
-    --ly-carousel-item-max: 28rem;
-    --ly-sidebar-min: 14rem;
-    --ly-sidebar-width: 18rem;
-    --ly-sidebar-max: 22rem;
-    --ly-pane-fixed: 22rem;
     --ly-header-height: 4.5rem;
-
-    --ly-radius-sm: 0.5rem;
-    --ly-radius: 0.875rem;
-    --ly-radius-lg: 1.5rem;
-    --ly-radius-xl: 2.25rem;
-
     --ly-z-header: 20;
+
+    /* V1 token aliases remain available so legacy selectors can preserve sizing. */
+    --ly-container-sm: var(--ly-wrapper-compact);
+    --ly-container-md: 56rem;
+    --ly-container-lg: var(--ly-wrapper-content);
+    --ly-container-xl: 88rem;
+    --ly-container-wide: var(--ly-wrapper-wide);
+    --ly-container-max: var(--ly-container-lg);
+    --ly-content-readable: var(--ly-wrapper-prose);
+    --ly-carousel-item-min: var(--ly-reel-item-min);
+    --ly-carousel-item-max: var(--ly-reel-item-max);
+    --ly-sidebar-min: 14rem;
+    --ly-sidebar-width: var(--ly-recipe-rail);
+    --ly-sidebar-max: var(--ly-recipe-aside);
+    --ly-pane-fixed: var(--ly-pane-size);
     --ly-z-sidebar: 10;
   }
 }
@@ -67,7 +86,7 @@
   }
 
   :where(.ly-root) {
-    min-width: 0;
+    min-inline-size: 0;
     margin: 0;
   }
 
@@ -75,79 +94,113 @@
   :where(.ly-root svg),
   :where(.ly-root video),
   :where(.ly-root canvas) {
-    max-width: 100%;
+    max-inline-size: 100%;
   }
 }
 
-@layer ly.layout {
+@layer ly.wrappers {
+  .ly-wrapper {
+    /* Personalities provide only the plain-wrapper default; explicit variants stay authoritative. */
+    --ly-wrapper-max: var(--ly-personality-wrapper-max, var(--ly-wrapper-content));
+
+    /* Symmetric safe-area compensation keeps logical gutters stable in either direction. */
+    container-name: ly-wrapper;
+    container-type: inline-size;
+    inline-size: min(100%, calc(var(--ly-wrapper-max) + (var(--ly-wrapper-gutter) * 2)));
+    margin-inline: auto;
+    padding-inline: var(--ly-wrapper-gutter);
+  }
+
+  .ly-wrapper--compact {
+    --ly-wrapper-max: 40rem;
+  }
+
+  .ly-wrapper--prose {
+    --ly-wrapper-max: 68ch;
+  }
+
+  .ly-wrapper--content {
+    --ly-wrapper-max: 72rem;
+  }
+
+  .ly-wrapper--wide {
+    --ly-wrapper-max: 112rem;
+  }
+
+  .ly-wrapper--full {
+    --ly-wrapper-max: 100%;
+  }
+
+  .ly-wrapper--breakout {
+    --ly-breakout-content-size: min(
+      var(--ly-wrapper-content),
+      calc(100% - (var(--ly-wrapper-gutter) * 2))
+    );
+    --ly-breakout-feature-size: min(
+      var(--ly-wrapper-wide),
+      calc(100% - (var(--ly-wrapper-gutter) * 2))
+    );
+
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(min(100%, var(--ly-wrapper-gutter)), 1fr)
+      [feature-start] minmax(
+        0,
+        calc((var(--ly-breakout-feature-size) - var(--ly-breakout-content-size)) / 2)
+      )
+      [content-start] minmax(0, var(--ly-breakout-content-size)) [content-end]
+      minmax(
+        0,
+        calc((var(--ly-breakout-feature-size) - var(--ly-breakout-content-size)) / 2)
+      )
+      [feature-end] minmax(min(100%, var(--ly-wrapper-gutter)), 1fr) [full-end];
+    inline-size: 100%;
+    padding-inline: 0;
+  }
+
+  .ly-wrapper--breakout > * {
+    grid-column: content;
+    min-inline-size: 0;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--content, [data-ly-lane="content"]) {
+    grid-column: content;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--feature, [data-ly-lane="feature"]) {
+    grid-column: feature;
+  }
+
+  .ly-wrapper--breakout > :where(.ly-lane--full, [data-ly-lane="full"]) {
+    grid-column: full;
+  }
+}
+
+/* primitives.css */
+/* Reusable composition primitives own flow and sizing only. */
+
+@layer ly.primitives {
   .ly-page {
-    min-height: 100svh;
+    min-block-size: 100svh;
   }
 
   .ly-header,
   .ly-footer,
   .ly-main,
-  .ly-wrapper,
   .ly-section,
   .ly-surface {
-    min-width: 0;
+    min-inline-size: 0;
+    min-block-size: 0;
   }
 
   .ly-header {
-    min-height: var(--ly-header-height);
+    min-block-size: var(--ly-header-height);
   }
 
   .ly-header--sticky {
     position: sticky;
-    top: 0;
+    inset-block-start: 0;
     z-index: var(--ly-z-header);
-  }
-
-  .ly-container,
-  .ly-wrapper {
-    /* Keep wrappers resilient during viewport resizing without owning visual paint. */
-    width: min(100% - (var(--ly-page-padding-inline) * 2), var(--ly-container-max));
-    margin-inline: auto;
-  }
-
-  .ly-container--sm,
-  .ly-wrapper--sm {
-    --ly-container-max: var(--ly-container-sm);
-  }
-
-  .ly-container--md,
-  .ly-wrapper--md {
-    --ly-container-max: var(--ly-container-md);
-  }
-
-  .ly-container--lg,
-  .ly-wrapper--lg {
-    --ly-container-max: var(--ly-container-lg);
-  }
-
-  .ly-container--xl,
-  .ly-wrapper--xl {
-    --ly-container-max: var(--ly-container-xl);
-  }
-
-  .ly-container--wide,
-  .ly-wrapper--wide {
-    --ly-container-max: var(--ly-container-wide);
-  }
-
-  .ly-container--fluid,
-  .ly-wrapper--fluid {
-    width: 100%;
-    max-width: none;
-    padding-inline: var(--ly-page-padding-inline);
-  }
-
-  .ly-wrapper--readable {
-    --ly-container-max: var(--ly-content-readable);
-  }
-
-  .ly-readable {
-    max-width: var(--ly-content-readable);
   }
 
   .ly-section {
@@ -160,6 +213,10 @@
 
   .ly-section--flush {
     --ly-section-padding-block: 0;
+  }
+
+  .ly-readable {
+    max-inline-size: var(--ly-wrapper-prose);
   }
 
   .ly-stack {
@@ -175,17 +232,49 @@
     gap: var(--ly-cluster-gap);
   }
 
-  .ly-button-group {
-    /* Button groups provide flow only; UI libraries keep button paint and states. */
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--ly-cluster-gap);
+  .ly-center {
+    inline-size: min(100%, var(--ly-center-max, var(--ly-wrapper-content)));
+    margin-inline: auto;
   }
 
-  .ly-button-group > * {
-    flex: 0 1 auto;
-    min-width: min(100%, var(--ly-button-min, 8rem));
+  .ly-cover {
+    display: flex;
+    flex-direction: column;
+    min-block-size: var(--ly-cover-min);
+    padding-block: var(--ly-cover-padding, var(--ly-space-5));
+  }
+
+  .ly-cover > :where(.ly-cover__center, [data-ly-cover-center]) {
+    margin-block: auto;
+  }
+
+  .ly-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gap);
+  }
+
+  .ly-switcher > * {
+    flex-basis: calc((var(--ly-switcher-threshold) - 100%) * 999);
+    flex-grow: 1;
+    min-inline-size: 0;
+  }
+
+  .ly-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ly-gap);
+  }
+
+  .ly-sidebar > :where(.ly-sidebar__side, [data-ly-sidebar="side"]) {
+    flex-basis: var(--ly-sidebar-size);
+    flex-grow: 1;
+  }
+
+  .ly-sidebar > :where(.ly-sidebar__content, [data-ly-sidebar="content"]) {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-inline-size: min(100%, var(--ly-sidebar-content-min));
   }
 
   .ly-grid {
@@ -198,219 +287,385 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
   }
 
-  .ly-card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  .ly-card-grid > * {
-    min-width: 0;
-  }
-
-  .ly-card-sm {
-    min-block-size: var(--ly-card-size-sm);
-  }
-
-  .ly-card-md {
-    min-block-size: var(--ly-card-size-md);
-  }
-
-  .ly-card-lg {
-    min-block-size: var(--ly-card-size-lg);
-  }
-
-  .ly-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  .ly-gallery > * {
-    min-width: 0;
-  }
-
-  .ly-carousel {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(min(100%, var(--ly-carousel-item-min)), var(--ly-carousel-item-max));
-    gap: var(--ly-grid-gap);
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-  }
-
-  .ly-carousel > * {
-    min-width: 0;
-    scroll-snap-align: start;
-  }
-
-  .ly-row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-inline: calc(var(--ly-gutter, var(--ly-gap)) * -0.5);
-  }
-
-  .ly-col {
-    flex: 1 1 0;
-    min-width: 0;
-    padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5);
-  }
-
-  .ly-sidebar-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--ly-gap);
-  }
-
-  .ly-sidebar-layout > * {
-    min-width: 0;
-  }
-
-  .ly-sidebar {
-    min-width: 0;
-  }
-
-  .ly-content {
-    min-width: 0;
+  .ly-grid > *,
+  .ly-split > *,
+  .ly-panes > *,
+  .ly-media > * {
+    min-inline-size: 0;
   }
 
   .ly-split {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--ly-gap);
     align-items: var(--ly-split-align, center);
   }
 
-  .ly-split > * {
-    min-width: 0;
-  }
-
   .ly-panes {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--ly-gap);
   }
 
-  .ly-panes > * {
-    min-width: 0;
+  .ly-media {
+    display: grid;
+    grid-template-areas:
+      "media"
+      "content"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+    align-items: var(--ly-media-align, start);
   }
 
-  .ly-surface {
-    border-radius: var(--ly-radius);
+  .ly-media > :where(.ly-media__asset, [data-ly-media="asset"]) {
+    grid-area: media;
   }
 
-  .ly-surface--raised {
-    border-radius: var(--ly-radius-lg);
+  .ly-media > :where(.ly-media__content, [data-ly-media="content"]) {
+    grid-area: content;
   }
 
-  .ly-divider {
-    min-height: 1px;
-    margin-block: var(--ly-space-5);
+  .ly-media > :where(.ly-media__actions, [data-ly-media="actions"]) {
+    grid-area: actions;
+  }
+
+  .ly-reel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(min(100%, var(--ly-reel-item-min)), var(--ly-reel-item-max));
+    gap: var(--ly-grid-gap);
+    overflow-x: auto;
+    overflow-inline: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+  }
+
+  .ly-reel > * {
+    min-inline-size: 0;
+    scroll-snap-align: start;
   }
 
   .ly-frame {
-    aspect-ratio: var(--ly-frame-ratio, 16 / 9);
+    aspect-ratio: var(--ly-frame-ratio);
     overflow: hidden;
   }
 
   .ly-frame > * {
-    width: 100%;
-    height: 100%;
+    inline-size: 100%;
+    block-size: 100%;
     object-fit: cover;
   }
 
-  .ly-scroll-area {
-    min-height: 0;
+  .ly-scroll {
+    min-block-size: 0;
+    max-block-size: var(--ly-scroll-max);
     overflow: auto;
+    overscroll-behavior: contain;
   }
 
-  .ly-app-shell {
-    min-height: 100svh;
-    display: grid;
-    grid-template-areas:
-      "header"
-      "main";
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .ly-app-header {
-    grid-area: header;
-    min-width: 0;
-  }
-
-  .ly-app-sidebar {
-    grid-area: sidebar;
-    display: none;
-    min-width: 0;
-  }
-
-  .ly-app-main {
-    grid-area: main;
-    min-width: 0;
-  }
-
-  .ly-visually-hidden {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    clip-path: inset(50%) !important;
-    white-space: nowrap !important;
-  }
+  /* Unsupported container-query browsers retain this safe DOM-order stack. */
 }
 
-@layer ly.responsive {
-  @media (min-width: 48rem) {
-    /*
-      Fixed support tracks are capped against their container so nested layouts
-      can compress instead of forcing horizontal page overflow.
-    */
-    .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-width)) minmax(0, 1fr);
-    }
-
-    .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      z-index: var(--ly-z-sidebar);
-      height: 100svh;
-      overflow: auto;
-    }
-
-    .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max)) minmax(0, 1fr);
-      align-items: start;
-    }
-
-    .ly-sidebar-layout--right {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-sidebar-min)), var(--ly-sidebar-max));
-    }
-
+@layer ly.primitives {
+  @container (min-width: 48rem) {
     .ly-split {
       grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
     }
 
-    .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-pane-fixed)), 0.7fr);
+    .ly-panes--2 {
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-pane-size)), 0.7fr);
+    }
+
+    .ly-media {
+      grid-template-areas:
+        "media content"
+        "media actions";
+      grid-template-columns: minmax(min(100%, var(--ly-media-size)), auto) minmax(0, 1fr);
     }
   }
 
-  @media (min-width: 64rem) {
-    .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 14rem), 0.35fr) minmax(0, 1fr) minmax(min(100%, 14rem), 0.35fr);
+  @container (min-width: 64rem) {
+    .ly-panes--3 {
+      grid-template-columns:
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-pane-rail, 14rem)), 0.35fr);
     }
   }
 }
 
+/* recipes.css */
+/*
+  Built-in recipes follow semantic mobile DOM order. Wider arrangements use
+  named areas so visual placement never changes keyboard or reading order.
+*/
+
+@layer ly.recipes {
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"]),
+  :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
+  :where(.ly-docs, [data-ly-recipe="docs"]),
+  :where(.ly-list-detail, [data-ly-recipe="list-detail"]),
+  :where(.ly-split-hero, [data-ly-recipe="split-hero"]),
+  :where(.ly-gallery, [data-ly-recipe="gallery"]),
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
+    container-name: ly-recipe;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"]),
+  :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
+  :where(.ly-docs, [data-ly-recipe="docs"]),
+  :where(.ly-list-detail, [data-ly-recipe="list-detail"]),
+  :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-gap);
+  }
+
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+    min-block-size: 100svh;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "main"
+      "aside"
+      "footer";
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  }
+
+  :where(.ly-dashboard, [data-ly-recipe="dashboard"]) {
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "aside"
+      "footer";
+  }
+
+  :where(.ly-docs, [data-ly-recipe="docs"]) {
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "aside"
+      "footer";
+  }
+
+  :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+    grid-template-areas:
+      "primary"
+      "secondary"
+      "actions";
+  }
+
+  :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+    grid-template-areas:
+      "content"
+      "media"
+      "actions";
+    align-items: var(--ly-split-hero-align, center);
+  }
+
+  :where(.ly-gallery, [data-ly-recipe="gallery"]),
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
+    display: grid;
+    gap: var(--ly-grid-gap);
+  }
+
+  :where(.ly-gallery, [data-ly-recipe="gallery"]) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
+  }
+
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
+  }
+
+  :where(.ly-gallery, [data-ly-recipe="gallery"]) > *,
+  :where(.ly-card-grid, [data-ly-recipe="card-grid"]) > * {
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--header, [data-ly-area="header"]) {
+    grid-area: header;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--nav, [data-ly-area="nav"]) {
+    grid-area: nav;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--main, [data-ly-area="main"]) {
+    grid-area: main;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--aside, [data-ly-area="aside"]) {
+    grid-area: aside;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--footer, [data-ly-area="footer"]) {
+    grid-area: footer;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--content, [data-ly-area="content"]) {
+    grid-area: content;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--media, [data-ly-area="media"]) {
+    grid-area: media;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--actions, [data-ly-area="actions"]) {
+    grid-area: actions;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--primary, [data-ly-area="primary"]) {
+    grid-area: primary;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-area--secondary, [data-ly-area="secondary"]) {
+    grid-area: secondary;
+    min-inline-size: 0;
+  }
+
+  .ly-app-header {
+    grid-area: header;
+    min-inline-size: 0;
+  }
+
+  .ly-app-sidebar {
+    grid-area: sidebar;
+    min-inline-size: 0;
+  }
+
+  .ly-app-main {
+    grid-area: main;
+    min-inline-size: 0;
+  }
+
+  .ly-app-aside {
+    grid-area: aside;
+    min-inline-size: 0;
+  }
+
+  .ly-app-footer {
+    grid-area: footer;
+    min-inline-size: 0;
+  }
+
+  :where(.ly-app-shell, [data-ly-recipe="app-shell"])
+    > :where(.ly-area--nav, [data-ly-area="nav"]) {
+    grid-area: sidebar;
+  }
+
+  /*
+    A recipe responds to its nearest ancestor container and then becomes the
+    containment scope for nested compositions. Standalone roots keep the safe
+    mobile template when no ancestor container is present.
+  */
+  @container (min-width: 48rem) {
+    :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header"
+        "sidebar main"
+        "aside main"
+        "footer footer";
+      grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
+    }
+
+    :where(.ly-dashboard, [data-ly-recipe="dashboard"]) {
+      grid-template-areas:
+        "header header"
+        "nav nav"
+        "main aside"
+        "footer footer";
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    :where(.ly-docs, [data-ly-recipe="docs"]) {
+      grid-template-areas:
+        "header header"
+        "nav main"
+        "nav aside"
+        "footer footer";
+      grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
+    }
+
+    :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+      grid-template-areas:
+        "primary secondary"
+        "actions actions";
+      grid-template-columns: minmax(min(100%, var(--ly-pane-size)), 0.7fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+      grid-template-areas:
+        "content media"
+        "actions media";
+      grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
+    }
+
+    :where(.ly-gallery, [data-ly-recipe="gallery"]) {
+      --ly-gallery-min: 14rem;
+    }
+
+    :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
+      --ly-card-grid-min: 18rem;
+    }
+  }
+
+  @container (min-width: 64rem) {
+    :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "sidebar footer footer";
+      grid-template-columns:
+        minmax(min(100%, var(--ly-recipe-rail)), auto)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
+    :where(.ly-docs, [data-ly-recipe="docs"]) {
+      grid-template-areas:
+        "nav header header"
+        "nav main aside"
+        "nav footer footer";
+      grid-template-columns:
+        minmax(min(100%, var(--ly-recipe-rail)), auto)
+        minmax(0, 1fr)
+        minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+      grid-template-columns: minmax(min(100%, var(--ly-pane-size)), 0.45fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    }
+
+    :where(.ly-gallery, [data-ly-recipe="gallery"]) {
+      --ly-gallery-min: 16rem;
+    }
+
+    :where(.ly-card-grid, [data-ly-recipe="card-grid"]) {
+      --ly-card-grid-min: 20rem;
+    }
+  }
+}
+
+/* utilities.css */
 @layer ly.utilities {
   .ly-cols-1 { --ly-grid-columns: 1; }
   .ly-cols-2 { --ly-grid-columns: 2; }
@@ -444,19 +699,6 @@
   .ly-span-16 { grid-column: span 16; }
   .ly-span-full { grid-column: 1 / -1; }
 
-  .ly-col-1 { flex: 0 0 auto; width: 8.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-2 { flex: 0 0 auto; width: 16.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-3 { flex: 0 0 auto; width: 25%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-4 { flex: 0 0 auto; width: 33.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-5 { flex: 0 0 auto; width: 41.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-6 { flex: 0 0 auto; width: 50%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-7 { flex: 0 0 auto; width: 58.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-8 { flex: 0 0 auto; width: 66.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-9 { flex: 0 0 auto; width: 75%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-10 { flex: 0 0 auto; width: 83.333333%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-11 { flex: 0 0 auto; width: 91.666667%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-  .ly-col-12 { flex: 0 0 auto; width: 100%; padding-inline: calc(var(--ly-gutter, var(--ly-gap)) * 0.5); }
-
   .ly-gap-0 { --ly-gap: var(--ly-space-0); --ly-grid-gap: var(--ly-space-0); --ly-stack-gap: var(--ly-space-0); --ly-cluster-gap: var(--ly-space-0); }
   .ly-gap-1 { --ly-gap: var(--ly-space-1); --ly-grid-gap: var(--ly-space-1); --ly-stack-gap: var(--ly-space-1); --ly-cluster-gap: var(--ly-space-1); }
   .ly-gap-2 { --ly-gap: var(--ly-space-2); --ly-grid-gap: var(--ly-space-2); --ly-stack-gap: var(--ly-space-2); --ly-cluster-gap: var(--ly-space-2); }
@@ -487,10 +729,10 @@
   .ly-py-8 { padding-block: var(--ly-space-8); }
 
   .ly-mx-auto { margin-inline: auto; }
-  .ly-w-full { width: 100%; }
-  .ly-h-full { height: 100%; }
-  .ly-min-h-screen { min-height: 100svh; }
-  .ly-bleed { width: 100vw; margin-inline: calc(50% - 50vw); }
+  .ly-w-full { inline-size: 100%; }
+  .ly-h-full { block-size: 100%; }
+  .ly-min-h-screen { min-block-size: 100svh; }
+  .ly-bleed { inline-size: 100vw; margin-inline: calc(50% - 50vw); }
   .ly-overflow-auto { overflow: auto; }
   .ly-overflow-hidden { overflow: hidden; }
 
@@ -511,12 +753,36 @@
   .ly-frame-21x9 { --ly-frame-ratio: 21 / 9; }
 
   .ly-hidden { display: none !important; }
+
   .ly-show-md-up,
   .ly-show-lg-up {
     display: none !important;
   }
 
-  @media (min-width: 48rem) {
+  .ly-visually-hidden {
+    position: absolute !important;
+    inline-size: 1px !important;
+    block-size: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+
+  /* Explicit escape hatches require consumers to verify focus and reading order. */
+  .ly-order-first { order: -1; }
+  .ly-order-normal { order: 0; }
+  .ly-order-last { order: 999; }
+  .ly-order-1 { order: 1; }
+  .ly-order-2 { order: 2; }
+  .ly-order-3 { order: 3; }
+  .ly-order-4 { order: 4; }
+  .ly-order-5 { order: 5; }
+  .ly-order-6 { order: 6; }
+
+  @container (min-width: 48rem) {
     .ly-md-cols-1 { --ly-grid-columns: 1; }
     .ly-md-cols-2 { --ly-grid-columns: 2; }
     .ly-md-cols-3 { --ly-grid-columns: 3; }
@@ -526,9 +792,19 @@
     .ly-md-cols-12 { --ly-grid-columns: 12; }
     .ly-md-cols-16 { --ly-grid-columns: 16; }
     .ly-show-md-up { display: revert !important; }
+
+    .ly-md-order-first { order: -1; }
+    .ly-md-order-normal { order: 0; }
+    .ly-md-order-last { order: 999; }
+    .ly-md-order-1 { order: 1; }
+    .ly-md-order-2 { order: 2; }
+    .ly-md-order-3 { order: 3; }
+    .ly-md-order-4 { order: 4; }
+    .ly-md-order-5 { order: 5; }
+    .ly-md-order-6 { order: 6; }
   }
 
-  @media (min-width: 64rem) {
+  @container (min-width: 64rem) {
     .ly-lg-cols-1 { --ly-grid-columns: 1; }
     .ly-lg-cols-2 { --ly-grid-columns: 2; }
     .ly-lg-cols-3 { --ly-grid-columns: 3; }
@@ -538,1401 +814,695 @@
     .ly-lg-cols-12 { --ly-grid-columns: 12; }
     .ly-lg-cols-16 { --ly-grid-columns: 16; }
     .ly-show-lg-up { display: revert !important; }
+
+    .ly-lg-order-first { order: -1; }
+    .ly-lg-order-normal { order: 0; }
+    .ly-lg-order-last { order: 999; }
+    .ly-lg-order-1 { order: 1; }
+    .ly-lg-order-2 { order: 2; }
+    .ly-lg-order-3 { order: 3; }
+    .ly-lg-order-4 { order: 4; }
+    .ly-lg-order-5 { order: 5; }
+    .ly-lg-order-6 { order: 6; }
   }
 }
 
-/* layout-ui-style-kit-bridge.css */
-/*
-  Compatibility bridge for ui-style-kit-css.
-  This bridge intentionally does not map color, type, border, or shadow tokens.
-  ui-style-kit-css owns those visuals; layout-style-library owns structure.
-*/
+/* personalities/minimal-saas.css */
+/* Layout style: minimal-saas. A measured left rail keeps work areas predictable. */
 
-@layer ly.bridge {
-  :where(.ly-root[data-ui][data-theme][data-mode], [data-ui][data-theme][data-mode] .ly-root) {
-    --ly-ui-style-kit-bridge: 1;
-
-    /*
-      Normalize UI kit root background geometry without redefining its paint.
-      Patterned theme layers should fill the viewport once instead of tiling.
-    */
-    min-block-size: 100svh;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-  }
-
-  :where(.ly-root[data-ui="minimal-saas"], [data-ui="minimal-saas"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: minimal-saas;
-  }
-
-  :where(.ly-root[data-ui="bento"], [data-ui="bento"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: bento;
-  }
-
-  :where(.ly-root[data-ui="maximalist"], [data-ui="maximalist"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: maximalist;
-  }
-
-  :where(.ly-root[data-ui="bauhaus"], [data-ui="bauhaus"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: bauhaus;
-  }
-
-  :where(.ly-root[data-ui="tactile"], [data-ui="tactile"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: tactile;
-  }
-
-  :where(.ly-root[data-ui="neumorphism"], [data-ui="neumorphism"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: neumorphism;
-  }
-
-  :where(.ly-root[data-ui="retrofuturism"], [data-ui="retrofuturism"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: retrofuturism;
-  }
-
-  :where(.ly-root[data-ui="brutalism"], [data-ui="brutalism"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: brutalism;
-  }
-
-  :where(.ly-root[data-ui="cyberpunk"], [data-ui="cyberpunk"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: cyberpunk;
-  }
-
-  :where(.ly-root[data-ui="y2k"], [data-ui="y2k"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: y2k;
-  }
-
-  :where(.ly-root[data-ui="retro-glass"], [data-ui="retro-glass"] .ly-root) {
-    --ly-ui-style-kit-bridge-style: retro-glass;
-  }
-
-  :where(.saas-container, .bento-container, .max-container, .bau-container, .tactile-container, .neo-container, .retro-container, .brutal-container, .cyber-container, .y2k-container, .rg-container) {
-    /* UI Style Kit naming can opt into layout sizing without taking over visual paint. */
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-    margin-inline: auto;
-  }
-
-  :where(.saas-section, .bento-section, .max-section, .bau-section, .tactile-section, .neo-section, .retro-section, .brutal-section, .cyber-section, .y2k-section, .rg-section) {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.saas-stack, .bento-stack, .max-stack, .bau-stack, .tactile-stack, .neo-stack, .retro-stack, .brutal-stack, .cyber-stack, .y2k-stack, .rg-stack) {
-    display: flex;
-    flex-direction: column;
-    gap: var(--ly-stack-gap);
-  }
-
-  :where(.saas-cluster, .bento-cluster, .max-cluster, .bau-cluster, .tactile-cluster, .neo-cluster, .retro-cluster, .brutal-cluster, .cyber-cluster, .y2k-cluster, .rg-cluster) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--ly-cluster-gap);
-  }
-
-  :where(.saas-grid, .bento-grid, .max-grid, .bau-grid, .tactile-grid, .neo-grid, .retro-grid, .brutal-grid, .cyber-grid, .y2k-grid, .rg-grid) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-grid-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--ly-gap);
-    align-items: var(--ly-split-align, center);
-  }
-
-  :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) > * {
-    min-width: 0;
-  }
-
-  :where(.saas-button-group, .bento-button-group, .max-button-group, .bau-button-group, .tactile-button-group, .neo-button-group, .retro-button-group, .brutal-button-group, .cyber-button-group, .y2k-button-group, .rg-button-group) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--ly-cluster-gap);
-  }
-
-  :where(.saas-button-group, .bento-button-group, .max-button-group, .bau-button-group, .tactile-button-group, .neo-button-group, .retro-button-group, .brutal-button-group, .cyber-button-group, .y2k-button-group, .rg-button-group) > * {
-    flex: 0 1 auto;
-    min-width: min(100%, var(--ly-button-min, 8rem));
-  }
-
-  :where(.saas-card-grid, .bento-card-grid, .max-card-grid, .bau-card-grid, .tactile-card-grid, .neo-card-grid, .retro-card-grid, .brutal-card-grid, .cyber-card-grid, .y2k-card-grid, .rg-card-grid) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-card-grid-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  :where(.saas-card-grid, .bento-card-grid, .max-card-grid, .bau-card-grid, .tactile-card-grid, .neo-card-grid, .retro-card-grid, .brutal-card-grid, .cyber-card-grid, .y2k-card-grid, .rg-card-grid) > * {
-    min-width: 0;
-  }
-
-  :where(.saas-card-sm, .bento-card-sm, .max-card-sm, .bau-card-sm, .tactile-card-sm, .neo-card-sm, .retro-card-sm, .brutal-card-sm, .cyber-card-sm, .y2k-card-sm, .rg-card-sm) {
-    min-block-size: var(--ly-card-size-sm);
-  }
-
-  :where(.saas-card-md, .bento-card-md, .max-card-md, .bau-card-md, .tactile-card-md, .neo-card-md, .retro-card-md, .brutal-card-md, .cyber-card-md, .y2k-card-md, .rg-card-md) {
-    min-block-size: var(--ly-card-size-md);
-  }
-
-  :where(.saas-card-lg, .bento-card-lg, .max-card-lg, .bau-card-lg, .tactile-card-lg, .neo-card-lg, .retro-card-lg, .brutal-card-lg, .cyber-card-lg, .y2k-card-lg, .rg-card-lg) {
-    min-block-size: var(--ly-card-size-lg);
-  }
-
-  :where(.saas-gallery, .bento-gallery, .max-gallery, .bau-gallery, .tactile-gallery, .neo-gallery, .retro-gallery, .brutal-gallery, .cyber-gallery, .y2k-gallery, .rg-gallery) {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-gallery-min)), 1fr));
-    gap: var(--ly-grid-gap);
-  }
-
-  :where(.saas-gallery, .bento-gallery, .max-gallery, .bau-gallery, .tactile-gallery, .neo-gallery, .retro-gallery, .brutal-gallery, .cyber-gallery, .y2k-gallery, .rg-gallery) > * {
-    min-width: 0;
-  }
-
-  :where(.saas-carousel, .bento-carousel, .max-carousel, .bau-carousel, .tactile-carousel, .neo-carousel, .retro-carousel, .brutal-carousel, .cyber-carousel, .y2k-carousel, .rg-carousel) {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(min(100%, var(--ly-carousel-item-min)), var(--ly-carousel-item-max));
-    gap: var(--ly-grid-gap);
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-  }
-
-  :where(.saas-carousel, .bento-carousel, .max-carousel, .bau-carousel, .tactile-carousel, .neo-carousel, .retro-carousel, .brutal-carousel, .cyber-carousel, .y2k-carousel, .rg-carousel) > * {
-    min-width: 0;
-    scroll-snap-align: start;
-  }
-
-  @media (min-width: 48rem) {
-    :where(.saas-split, .bento-split, .max-split, .bau-split, .tactile-split, .neo-split, .retro-split, .brutal-split, .cyber-split, .y2k-split, .rg-split) {
-      grid-template-columns: minmax(0, var(--ly-split-primary, 1fr)) minmax(0, var(--ly-split-secondary, 1fr));
-    }
-  }
-}
-
-/* layout-style-minimal-saas.css */
-/*
-  Layout style: minimal-saas.
-  Steady left-rail SaaS shell with conservative content widths and predictable
-  workspace rhythm. Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.minimal_saas {
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) {
-    --ly-container-max: 88rem;
-    --ly-page-padding-inline: clamp(1rem, 3vw, 2.5rem);
-    --ly-section-padding-block: clamp(2rem, 5vw, 4rem);
-    --ly-sidebar-width: clamp(15rem, 18vw, 19rem);
+@layer ly.personalities.minimal_saas {
+  :where(.ly-root[data-ly-layout="minimal-saas"]) {
+    --ly-recipe-rail: 15rem;
+    --ly-recipe-aside: 16rem;
+    --ly-grid-columns: 4;
     --ly-grid-min: 16rem;
-    --ly-gap: clamp(1rem, 2vw, 1.75rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.875rem, 1.6vw, 1.35rem);
-  }
-
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-app-main {
-    padding-block: clamp(1rem, 2vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-container,
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-grid--auto {
-    grid-auto-rows: minmax(8rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, 14rem), var(--ly-sidebar-width)) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 14rem), 0.24fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-split,
-    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 18rem), 0.44fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="minimal-saas"], .ly-root[layout-style="minimal-saas"], .ly-root.ly-layout-minimal-saas, .ly-root.ly-style-minimal-saas) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 13rem), 0.22fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.32fr);
-    }
-  }
-}
-
-/* layout-style-bento.css */
-/*
-  Layout style: bento.
-  Modular dashboard shell with staged mosaic zones. Visual identity remains
-  owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.bento {
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) {
-    --ly-container-max: 104rem;
-    --ly-page-padding-inline: clamp(1rem, 3.5vw, 3rem);
-    --ly-section-padding-block: clamp(2rem, 6vw, 5rem);
-    --ly-sidebar-width: clamp(13rem, 16vw, 17rem);
-    --ly-grid-min: 14rem;
-    --ly-gap: clamp(1rem, 2.5vw, 2rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1rem, 2vw, 1.75rem);
-  }
-
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-app-main {
-    padding-block: clamp(1rem, 3vw, 2.5rem);
-  }
-
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-container,
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-grid--auto {
-    grid-auto-rows: minmax(9rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, 13rem), 0.26fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: var(--ly-space-3);
-      height: calc(100svh - (var(--ly-space-3) * 2));
-      margin: var(--ly-space-3) 0 var(--ly-space-3) var(--ly-space-3);
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-grid--auto > :nth-child(4n + 1) {
-      grid-column: span 2;
-      min-height: 14rem;
-    }
-
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 12rem), 0.3fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-split {
-      grid-template-columns: minmax(0, 0.78fr) minmax(min(100%, 18rem), 1.22fr);
-    }
-
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-panes--two {
-      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 18rem), 0.82fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="bento"], .ly-root[layout-style="bento"], .ly-root.ly-layout-bento, .ly-root.ly-style-bento) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 12rem), 0.6fr) minmax(0, 1.4fr) minmax(min(100%, 14rem), 0.8fr);
-    }
-  }
-}
-
-/* layout-style-maximalist.css */
-/*
-  Layout style: maximalist.
-  Editorial shell with oversized hero splits and staggered supporting regions.
-  Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.maximalist {
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) {
-    --ly-container-max: 102rem;
-    --ly-page-padding-inline: clamp(1rem, 6vw, 5.5rem);
-    --ly-section-padding-block: clamp(4rem, 13vw, 10rem);
-    --ly-sidebar-width: clamp(13rem, 18vw, 20rem);
-    --ly-grid-min: 14rem;
-    --ly-gap: clamp(1.25rem, 4vw, 3rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1.5rem, 4vw, 3.5rem);
-  }
-
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-main {
-    padding-block: clamp(1rem, 3vw, 3rem);
-  }
-
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-container,
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-section {
-    padding-block: clamp(3.5rem, 11vw, 8rem);
-  }
-
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
-    align-items: stretch;
-  }
-
-  :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid--auto {
-    grid-auto-rows: minmax(10rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
-      /* Keep the editorial stage stacked until the wider shell can carry the oversized rhythm. */
-      grid-template-columns: 1fr;
-    }
-
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid--auto > :nth-child(5n + 1) {
-      grid-column: span 2;
-      min-height: 24rem;
-    }
-
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-grid--auto > :nth-child(5n + 3) {
-      transform: translateY(var(--ly-space-7));
-    }
-  }
-
-  @media (min-width: 56rem) {
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 13rem), 0.28fr);
-    }
-
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: calc(var(--ly-gap) * 1.5);
-      height: max-content;
-      margin-block: clamp(2rem, 8vw, 7rem);
-      transform: translateX(calc(var(--ly-gap) * -0.35));
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1.55fr) minmax(min(100%, 15rem), 0.45fr);
-    }
-
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-split {
-      grid-template-columns: minmax(0, 1.62fr) minmax(min(100%, 16rem), 0.54fr);
-      gap: clamp(1.5rem, 6vw, 5rem);
-    }
-
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-panes--two {
-      grid-template-columns: minmax(min(100%, 16rem), 0.44fr) minmax(0, 1.56fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="maximalist"], .ly-root[layout-style="maximalist"], .ly-root.ly-layout-maximalist, .ly-root.ly-style-maximalist) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 14rem), 0.34fr) minmax(0, 1.28fr) minmax(min(100%, 18rem), 0.58fr);
-    }
-  }
-}
-
-/* layout-style-bauhaus.css */
-/*
-  Layout style: bauhaus.
-  Strict framed column shell with structural rails and measured offsets. Visual
-  identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.bauhaus {
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) {
-    --ly-container-max: 92rem;
-    --ly-page-padding-inline: clamp(1rem, 2vw, 2rem);
-    --ly-section-padding-block: clamp(2.5rem, 5vw, 4.5rem);
-    --ly-sidebar-width: clamp(8rem, 12vw, 12rem);
-    --ly-grid-min: 13rem;
-    --ly-gap: clamp(0.75rem, 1.6vw, 1.25rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.75rem, 1.5vw, 1.25rem);
-  }
-
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-main {
-    padding-block: clamp(0.75rem, 2vw, 1.5rem);
-  }
-
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-container,
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-grid--auto {
-    grid-auto-rows: minmax(7rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, 7rem), 0.18fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 8rem), 0.22fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-split {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 12rem), 0.5fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="bauhaus"], .ly-root[layout-style="bauhaus"], .ly-root.ly-layout-bauhaus, .ly-root.ly-style-bauhaus) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 10rem), 0.25fr) minmax(0, 1fr) minmax(min(100%, 10rem), 0.25fr);
-    }
-  }
-}
-
-/* layout-style-tactile.css */
-/*
-  Layout style: tactile.
-  Instrument-panel shell with a heavier support dock and dense controls. Visual
-  identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.tactile {
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) {
-    --ly-container-max: 98rem;
-    --ly-page-padding-inline: clamp(1rem, 3vw, 2.75rem);
-    --ly-section-padding-block: clamp(2rem, 5vw, 4rem);
-    --ly-sidebar-width: clamp(18rem, 22vw, 24rem);
-    --ly-grid-min: 15rem;
-    --ly-gap: clamp(1rem, 2.2vw, 1.75rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1rem, 2vw, 1.75rem);
-  }
-
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-app-main {
-    padding-block: clamp(1rem, 2.5vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-container,
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-grid--auto {
-    grid-auto-rows: minmax(8rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, 18rem), var(--ly-sidebar-width)) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 18rem), 0.42fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-split {
-      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 18rem), 0.82fr);
-    }
-
-    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 20rem), 0.62fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="tactile"], .ly-root[layout-style="tactile"], .ly-root.ly-layout-tactile, .ly-root.ly-style-tactile) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 17rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.46fr);
-    }
-  }
-}
-
-/* layout-style-neumorphism.css */
-/*
-  Layout style: neumorphism.
-  Centered island shell with detached support regions. Visual identity remains
-  owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.neumorphism {
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) {
-    --ly-container-max: 86rem;
-    --ly-page-padding-inline: clamp(1.25rem, 5vw, 4rem);
-    --ly-section-padding-block: clamp(3rem, 8vw, 6rem);
-    --ly-sidebar-width: clamp(16rem, 20vw, 20rem);
-    --ly-grid-min: 16rem;
-    --ly-gap: clamp(1.25rem, 3vw, 2.5rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1.25rem, 2.5vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-app-main {
-    padding-block: clamp(2rem, 5vw, 4rem);
-  }
-
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-container,
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-grid--auto {
-    grid-auto-rows: minmax(9rem, auto);
-  }
-
-  @media (min-width: 56rem) {
-    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.34fr);
-      align-items: start;
-    }
-
-    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: clamp(1rem, 3vw, 2rem);
-      max-height: calc(100svh - clamp(2rem, 6vw, 4rem));
-      margin: clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) 0;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.42fr);
-    }
-
-    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-split {
-      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    }
-
-    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.5fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="neumorphism"], .ly-root[layout-style="neumorphism"], .ly-root.ly-layout-neumorphism, .ly-root.ly-style-neumorphism) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 15rem), 0.38fr) minmax(0, 1fr) minmax(min(100%, 15rem), 0.38fr);
-    }
-  }
-}
-
-/* layout-style-retrofuturism.css */
-/*
-  Layout style: retrofuturism.
-  Panoramic bridge shell with symmetric pods and a wide central stage. Visual
-  identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.retrofuturism {
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) {
-    --ly-container-max: 110rem;
-    --ly-page-padding-inline: clamp(1rem, 4vw, 4rem);
-    --ly-section-padding-block: clamp(3rem, 8vw, 7rem);
-    --ly-sidebar-width: clamp(12rem, 14vw, 16rem);
-    --ly-grid-min: 15rem;
-    --ly-gap: clamp(1rem, 3vw, 2.5rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1rem, 2.4vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-main {
-    padding-block: clamp(1.5rem, 4vw, 3rem);
-  }
-
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-container,
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-grid--auto {
-    grid-auto-rows: minmax(8rem, auto);
-  }
-
-  @media (min-width: 56rem) {
-    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-shell {
-      grid-template-areas:
-        "header header header"
-        "sidebar main main";
-      grid-template-columns: minmax(min(100%, 12rem), 0.24fr) minmax(0, 1fr) minmax(min(100%, 12rem), 0.24fr);
-    }
-
-    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: clamp(1rem, 2vw, 1.5rem);
-      height: calc(100svh - clamp(2rem, 4vw, 3rem));
-      margin: clamp(1rem, 2vw, 1.5rem) 0 clamp(1rem, 2vw, 1.5rem) clamp(1rem, 2vw, 1.5rem);
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 12rem), 0.32fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-split {
-      grid-template-columns: minmax(0, 1.35fr) minmax(min(100%, 16rem), 0.65fr);
-    }
-
-    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-panes--two {
-      grid-template-columns: minmax(min(100%, 14rem), 0.44fr) minmax(0, 1.2fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="retrofuturism"], .ly-root[layout-style="retrofuturism"], .ly-root.ly-layout-retrofuturism, .ly-root.ly-style-retrofuturism) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 12rem), 0.44fr) minmax(0, 1.4fr) minmax(min(100%, 12rem), 0.44fr);
-    }
-  }
-}
-
-/* layout-style-brutalism.css */
-/*
-  Layout style: brutalism.
-  Full-bleed slab shell with abrupt section breaks and compressed rails. Visual
-  identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.brutalism {
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) {
-    --ly-container-max: 100vw;
-    --ly-page-padding-inline: clamp(0.75rem, 3vw, 3rem);
-    --ly-section-padding-block: clamp(2rem, 6vw, 5rem);
-    --ly-sidebar-width: clamp(12rem, 15vw, 16rem);
-    --ly-grid-min: 12rem;
-    --ly-gap: clamp(0.75rem, 2vw, 1.5rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.75rem, 2vw, 1.5rem);
-  }
-
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-main {
-    padding-block: 0;
-  }
-
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-container,
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-wrapper {
-    width: min(100%, var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-grid--auto {
-    grid-auto-rows: minmax(7rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 12rem), 0.22fr);
-    }
-
-    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1.55fr) minmax(min(100%, 12rem), 0.45fr);
-    }
-
-    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-split {
-      grid-template-columns: minmax(0, 1.7fr) minmax(min(100%, 12rem), 0.3fr);
-    }
-
-    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-panes--two {
-      grid-template-columns: minmax(min(100%, 12rem), 0.35fr) minmax(0, 1.65fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="brutalism"], .ly-root[layout-style="brutalism"], .ly-root.ly-layout-brutalism, .ly-root.ly-style-brutalism) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 11rem), 0.28fr) minmax(0, 1.42fr) minmax(min(100%, 14rem), 0.4fr);
-    }
-  }
-}
-
-/* layout-style-cyberpunk.css */
-/*
-  Layout style: cyberpunk.
-  Narrow utility rail with dense command workspace and compact gutters. Visual
-  identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.cyberpunk {
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) {
-    --ly-container-max: 104rem;
-    --ly-page-padding-inline: clamp(0.75rem, 2vw, 2rem);
-    --ly-section-padding-block: clamp(2rem, 5vw, 4rem);
-    --ly-sidebar-width: clamp(10rem, 12vw, 12.5rem);
-    --ly-grid-min: 12rem;
-    --ly-gap: clamp(0.75rem, 1.8vw, 1.25rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.75rem, 1.5vw, 1.25rem);
-  }
-
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-main {
-    padding-block: clamp(0.75rem, 2vw, 1.5rem);
-  }
-
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-container,
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-grid--auto {
-    grid-auto-rows: minmax(7rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-shell {
-      grid-template-areas:
-        "sidebar header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, var(--ly-sidebar-width)), var(--ly-sidebar-width)) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 10rem), 0.24fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-split {
-      grid-template-columns: minmax(0, 1.2fr) minmax(min(100%, 16rem), 0.8fr);
-    }
-
-    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 15rem), 0.38fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="cyberpunk"], .ly-root[layout-style="cyberpunk"], .ly-root.ly-layout-cyberpunk, .ly-root.ly-style-cyberpunk) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 10rem), 0.24fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.38fr);
-    }
-  }
-}
-
-/* layout-style-y2k.css */
-/*
-  Layout style: y2k.
-  Centered hub shell with floating-window rhythm and in-flow support regions.
-  Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.y2k {
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) {
-    --ly-container-max: 84rem;
-    --ly-page-padding-inline: clamp(1rem, 5vw, 4rem);
-    --ly-section-padding-block: clamp(3rem, 8vw, 6rem);
-    --ly-sidebar-width: clamp(17rem, 22vw, 21rem);
-    --ly-grid-min: 16rem;
-    --ly-gap: clamp(1.25rem, 3vw, 2.5rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1rem, 2.5vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-app-main {
-    padding-block: clamp(2rem, 6vw, 4rem);
-  }
-
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-container,
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-grid--auto {
-    grid-auto-rows: minmax(8rem, auto);
-  }
-
-  @media (min-width: 54rem) {
-    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.34fr);
-      align-items: start;
-    }
-
-    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: clamp(1rem, 4vw, 3rem);
-      max-height: calc(100svh - clamp(2rem, 8vw, 6rem));
-      margin: clamp(3rem, 8vw, 6rem) clamp(1rem, 5vw, 3rem) clamp(2rem, 6vw, 4rem) 0;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 0.92fr) minmax(min(100%, 16rem), 1.08fr);
-    }
-
-    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-split {
-      grid-template-columns: minmax(0, 0.86fr) minmax(min(100%, 18rem), 1.14fr);
-    }
-
-    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.56fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="y2k"], .ly-root[layout-style="y2k"], .ly-root.ly-layout-y2k, .ly-root.ly-style-y2k) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 16rem), 0.5fr) minmax(0, 1fr) minmax(min(100%, 16rem), 0.5fr);
-    }
-  }
-}
-
-/* layout-style-retro-glass.css */
-/*
-  Layout style: retro-glass.
-  Top-framed content shell with a floating right utility rail. Visual identity
-  remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.retro_glass {
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) {
-    --ly-container-max: 96rem;
-    --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
-    --ly-section-padding-block: clamp(3rem, 8vw, 6rem);
-    --ly-sidebar-width: 18rem;
-    --ly-grid-min: 15rem;
-    --ly-gap: clamp(1rem, 2.6vw, 2rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1rem, 2vw, 1.75rem);
-  }
-
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-main {
-    padding: clamp(1rem, 3vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-container,
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-wrapper {
-    width: min(100%, var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-section {
-    padding-block: clamp(2rem, 6vw, 5rem);
-  }
-
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
-    align-items: stretch;
-  }
-
-  :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-grid--auto {
-    grid-auto-rows: minmax(9rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
-      /* Keep glass feature panels stacked until the floating rail has enough horizontal room. */
-      grid-template-columns: 1fr;
-    }
-
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.62fr);
-    }
-  }
-
-  @media (min-width: 56rem) {
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), var(--ly-sidebar-width));
-    }
-
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: var(--ly-space-4);
-      height: calc(100svh - (var(--ly-space-4) * 2));
-      margin: var(--ly-space-4) var(--ly-space-4) var(--ly-space-4) 0;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 16rem), 0.48fr);
-    }
-
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-split {
-      grid-template-columns: minmax(0, 1.1fr) minmax(min(100%, 18rem), 0.9fr);
-    }
-  }
-
-  @media (min-width: 78rem) {
-    :where(.ly-root[data-layout="retro-glass"], .ly-root[layout-style="retro-glass"], .ly-root.ly-layout-retro-glass, .ly-root.ly-style-retro-glass) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 15rem), 0.4fr) minmax(0, 1fr) minmax(min(100%, 18rem), 0.52fr);
-    }
-  }
-}
-
-/* layout-style-f-pattern.css */
-/*
-  Layout style: f-pattern.
-  Top-led scan path with a persistent left rail and heavier early content rows.
-  Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.f_pattern {
-  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) {
-    --ly-container-max: 94rem;
-    --ly-page-padding-inline: clamp(1rem, 3vw, 2.75rem);
-    --ly-section-padding-block: clamp(2rem, 5vw, 4.5rem);
-    --ly-sidebar-width: clamp(13rem, 19vw, 20rem);
-    --ly-grid-min: 15rem;
-    --ly-gap: clamp(1rem, 2.25vw, 1.85rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.875rem, 1.8vw, 1.45rem);
-  }
-
-  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-main {
-    padding-block: clamp(0.75rem, 2vw, 2rem);
-  }
-
-  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-container,
-  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-grid--auto {
-    grid-auto-rows: minmax(8rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "sidebar main";
-      grid-template-columns: minmax(min(100%, 13rem), 0.3fr) minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
-    }
-
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100svh;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-grid--auto > :nth-child(3n + 1) {
-      grid-column: span 2;
-      min-height: 13rem;
-    }
-
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 14rem), 0.34fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-split {
-      grid-template-columns: minmax(0, 1.35fr) minmax(min(100%, 18rem), 0.65fr);
-    }
-
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-panes--two {
-      grid-template-columns: minmax(min(100%, 15rem), 0.38fr) minmax(0, 1fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="f-pattern"], .ly-root[layout-style="f-pattern"], .ly-root.ly-layout-f-pattern, .ly-root.ly-style-f-pattern) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 13rem), 0.28fr) minmax(0, 1.28fr) minmax(min(100%, 16rem), 0.44fr);
-    }
-  }
-}
-
-/* layout-style-z-pattern.css */
-/*
-  Layout style: z-pattern.
-  Header-first scan path that moves from broad lead content to a right-side
-  support rail. Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.z_pattern {
-  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) {
-    --ly-container-max: 100rem;
-    --ly-page-padding-inline: clamp(1rem, 3.4vw, 3rem);
-    --ly-section-padding-block: clamp(2rem, 5.5vw, 5rem);
-    --ly-sidebar-width: clamp(14rem, 20vw, 21rem);
-    --ly-grid-min: 15rem;
-    --ly-gap: clamp(1rem, 2.4vw, 2rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.875rem, 1.9vw, 1.5rem);
-  }
-
-  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-app-main {
-    padding-block: clamp(1rem, 2.6vw, 2.5rem);
-  }
-
-  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-container,
-  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-grid--auto {
-    grid-auto-rows: minmax(8rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1.18fr) minmax(min(100%, 15rem), 0.42fr);
-    }
-
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: var(--ly-space-4);
-      height: calc(100svh - (var(--ly-space-4) * 2));
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-grid--auto > :nth-child(4n + 2) {
-      grid-column: span 2;
-      min-height: 12rem;
-    }
-
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 15rem), 0.36fr);
-    }
-
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-split {
-      grid-template-columns: minmax(0, 0.92fr) minmax(min(100%, 19rem), 1.08fr);
-      align-items: end;
-    }
-
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-panes--two {
-      grid-template-columns: minmax(0, 1.25fr) minmax(min(100%, 17rem), 0.75fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="z-pattern"], .ly-root[layout-style="z-pattern"], .ly-root.ly-layout-z-pattern, .ly-root.ly-style-z-pattern) .ly-panes--three {
-      grid-template-columns: minmax(0, 1.1fr) minmax(min(100%, 15rem), 0.55fr) minmax(min(100%, 14rem), 0.35fr);
-    }
-  }
-}
-
-/* layout-style-split-screen.css */
-/*
-  Layout style: split-screen.
-  Equal-weight shell columns for contrasting focal points or side-by-side
-  choices. Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.split_screen {
-  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) {
-    --ly-container-max: 100vw;
-    --ly-page-padding-inline: clamp(0.875rem, 2.5vw, 2rem);
-    --ly-section-padding-block: clamp(1.5rem, 4vw, 3.5rem);
-    --ly-sidebar-width: 50vw;
-    --ly-grid-min: 14rem;
-    --ly-gap: clamp(0.875rem, 2vw, 1.5rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.875rem, 1.6vw, 1.25rem);
-  }
-
-  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-app-main {
-    padding-block: 0;
-  }
-
-  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-container,
-  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-wrapper {
-    width: min(100%, var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
-
-  :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-grid--auto {
-    grid-auto-rows: minmax(9rem, auto);
-  }
-
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-app-shell {
-      grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-app-sidebar {
-      display: block;
-      min-height: 100%;
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-sidebar-layout,
-    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-split,
-    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-panes--two {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="split-screen"], .ly-root[layout-style="split-screen"], .ly-root.ly-layout-split-screen, .ly-root.ly-style-split-screen) .ly-panes--three {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-    }
-  }
-}
-
-/* layout-style-mondrian.css */
-/*
-  Layout style: mondrian.
-  Asymmetrical rectangular blocks with staggered spans inspired by Mondrian
-  composition. Visual identity remains owned by ui-style-kit-css.
-*/
-
-@layer ly.styles.mondrian {
-  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) {
-    --ly-container-max: 108rem;
-    --ly-page-padding-inline: clamp(0.75rem, 2.5vw, 2rem);
-    --ly-section-padding-block: clamp(1.75rem, 4.5vw, 4rem);
-    --ly-sidebar-width: clamp(11rem, 16vw, 17rem);
-    --ly-grid-min: 11rem;
-    --ly-gap: clamp(0.75rem, 1.6vw, 1.25rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(0.75rem, 1.5vw, 1.2rem);
-  }
-
-  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-main {
-    padding-block: clamp(0.75rem, 1.8vw, 1.5rem);
-  }
-
-  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-container,
-  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
-  }
-
-  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-section {
-    padding-block: var(--ly-section-padding-block);
-  }
+    --ly-personality-wrapper-max: 88rem;
 
-  :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-grid--auto {
-    grid-auto-rows: minmax(7rem, auto);
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
   }
 
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-shell {
+  /* Named areas rearrange the shell without changing its mobile DOM or focus order. */
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="minimal-saas"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "sidebar header header"
-        "sidebar main main";
-      grid-template-columns: minmax(min(100%, 11rem), 0.28fr) minmax(0, 0.86fr) minmax(0, 1.14fr);
-      grid-template-rows: auto 1fr;
+        "sidebar main aside"
+        "sidebar footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 15rem), 0.24fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 16rem), 0.28fr);
     }
 
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-app-sidebar {
-      display: block;
-      position: sticky;
-      top: var(--ly-space-3);
-      height: calc(100svh - (var(--ly-space-3) * 2));
-      overflow: auto;
-    }
-
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-grid--auto > :nth-child(5n + 1) {
+    :where(.ly-root[data-ly-layout="minimal-saas"]) .ly-grid > :nth-child(4n + 1) {
       grid-column: span 2;
-      grid-row: span 2;
-      min-height: 15rem;
-    }
-
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-sidebar-layout {
-      grid-template-columns: minmax(min(100%, 11rem), 0.25fr) minmax(0, 1fr);
-    }
-
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-split {
-      grid-template-columns: minmax(0, 0.7fr) minmax(min(100%, 20rem), 1.3fr);
-    }
-
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-panes--two {
-      grid-template-columns: minmax(min(100%, 13rem), 0.46fr) minmax(0, 1.54fr);
-    }
-  }
-
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="mondrian"], .ly-root[layout-style="mondrian"], .ly-root.ly-layout-mondrian, .ly-root.ly-style-mondrian) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 11rem), 0.28fr) minmax(0, 1.44fr) minmax(min(100%, 13rem), 0.28fr);
     }
   }
 }
 
-/* layout-style-synthwave.css */
-/*
-  Layout style: synthwave.
-  Wide stage, dock-like support areas, and cinematic horizontal flow inspired
-  by retro-futuristic interface composition. Visual identity remains owned by
-  ui-style-kit-css.
-*/
+/* personalities/bento.css */
+/* Layout style: bento. A full-width shell and staggered spans form modular tiles. */
 
-@layer ly.styles.synthwave {
-  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) {
-    --ly-container-max: 112rem;
-    --ly-page-padding-inline: clamp(1rem, 4vw, 3.5rem);
-    --ly-section-padding-block: clamp(2.5rem, 7vw, 6rem);
-    --ly-sidebar-width: clamp(14rem, 18vw, 20rem);
+@layer ly.personalities.bento {
+  :where(.ly-root[data-ly-layout="bento"]) {
+    --ly-grid-columns: 6;
+    --ly-grid-min: 12rem;
+    --ly-card-grid-min: 13rem;
+    --ly-personality-wrapper-max: 112rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="bento"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header header"
+        "sidebar main main"
+        "aside main main"
+        "footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.3fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-ly-layout="bento"]) .ly-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="bento"])
+      :where(.ly-card-grid, [data-ly-recipe="card-grid"])
+      > :nth-child(6n + 1) {
+      grid-column: span 2;
+    }
+  }
+}
+
+/* personalities/maximalist.css */
+/* Layout style: maximalist. A full-bleed four-track mosaic favors dramatic spans. */
+
+@layer ly.personalities.maximalist {
+  :where(.ly-root[data-ly-layout="maximalist"]) {
+    --ly-grid-columns: 12;
+    --ly-grid-min: 10rem;
+    --ly-personality-wrapper-max: 100%;
+    --ly-card-grid-min: 12rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header header header"
+        "main main sidebar aside"
+        "main main footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.4fr)
+        minmax(0, 0.6fr)
+        minmax(min(100%, 15rem), 0.32fr)
+        minmax(min(100%, 18rem), 0.38fr);
+    }
+
+    :where(.ly-root[data-ly-layout="maximalist"]) .ly-grid > :nth-child(7n + 1) {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-gallery, [data-ly-recipe="gallery"])
+      > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}
+
+/* personalities/bauhaus.css */
+/* Layout style: bauhaus. A left rail anchors an intentionally asymmetric grid. */
+
+@layer ly.personalities.bauhaus {
+  :where(.ly-root[data-ly-layout="bauhaus"]) {
+    --ly-recipe-rail: 14rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 13rem;
+    --ly-personality-wrapper-max: 96rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  /* Cap the fallback rail until the wider personality template is eligible. */
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="bauhaus"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 14rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="bauhaus"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header header aside"
+        "sidebar main main aside"
+        "sidebar footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.24fr)
+        minmax(0, 0.7fr)
+        minmax(0, 1.3fr)
+        minmax(min(100%, 18rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="bauhaus"]) .ly-grid > :nth-child(3n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}
+
+/* personalities/tactile.css */
+/* Layout style: tactile. A compact left rail leaves a broad, steady work lane. */
+
+@layer ly.personalities.tactile {
+  :where(.ly-root[data-ly-layout="tactile"]) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 5;
+    --ly-grid-min: 15rem;
+    --ly-personality-wrapper-max: 82rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="tactile"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main"
+        "sidebar aside"
+        "sidebar footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(min(100%, 17rem), 0.28fr) minmax(0, 1fr);
+    }
+
+    :where(.ly-root[data-ly-layout="tactile"]) .ly-grid > :nth-child(5n + 2) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="tactile"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+      grid-template-columns: minmax(min(100%, 20rem), 0.42fr) minmax(0, 0.58fr);
+    }
+  }
+}
+
+/* personalities/neumorphism.css */
+/* Layout style: neumorphism. A calm right rail preserves a compact workspace. */
+
+@layer ly.personalities.neumorphism {
+  :where(.ly-root[data-ly-layout="neumorphism"]) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 4;
+    --ly-grid-min: 17rem;
+    --ly-personality-wrapper-max: 84rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header sidebar"
+        "main sidebar"
+        "aside sidebar"
+        "footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="neumorphism"]) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="neumorphism"])
+      :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {
+      grid-template-columns: minmax(0, 0.58fr) minmax(min(100%, 19rem), 0.42fr);
+    }
+  }
+}
+
+/* personalities/retrofuturism.css */
+/* Layout style: retrofuturism. Twin rails frame a focused central work zone. */
+
+@layer ly.personalities.retrofuturism {
+  :where(.ly-root[data-ly-layout="retrofuturism"]) {
+    --ly-recipe-rail: 14rem;
+    --ly-recipe-aside: 17rem;
+    --ly-grid-columns: 6;
     --ly-grid-min: 14rem;
-    --ly-gap: clamp(1rem, 2.8vw, 2.25rem);
-    --ly-grid-gap: var(--ly-gap);
-    --ly-stack-gap: clamp(1rem, 2.2vw, 1.8rem);
-    --ly-carousel-item-min: 18rem;
-    --ly-carousel-item-max: 34rem;
+    --ly-personality-wrapper-max: 106rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
   }
 
-  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-main {
-    padding-block: clamp(1rem, 3vw, 3rem);
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="retrofuturism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header aside"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 14rem), 0.24fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="retrofuturism"]) .ly-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+    }
+  }
+}
+
+/* personalities/brutalism.css */
+/* Layout style: brutalism. A blunt right rail counters a broad primary plane. */
+
+@layer ly.personalities.brutalism {
+  :where(.ly-root[data-ly-layout="brutalism"]) {
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 16rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 100rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
   }
 
-  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-container,
-  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-wrapper {
-    width: min(100% - var(--ly-page-padding-inline), var(--ly-container-max));
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="brutalism"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "main aside sidebar"
+        "footer footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.3fr)
+        minmax(min(100%, 16rem), 0.7fr)
+        minmax(min(100%, 18rem), 0.34fr);
+    }
+
+    :where(.ly-root[data-ly-layout="brutalism"]) .ly-grid > :nth-child(3n) {
+      grid-column: span 2;
+    }
+  }
+}
+
+/* personalities/cyberpunk.css */
+/* Layout style: cyberpunk. A narrow command rail fronts a dense three-lane shell. */
+
+@layer ly.personalities.cyberpunk {
+  :where(.ly-root[data-ly-layout="cyberpunk"]) {
+    --ly-recipe-rail: 13rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 12rem;
+    --ly-personality-wrapper-max: 112rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
   }
 
-  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-section {
-    padding-block: var(--ly-section-padding-block);
+  @container ly-personality (min-width: 44rem) {
+    :where(.ly-root[data-ly-layout="cyberpunk"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header aside"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 13rem), 0.2fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 19rem), 0.32fr);
+    }
+
+    :where(.ly-root[data-ly-layout="cyberpunk"]) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 3;
+    }
+  }
+}
+
+/* personalities/y2k.css */
+/* Layout style: y2k. A tall right rail frames a reversed supporting workspace. */
+
+@layer ly.personalities.y2k {
+  :where(.ly-root[data-ly-layout="y2k"]) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 5;
+    --ly-grid-min: 13rem;
+    --ly-personality-wrapper-max: 90rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
   }
 
-  :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-grid--auto {
-    grid-auto-rows: minmax(9rem, auto);
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="y2k"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "aside main sidebar"
+        "footer footer sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 18rem), 0.34fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 16rem), 0.28fr);
+    }
+
+    :where(.ly-root[data-ly-layout="y2k"]) .ly-grid > :nth-child(5n + 1) {
+      grid-column: span 3;
+    }
+  }
+}
+
+/* personalities/retro-glass.css */
+/* Layout style: retro-glass. A stepped right rail floats beside a wide stage. */
+
+@layer ly.personalities.retro_glass {
+  :where(.ly-root[data-ly-layout="retro-glass"]) {
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 15rem;
+    --ly-personality-wrapper-max: 104rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
   }
 
-  @media (min-width: 48rem) {
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-shell {
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="retro-glass"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-ly-layout="retro-glass"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "main main sidebar"
+        "aside footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(0, 0.75fr)
+        minmax(min(100%, 18rem), 0.32fr);
+    }
+
+    :where(.ly-root[data-ly-layout="retro-glass"]) .ly-grid > :nth-child(4n) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}
+
+/* personalities/f-pattern.css */
+/* Layout style: f-pattern. A left rail supports a wide first-reading column. */
+
+@layer ly.personalities.f_pattern {
+  :where(.ly-root[data-ly-layout="f-pattern"]) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 6;
+    --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 92rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="f-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 16rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 56rem) {
+    :where(.ly-root[data-ly-layout="f-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "sidebar header header"
+        "sidebar main aside"
+        "sidebar footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 16rem), 0.26fr)
+        minmax(0, 1.35fr)
+        minmax(min(100%, 18rem), 0.65fr);
+    }
+
+    :where(.ly-root[data-ly-layout="f-pattern"]) .ly-grid > :nth-child(3n + 1) {
+      grid-column: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="f-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    }
+  }
+}
+
+/* personalities/z-pattern.css */
+/* Layout style: z-pattern. A right rail closes a diagonal reading progression. */
+
+@layer ly.personalities.z_pattern {
+  :where(.ly-root[data-ly-layout="z-pattern"]) {
+    --ly-recipe-rail: 17rem;
+    --ly-recipe-aside: 19rem;
+    --ly-grid-columns: 8;
+    --ly-grid-min: 14rem;
+    --ly-personality-wrapper-max: 108rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 60rem) {
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header sidebar"
+        "main aside sidebar"
+        "footer aside sidebar";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(0, 1.45fr)
+        minmax(min(100%, 19rem), 0.55fr)
+        minmax(min(100%, 17rem), 0.3fr);
+    }
+
+    :where(.ly-root[data-ly-layout="z-pattern"]) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 2;
+      align-self: end;
+    }
+
+    :where(.ly-root[data-ly-layout="z-pattern"])
+      :where(.ly-split-hero, [data-ly-recipe="split-hero"]) {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.5fr);
+    }
+  }
+}
+
+/* personalities/split-screen.css */
+/* Layout style: split-screen. Equal tracks keep two primary experiences in balance. */
+
+@layer ly.personalities.split_screen {
+  :where(.ly-root[data-ly-layout="split-screen"]) {
+    --ly-grid-columns: 2;
+    --ly-grid-min: 20rem;
+    --ly-personality-wrapper-max: 100%;
+    --ly-split-primary: 1fr;
+    --ly-split-secondary: 1fr;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="split-screen"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
         "header header"
-        "main main"
-        "sidebar sidebar";
+        "main sidebar"
+        "aside sidebar"
+        "footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-sidebar {
-      display: block;
-      overflow: auto;
+    :where(.ly-root[data-ly-layout="split-screen"])
+      :where(
+        .ly-split,
+        .ly-split-hero,
+        [data-ly-recipe="split-hero"],
+        .ly-list-detail,
+        [data-ly-recipe="list-detail"]
+      ) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
+  }
+}
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-sidebar-layout {
-      grid-template-columns: minmax(0, 1.2fr) minmax(min(100%, 17rem), 0.8fr);
-    }
+/* personalities/mondrian.css */
+/* Layout style: mondrian. Unequal zones and spanning blocks create a strict mosaic. */
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-split {
-      grid-template-columns: minmax(0, 1fr);
-    }
+@layer ly.personalities.mondrian {
+  :where(.ly-root[data-ly-layout="mondrian"]) {
+    --ly-recipe-rail: 13rem;
+    --ly-recipe-aside: 18rem;
+    --ly-grid-columns: 10;
+    --ly-grid-min: 11rem;
+    --ly-personality-wrapper-max: 112rem;
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-panes--two {
-      grid-template-columns: minmax(0, 1.35fr) minmax(min(100%, 17rem), 0.65fr);
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="mondrian"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 13rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
-  @media (min-width: 80rem) {
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-shell {
+  @container ly-personality (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="mondrian"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
-        "header header"
-        "main sidebar";
-      grid-template-columns: minmax(0, 1.52fr) minmax(min(100%, 17rem), 0.48fr);
+        "sidebar header header"
+        "sidebar main aside"
+        "footer footer aside";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 13rem), 0.22fr)
+        minmax(0, 1.45fr)
+        minmax(min(100%, 18rem), 0.55fr);
     }
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-app-sidebar {
-      position: sticky;
-      top: var(--ly-space-5);
-      height: calc(100svh - (var(--ly-space-5) * 2));
+    :where(.ly-root[data-ly-layout="mondrian"]) .ly-grid > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+}
+
+/* personalities/synthwave.css */
+/* Layout style: synthwave. A cinematic center stage sits between support zones. */
+
+@layer ly.personalities.synthwave {
+  :where(.ly-root[data-ly-layout="synthwave"]) {
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 20rem;
+    --ly-grid-columns: 12;
+    --ly-grid-min: 14rem;
+    --ly-reel-item-max: 34rem;
+    --ly-personality-wrapper-max: 112rem;
+
+    container-name: ly-personality;
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  @container ly-personality (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="synthwave"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-columns: minmax(min(100%, 16rem), 0.3fr) minmax(0, 1fr);
+    }
+  }
+
+  @container ly-personality (min-width: 64rem) {
+    :where(.ly-root[data-ly-layout="synthwave"])
+      :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
+      grid-template-areas:
+        "header header header"
+        "sidebar main aside"
+        "footer footer footer";
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-columns:
+        minmax(min(100%, 16rem), 0.28fr)
+        minmax(0, 1fr)
+        minmax(min(100%, 20rem), 0.34fr);
     }
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-split {
-      grid-template-columns: minmax(0, 1.42fr) minmax(min(100%, 20rem), 0.58fr);
+    :where(.ly-root[data-ly-layout="synthwave"]) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 3;
     }
 
-    :where(.ly-root[data-layout="synthwave"], .ly-root[layout-style="synthwave"], .ly-root.ly-layout-synthwave, .ly-root.ly-style-synthwave) .ly-panes--three {
-      grid-template-columns: minmax(min(100%, 14rem), 0.36fr) minmax(0, 1.28fr) minmax(min(100%, 16rem), 0.36fr);
+    :where(.ly-root[data-ly-layout="synthwave"]) .ly-reel {
+      grid-auto-columns: minmax(min(100%, 20rem), var(--ly-reel-item-max));
     }
   }
 }
