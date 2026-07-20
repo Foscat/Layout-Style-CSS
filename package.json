@@ -1,6 +1,6 @@
 {
   "name": "layout-style-css",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Dependency-free structural CSS for responsive wrappers, composition primitives, recipes, utilities, and layout personalities.",
   "type": "module",
   "license": "MIT",
@@ -54,9 +54,9 @@
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
-    "interactive-surface-css": "1.4.0",
+    "interactive-surface-css": "1.5.0",
     "stylelint": "17.14.0",
-    "ui-style-kit-css": "2.0.1"
+    "ui-style-kit-css": "file:../ui-style-kit-css"
   },
   "exports": {
     ".": "./dist/layout-style-css.css",

@@ -6,18 +6,18 @@ Version 2.0 rebuilds Layout Style CSS as a container-first, dependency-free stru
 
 - Development and release scripts require Node.js 20 or newer.
 - The package has no runtime dependencies and no peer dependencies.
-- `ui-style-kit-css@2.0.1` and `interactive-surface-css@1.4.0` are exact development and integration fixtures, not consumer dependencies.
+- `ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are development and integration fixtures, not consumer dependencies.
 - Current evergreen Chromium, Firefox, and WebKit are supported.
 - Responsive recipes use core thresholds at `48rem` and `64rem`; personalities may add personality-specific thresholds.
 
 Install companions explicitly only when the application uses them:
 
 ```bash
-npm install layout-style-css@2.0.0
-npm install ui-style-kit-css@2.0.1 interactive-surface-css@1.4.0
+npm install layout-style-css@2.1.0
+npm install ui-style-kit-css@2.1.0 interactive-surface-css@1.5.0
 ```
 
-The upcoming UI Style Kit revision is a separate follow-up, not part of the Layout Style CSS 2.0 release.
+Layout Style CSS 2.1 keeps the v2 layout contract and updates the optional companion fixture path to UI Style Kit visual CSS, its Interactive Surface token bridge, and Interactive Surface 1.5 state core.
 
 ## Export Changes
 
@@ -60,7 +60,7 @@ import "layout-style-css";
 Layout plus UI Style Kit:
 
 ```js
-import "ui-style-kit-css/with-bridge.css";
+import "ui-style-kit-css/visual.css";
 import "layout-style-css/integrations/ui-style-kit.css";
 import "layout-style-css";
 ```
@@ -68,9 +68,9 @@ import "layout-style-css";
 All three libraries must be imported in this exact order:
 
 ```js
-import "ui-style-kit-css/with-bridge.css";
+import "ui-style-kit-css/visual.css";
+import "ui-style-kit-css/interactive-surface-theme.css";
 import "interactive-surface-css/state-core.css";
-import "layout-style-css/integrations/ui-style-kit.css";
 import "layout-style-css";
 ```
 

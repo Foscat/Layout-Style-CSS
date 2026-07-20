@@ -1,10 +1,10 @@
 # Release And Publishing
 
-This checklist prepares `layout-style-css@2.0.0`. Publishing, tagging, pushing, and creating a GitHub release require separate explicit approval.
+This checklist prepares `layout-style-css@2.1.0`. Publishing, tagging, pushing, and creating a GitHub release require separate explicit approval.
 
 ## Version Contract
 
-- `package.json` and `package-lock.json` identify `2.0.0`.
+- `package.json` and `package-lock.json` identify `2.1.0`.
 - Node.js 20 and 22 pass standalone CI.
 - `CHANGELOG.md` contains the dated breaking-release entry.
 - README, migration guide, wiki, demo, exports, and tarball describe the same v2 API.
@@ -37,22 +37,22 @@ git diff --check
 
 ## Tag And Version Validation
 
-The publish workflow checks out the selected tag and fails unless it equals `v${package.version}`. For this release the only valid tag is `v2.0.0`.
+The publish workflow checks out the selected tag and fails unless it equals `v${package.version}`. For this release the only valid tag is `v2.1.0`.
 
 After separate approval, an operator may check registry availability:
 
 ```bash
-npm view layout-style-css@2.0.0 version --json
+npm view layout-style-css@2.1.0 version --json
 ```
 
 The eventual release sequence is:
 
 ```bash
-git tag v2.0.0
-git push origin v2.0.0
+git tag v2.1.0
+git push origin v2.1.0
 ```
 
-Publishing the `v2.0.0` GitHub release triggers the npm workflow. A separately approved recovery run may use `release_tag` set to `v2.0.0`.
+Publishing the `v2.1.0` GitHub release triggers the npm workflow. A separately approved recovery run may use `release_tag` set to `v2.1.0`.
 
 ## Workflow Safety
 

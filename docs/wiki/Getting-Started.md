@@ -7,7 +7,7 @@ Layout Style CSS 2.0 provides structural layout without prescribing theme or com
 Node.js 20 or newer is required for development scripts.
 
 ```bash
-npm install layout-style-css@2.0.0
+npm install layout-style-css@2.1.0
 ```
 
 ## Import

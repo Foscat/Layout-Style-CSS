@@ -2,7 +2,7 @@
 
 Container-first, dependency-free structural CSS for responsive application layouts.
 
-`layout-style-css@2.0.0` provides semantic wrappers, composition primitives, seven functional recipes, ordering escape hatches, and sixteen spatial personalities. It owns layout only; color, typography, borders, shadows, component paint, and interactive states belong to other libraries.
+`layout-style-css@2.1.0` provides semantic wrappers, composition primitives, seven functional recipes, ordering escape hatches, sixteen spatial personalities, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5. It owns layout only; color, typography, borders, shadows, component paint, and interactive states belong to other libraries.
 
 ## Requirements
 
@@ -10,12 +10,12 @@ Container-first, dependency-free structural CSS for responsive application layou
 - Current evergreen Chromium, Firefox, or WebKit for consumers
 - No runtime or peer dependencies
 
-`ui-style-kit-css@2.0.1` and `interactive-surface-css@1.4.0` are exact development and integration fixtures. They are not installed for consumers. A separate UI Style Kit revision is a follow-up and is not part of this release.
+`ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are development and integration fixtures. UI Style Kit is resolved from the sibling staged checkout until 2.1.0 is approved and published; Interactive Surface 1.5.0 is the released registry fixture. Neither package is installed for consumers.
 
 ## Install
 
 ```bash
-npm install layout-style-css@2.0.0
+npm install layout-style-css@2.1.0
 ```
 
 Standalone use needs one import:
@@ -33,21 +33,20 @@ Layout Style never imports companion packages. Install and import each layer exp
 Layout plus UI Style Kit:
 
 ```js
-import "ui-style-kit-css/with-bridge.css";
-import "layout-style-css/integrations/ui-style-kit.css";
+import "ui-style-kit-css/visual.css";
 import "layout-style-css";
 ```
 
 Layout plus UI Style Kit and Interactive Surface must use this order:
 
 ```js
-import "ui-style-kit-css/with-bridge.css";
+import "ui-style-kit-css/visual.css";
+import "ui-style-kit-css/interactive-surface-theme.css";
 import "interactive-surface-css/state-core.css";
-import "layout-style-css/integrations/ui-style-kit.css";
 import "layout-style-css";
 ```
 
-The UI Style Kit bridge establishes its visual tokens, Interactive Surface contributes interaction states, the Layout integration maps structural UI aliases, and Layout core applies spatial behavior.
+UI Style Kit establishes visual paint, the UI token bridge maps theme roles for Interactive Surface, Interactive Surface contributes interaction states, and Layout core applies spatial behavior.
 
 ## Public Exports
 
@@ -62,7 +61,7 @@ The UI Style Kit bridge establishes its visual tokens, Interactive Surface contr
 | `layout-style-css/utilities.css` | Structural utilities and ordering escape hatches. |
 | `layout-style-css/personalities.css` | All sixteen personalities. |
 | `layout-style-css/personalities/minimal-saas.css` | One personality; substitute any public personality name. |
-| `layout-style-css/integrations/ui-style-kit.css` | Import-free structural bridge for UI Style Kit names. |
+| `layout-style-css/integrations/ui-style-kit.css` | Deprecated import-free structural bridge for legacy UI Style Kit structural aliases. |
 | `layout-style-css/legacy.css` | Full v2 bundle plus v1 compatibility aliases. |
 
 The old root-level personality files and `all-with-ui-kit*` aggregates were removed. See [Migrating To 2.0](docs/wiki/Migrating-To-2.0.md) for exact mappings.
@@ -159,7 +158,13 @@ These are escape hatches. Visual reordering can diverge from screen-reader readi
 
 ## UI Style Kit Naming Compatibility
 
-Import `layout-style-css/integrations/ui-style-kit.css` after the UI and interaction layers. The bridge maps structural aliases such as `.saas-container`, `.bento-grid`, and `.cyber-split` without importing packages or redefining visual tokens.
+`layout-style-css/integrations/ui-style-kit.css` remains available for legacy code that still uses UI-prefixed structural aliases such as `.saas-container`, `.bento-grid`, and `.cyber-split`. It is frozen and deprecated; new ecosystem imports should use UI Style Kit visual builds plus Layout core instead of the structural bridge.
+
+Deprecated bridge import:
+
+```js
+import "layout-style-css/integrations/ui-style-kit.css";
+```
 
 Supported UI prefixes are `saas`, `bento`, `max`, `bau`, `tactile`, `neo`, `retro`, `brutal`, `cyber`, `y2k`, and `rg`.
 
@@ -178,11 +183,11 @@ The v1 `.ly-surface--raised` selector is intentionally removed, including from `
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.0.0/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.0.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.0/dist/layout-style-css.min.css">
 ```
 
-Companion CDN styles must appear in the same order as the package imports: UI Style Kit bridge, Interactive Surface `state-core.css`, Layout integration bridge, then Layout core.
+Companion CDN styles must appear in the same order as the package imports: UI Style Kit visual CSS, UI Style Kit `interactive-surface-theme.css`, Interactive Surface `state-core.css`, then Layout core. Load `layout-style-css/integrations/ui-style-kit.css` only for deprecated structural aliases.
 
 ## Development And Verification
 

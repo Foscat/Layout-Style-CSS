@@ -1,3 +1,82 @@
+const UI_STYLE_KIT_VERSION = "2.1.0";
+const UI_STYLE_KIT_MANIFEST_URL = `https://unpkg.com/ui-style-kit-css@${UI_STYLE_KIT_VERSION}/manifest.json`;
+const UI_STYLE_KIT_MANIFEST_FALLBACK = Object.freeze({
+  version: UI_STYLE_KIT_VERSION,
+  presets: Object.freeze([
+    Object.freeze({ id: "minimal-saas", label: "Minimal SaaS", prefix: "saas" }),
+    Object.freeze({ id: "bento", label: "Bento", prefix: "bento" }),
+    Object.freeze({ id: "maximalist", label: "Maximalist", prefix: "max" }),
+    Object.freeze({ id: "bauhaus", label: "Bauhaus", prefix: "bau" }),
+    Object.freeze({ id: "tactile", label: "Tactile", prefix: "tactile" }),
+    Object.freeze({ id: "neumorphism", label: "Neumorphism", prefix: "neo" }),
+    Object.freeze({ id: "retrofuturism", label: "Retrofuturism", prefix: "retro" }),
+    Object.freeze({ id: "brutalism", label: "Brutalism", prefix: "brutal" }),
+    Object.freeze({ id: "cyberpunk", label: "Cyberpunk", prefix: "cyber" }),
+    Object.freeze({ id: "y2k", label: "Y2K", prefix: "y2k" }),
+    Object.freeze({ id: "retro-glass", label: "Retro Glass", prefix: "rg" })
+  ]),
+  themes: Object.freeze([
+    "midnight-gold",
+    "ocean-steel",
+    "forest-moss",
+    "sunset-ember",
+    "royal-plum",
+    "graphite-cyan",
+    "desert-sage",
+    "rose-quartz",
+    "cyber-lime",
+    "arctic-indigo"
+  ]),
+  modes: Object.freeze(["light", "dark", "contrast"])
+});
+
+function normalizeUiStyleKitManifest(manifest) {
+  const normalized = {
+    version: String(manifest?.version ?? UI_STYLE_KIT_VERSION),
+    presets: Array.isArray(manifest?.presets) ? manifest.presets : [],
+    themes: Array.isArray(manifest?.themes) ? manifest.themes : [],
+    modes: Array.isArray(manifest?.modes) ? manifest.modes : []
+  };
+  const presets = normalized.presets
+    .map((preset) => ({
+      id: String(preset?.id ?? ""),
+      label: String(preset?.label ?? preset?.id ?? ""),
+      prefix: String(preset?.prefix ?? "")
+    }))
+    .filter((preset) => preset.id && preset.prefix);
+
+  if (presets.length === 0 || normalized.themes.length === 0 || normalized.modes.length === 0) {
+    throw new Error("UI Style Kit manifest is missing presets, themes, or modes.");
+  }
+
+  return Object.freeze({
+    version: normalized.version,
+    presets: Object.freeze(presets.map((preset) => Object.freeze(preset))),
+    themes: Object.freeze(normalized.themes.map(String)),
+    modes: Object.freeze(normalized.modes.map(String))
+  });
+}
+
+async function loadUiStyleKitManifest() {
+  try {
+    const response = await fetch(UI_STYLE_KIT_MANIFEST_URL, { cache: "force-cache" });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return normalizeUiStyleKitManifest(await response.json());
+  } catch (error) {
+    /*
+      The published demo can render before the companion UI release reaches every CDN edge.
+      The fallback mirrors the 2.1 manifest contract so layout behavior stays testable.
+    */
+    console.warn("UI Style Kit 2.1 manifest unavailable; using the packaged fallback.", error);
+    return UI_STYLE_KIT_MANIFEST_FALLBACK;
+  }
+}
+
+const UI_STYLE_KIT_MANIFEST = await loadUiStyleKitManifest();
 const ALLOWLISTS = Object.freeze({
   wrapper: Object.freeze(["default", "compact", "prose", "content", "wide", "full", "breakout"]),
   recipe: Object.freeze([
@@ -29,31 +108,9 @@ const ALLOWLISTS = Object.freeze({
   ]),
   container: Object.freeze(["auto", "40rem", "47rem", "49rem", "63rem", "65rem", "80rem"]),
   density: Object.freeze(["compact", "comfortable", "spacious"]),
-  ui: Object.freeze([
-    "minimal-saas",
-    "bento",
-    "maximalist",
-    "bauhaus",
-    "tactile",
-    "neumorphism",
-    "retrofuturism",
-    "brutalism",
-    "cyberpunk",
-    "y2k",
-    "retro-glass"
-  ]),
-  theme: Object.freeze([
-    "arctic-indigo",
-    "ocean-steel",
-    "graphite-cyan",
-    "forest-moss",
-    "rose-quartz",
-    "desert-sage",
-    "midnight-gold",
-    "cyber-lime",
-    "sunset-ember"
-  ]),
-  mode: Object.freeze(["light", "dark", "contrast"]),
+  ui: Object.freeze(UI_STYLE_KIT_MANIFEST.presets.map((preset) => preset.id)),
+  theme: Object.freeze(UI_STYLE_KIT_MANIFEST.themes),
+  mode: Object.freeze(UI_STYLE_KIT_MANIFEST.modes),
   ecosystem: Object.freeze(["layout-only", "layout-ui", "all-three"])
 });
 
@@ -85,19 +142,9 @@ const DENSITY_GAPS = Object.freeze({
   spacious: "1.5rem"
 });
 
-const UI_CLASS_PREFIXES = Object.freeze({
-  "minimal-saas": "saas",
-  bento: "bento",
-  maximalist: "max",
-  bauhaus: "bau",
-  tactile: "tactile",
-  neumorphism: "neo",
-  retrofuturism: "retro",
-  brutalism: "brutal",
-  cyberpunk: "cyber",
-  y2k: "y2k",
-  "retro-glass": "rg"
-});
+const UI_CLASS_PREFIXES = Object.freeze(
+  Object.fromEntries(UI_STYLE_KIT_MANIFEST.presets.map((preset) => [preset.id, preset.prefix]))
+);
 
 const RECIPE_CLASSES = Object.freeze({
   "app-shell": "ly-app-shell",
@@ -120,14 +167,13 @@ const RECIPE_AREAS = Object.freeze({
 const ECOSYSTEM_IMPORTS = Object.freeze({
   "layout-only": Object.freeze(['import "layout-style-css";']),
   "layout-ui": Object.freeze([
-    'import "ui-style-kit-css/with-bridge.css";',
-    'import "layout-style-css/integrations/ui-style-kit.css";',
+    'import "ui-style-kit-css/visual.css";',
     'import "layout-style-css";'
   ]),
   "all-three": Object.freeze([
-    'import "ui-style-kit-css/with-bridge.css";',
+    'import "ui-style-kit-css/visual.css";',
+    'import "ui-style-kit-css/interactive-surface-theme.css";',
     'import "interactive-surface-css/state-core.css";',
-    'import "layout-style-css/integrations/ui-style-kit.css";',
     'import "layout-style-css";'
   ])
 });
@@ -152,6 +198,7 @@ const copyStatus = document.querySelector("#copyStatus");
 const ecosystemStatus = document.querySelector("#ecosystemStatus");
 const containerReadout = document.querySelector("#containerReadout");
 const uiKitStylesheet = document.querySelector("#uiKitStylesheet");
+const uiKitInteractiveThemeStylesheet = document.querySelector("#uiKitInteractiveThemeStylesheet");
 const interactiveSurfaceStylesheet = document.querySelector("#interactiveSurfaceStylesheet");
 const layoutIntegrationStylesheet = document.querySelector("#layoutIntegrationStylesheet");
 const layoutCoreStylesheet = document.querySelector("#layoutCoreStylesheet");
@@ -161,6 +208,9 @@ const drawerClose = document.querySelector("#demoControlsClose");
 const drawerBackdrop = document.querySelector("#demoControlsBackdrop");
 const stateToggle = document.querySelector("#stateToggle");
 const mobileControlsQuery = window.matchMedia("(max-width: 63.999rem)");
+
+body.dataset.uiManifestVersion = UI_STYLE_KIT_MANIFEST.version;
+syncUiManifestSelectOptions();
 
 let state = readStateFromQuery();
 let drawerReturnFocus = null;
@@ -302,6 +352,40 @@ function formatLabel(value) {
     .join(" ");
 }
 
+function syncUiManifestSelectOptions() {
+  const optionGroups = {
+    ui: UI_STYLE_KIT_MANIFEST.presets.map((preset) => ({
+      value: preset.id,
+      label: preset.label || formatLabel(preset.id)
+    })),
+    theme: UI_STYLE_KIT_MANIFEST.themes.map((theme) => ({
+      value: theme,
+      label: formatLabel(theme)
+    })),
+    mode: UI_STYLE_KIT_MANIFEST.modes.map((mode) => ({
+      value: mode,
+      label: mode === "contrast" ? "High contrast" : formatLabel(mode)
+    }))
+  };
+
+  for (const [key, options] of Object.entries(optionGroups)) {
+    const select = controls[key];
+
+    if (!select) {
+      continue;
+    }
+
+    select.replaceChildren(
+      ...options.map(({ value, label }) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        return option;
+      })
+    );
+  }
+}
+
 function syncUiKitClasses() {
   const prefix = UI_CLASS_PREFIXES[state.ui];
 
@@ -330,8 +414,9 @@ function syncEcosystem() {
   const includesInteractiveSurface = state.ecosystem === "all-three";
 
   uiKitStylesheet.disabled = !includesUi;
+  uiKitInteractiveThemeStylesheet.disabled = !includesInteractiveSurface;
   interactiveSurfaceStylesheet.disabled = !includesInteractiveSurface;
-  layoutIntegrationStylesheet.disabled = !includesUi;
+  layoutIntegrationStylesheet.disabled = true;
   layoutCoreStylesheet.disabled = false;
   ecosystemStatus.textContent = ECOSYSTEM_LABELS[state.ecosystem];
 }

@@ -2,6 +2,18 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [2.1.0] - 2026-07-20
+
+### Changed
+
+- Updated the ecosystem demo and documentation to use `ui-style-kit-css@2.1.0` visual CSS, `ui-style-kit-css/interactive-surface-theme.css`, `interactive-surface-css@1.5.0` state core, and Layout core as the canonical import order.
+- Kept `layout-style-css/integrations/ui-style-kit.css` available as a frozen deprecated structural bridge for legacy UI-prefixed layout aliases.
+- Updated release metadata and the GitHub Pages demo to identify the 2.1.0 package line.
+
+### Tests
+
+- Switched demo fixtures to consume the staged UI Style Kit 2.1 manifest, visual bundle, and token bridge while locking Interactive Surface to the released 1.5.0 package.
+
 ## [2.0.0] - 2026-07-19
 
 ### Breaking

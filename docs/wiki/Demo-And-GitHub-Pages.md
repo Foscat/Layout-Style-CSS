@@ -37,7 +37,7 @@ The smoke suite verifies:
 - bounded scrolling
 - accessible mobile controls
 - layout-only, Layout plus UI, and all-three ecosystem modes
-- pinned `ui-style-kit-css@2.0.1` and `interactive-surface-css@1.4.0` fixture behavior
+- pinned `ui-style-kit-css@2.1.0` visual, token bridge, and manifest behavior plus released `interactive-surface-css@1.5.0`
 
 The demo query parser uses explicit allowlists and writes generated imports and markup with `textContent`.
 

@@ -602,10 +602,13 @@ function isLocalMarkdownLink(link) {
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
 const lockRoot = packageLock.packages[""];
+const uiKitFixturePackage = JSON.parse(
+  readFileSync(join(root, "node_modules", "ui-style-kit-css", "package.json"), "utf8")
+);
 const v2ContractFailures = [];
 
-if (packageJson.version !== "2.0.0") {
-  v2ContractFailures.push(`package version is ${packageJson.version}, expected 2.0.0`);
+if (packageJson.version !== "2.1.0") {
+  v2ContractFailures.push(`package version is ${packageJson.version}, expected 2.1.0`);
 }
 if (packageJson.engines?.node !== ">=20") {
   v2ContractFailures.push(`Node engine is ${packageJson.engines?.node ?? "missing"}, expected >=20`);
@@ -613,8 +616,8 @@ if (packageJson.engines?.node !== ">=20") {
 if (packageJson.dependencies !== undefined || packageJson.peerDependencies !== undefined) {
   v2ContractFailures.push("runtime and peer dependencies must be absent");
 }
-if (packageJson.devDependencies?.["interactive-surface-css"] !== "1.4.0") {
-  v2ContractFailures.push("interactive-surface-css dev fixture must be exactly 1.4.0");
+if (packageJson.devDependencies?.["interactive-surface-css"] !== "1.5.0") {
+  v2ContractFailures.push("interactive-surface-css dev fixture must be exactly 1.5.0");
 }
 if (JSON.stringify(packageJson.exports) !== JSON.stringify(expectedV2Exports)) {
   v2ContractFailures.push("package exports do not match the focused v2 contract");
@@ -1205,7 +1208,7 @@ assert(!minified.includes("\n\n"), "Minified bundle should not preserve expanded
 assert(!minified.includes("@import"), "Minified bundle must be layout-only and flattened");
 
 assert.equal(packageJson.name, "layout-style-css");
-assert.equal(packageJson.version, "2.0.0");
+assert.equal(packageJson.version, "2.1.0");
 assert.equal(packageJson.license, "MIT");
 assert.equal(packageJson.private, undefined);
 assert.match(packageJson.description, /dependency-free/i);
@@ -1220,21 +1223,32 @@ assert.equal(packageJson.jsdelivr, "dist/layout-style-css.min.css");
 assert.equal(packageJson.dependencies, undefined);
 assert.equal(packageJson.peerDependencies, undefined);
 assert.equal(packageJson.peerDependenciesMeta, undefined);
-assert.equal(packageJson.devDependencies["ui-style-kit-css"], "2.0.1");
-assert.equal(packageJson.devDependencies["interactive-surface-css"], "1.4.0");
+assert.equal(packageJson.devDependencies["ui-style-kit-css"], "file:../ui-style-kit-css");
+assert.equal(packageJson.devDependencies["interactive-surface-css"], "1.5.0");
 assert(packageJson.devDependencies.stylelint, "Stylelint must be installed for CSS linting");
 assert(packageJson.devDependencies["@playwright/test"], "Playwright must be installed for demo smoke checks");
-assert.equal(packageLock.version, "2.0.0");
-assert.equal(lockRoot.version, "2.0.0");
+assert.equal(packageLock.version, "2.1.0");
+assert.equal(lockRoot.version, "2.1.0");
 assert.equal(lockRoot.engines.node, ">=20");
 assert.equal(lockRoot.dependencies, undefined);
 assert.equal(lockRoot.peerDependencies, undefined);
 assert.equal(lockRoot.peerDependenciesMeta, undefined);
-assert.equal(lockRoot.devDependencies["ui-style-kit-css"], "2.0.1");
-assert.equal(lockRoot.devDependencies["interactive-surface-css"], "1.4.0");
+assert.equal(lockRoot.devDependencies["ui-style-kit-css"], "file:../ui-style-kit-css");
+assert.equal(lockRoot.devDependencies["interactive-surface-css"], "1.5.0");
+assert.equal(uiKitFixturePackage.version, "2.1.0", "Local UI Style Kit fixture must be the staged 2.1.0 line");
+assert.equal(
+  packageLock.packages["node_modules/ui-style-kit-css"].resolved,
+  "../ui-style-kit-css",
+  "Lockfile must resolve the staged local UI Style Kit fixture until 2.1.0 is published"
+);
+assert.equal(
+  packageLock.packages["node_modules/ui-style-kit-css"].link,
+  true,
+  "Lockfile must represent UI Style Kit as a local staged fixture"
+);
 assert.equal(
   packageLock.packages["node_modules/interactive-surface-css"].version,
-  "1.4.0",
+  "1.5.0",
   "Lockfile must resolve the exact Interactive Surface fixture"
 );
 assert.deepEqual(packageJson.files, [
@@ -1305,6 +1319,7 @@ for (const name of personalityNames) {
 }
 
 const demo = readFileSync(join(root, "demo", "index.html"), "utf8");
+const demoScript = readFileSync(join(root, "demo", "demo.js"), "utf8");
 const demoInlineCss = demo.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
 assert.deepEqual(
   findOwnedVisualDeclarations(demoInlineCss),
@@ -1380,10 +1395,22 @@ assert(
   demo.includes("../dist/integrations/ui-style-kit.css"),
   "Demo should opt into the focused UI Style Kit integration"
 );
-assert(demo.includes("ui-style-kit-css@2.0.1"), "Demo should pin UI Style Kit CSS v2.0.1");
 assert(
-  demo.includes("interactive-surface-css@1.4.0/state-core.css"),
-  "Demo should pin the Interactive Surface 1.4.0 state core"
+  demo.includes("ui-style-kit-css@2.1.0/dist/ui-style-kit.visual.min.css"),
+  "Demo should pin the UI Style Kit 2.1 visual build"
+);
+assert(
+  demo.includes("ui-style-kit-css@2.1.0/styles/interactive-surface-theme.css"),
+  "Demo should pin the UI Style Kit 2.1 Interactive Surface token bridge"
+);
+assert(
+  demoScript.includes("ui-style-kit-css@${UI_STYLE_KIT_VERSION}/manifest.json") &&
+    demoScript.includes('const UI_STYLE_KIT_VERSION = "2.1.0"'),
+  "Demo script should consume the UI Style Kit 2.1 manifest"
+);
+assert(
+  demo.includes("interactive-surface-css@1.5.0/state-core.css"),
+  "Demo should pin the Interactive Surface 1.5.0 state core"
 );
 for (const recipe of [
   "app-shell",
@@ -1478,7 +1505,7 @@ assert(
 );
 assert(
   readmeImports.includes("interactive-surface-css/state-core.css"),
-  "README should document the Interactive Surface 1.4 state-core entrypoint"
+  "README should document the Interactive Surface 1.5 state-core entrypoint"
 );
 
 for (const htmlBlock of extractFencedBlocks(readme, "html")) {
@@ -1491,9 +1518,9 @@ for (const htmlBlock of extractFencedBlocks(readme, "html")) {
 }
 
 assert(
-  readme.includes("https://unpkg.com/layout-style-css@2.0.0/dist/layout-style-css.min.css") &&
-    readme.includes("https://cdn.jsdelivr.net/npm/layout-style-css@2.0.0/dist/layout-style-css.min.css"),
-  "README CDN examples should pin the v2 package"
+  readme.includes("https://unpkg.com/layout-style-css@2.1.0/dist/layout-style-css.min.css") &&
+    readme.includes("https://cdn.jsdelivr.net/npm/layout-style-css@2.1.0/dist/layout-style-css.min.css"),
+  "README CDN examples should pin the v2.1 package"
 );
 
 const readmeLinks = extractMarkdownLinks(readme);
@@ -1522,13 +1549,13 @@ assert(changelog.includes("wiki"), "CHANGELOG.md should mention the new wiki doc
 
 const wikiHome = readFileSync(join(root, "docs/wiki/Home.md"), "utf8");
 assert(wikiHome.includes("# Layout Style CSS Wiki"), "Wiki home should use a clear product heading");
-assert(wikiHome.includes("Version 2.0.0"), "Wiki home should identify the documented release");
+assert(wikiHome.includes("Version 2.1.0"), "Wiki home should identify the documented release");
 const releaseChecklist = readFileSync(join(root, "docs/wiki/Release-And-Publishing.md"), "utf8");
 assert(
-  releaseChecklist.includes("layout-style-css@2.0.0") &&
-    releaseChecklist.includes("git tag v2.0.0") &&
-    releaseChecklist.includes("release_tag` set to `v2.0.0`"),
-  "Release checklist should identify the 2.0.0 package, tag, and workflow recovery path"
+  releaseChecklist.includes("layout-style-css@2.1.0") &&
+    releaseChecklist.includes("git tag v2.1.0") &&
+    releaseChecklist.includes("release_tag` set to `v2.1.0`"),
+  "Release checklist should identify the 2.1.0 package, tag, and workflow recovery path"
 );
 for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("docs/wiki/"))) {
   const content = readFileSync(join(root, file), "utf8");
@@ -1549,9 +1576,9 @@ assert(
   "npm publish workflow should publish from public release events, not draft release creation"
 );
 assert(
-  npmPublishWorkflow.includes("workflow_dispatch:") &&
+    npmPublishWorkflow.includes("workflow_dispatch:") &&
     npmPublishWorkflow.includes("release_tag:") &&
-    npmPublishWorkflow.includes('description: "Release tag to publish, for example v2.0.0"'),
+    npmPublishWorkflow.includes('description: "Release tag to publish, for example v2.1.0"'),
   "npm publish workflow should expose a manual recovery dispatch with an explicit release tag"
 );
 assert(

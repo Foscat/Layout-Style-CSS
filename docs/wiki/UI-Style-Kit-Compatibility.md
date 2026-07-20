@@ -1,6 +1,6 @@
 # UI Style Kit Compatibility
 
-Layout Style CSS is dependency-free. `ui-style-kit-css@2.0.1` is an exact development fixture used to verify the optional bridge; it is not a runtime or peer dependency. The UI Style Kit revision is a follow-up, not part of this release.
+Layout Style CSS is dependency-free. `ui-style-kit-css@2.1.0` is the visual fixture for 2.1 ecosystem verification; it is resolved from the sibling staged checkout until its approved publication and is not a runtime or peer dependency.
 
 ## Ownership Boundary
 
@@ -15,21 +15,20 @@ Layout Style CSS is dependency-free. `ui-style-kit-css@2.0.1` is an exact develo
 Layout plus UI:
 
 ```js
-import "ui-style-kit-css/with-bridge.css";
-import "layout-style-css/integrations/ui-style-kit.css";
+import "ui-style-kit-css/visual.css";
 import "layout-style-css";
 ```
 
 All three libraries:
 
 ```js
-import "ui-style-kit-css/with-bridge.css";
+import "ui-style-kit-css/visual.css";
+import "ui-style-kit-css/interactive-surface-theme.css";
 import "interactive-surface-css/state-core.css";
-import "layout-style-css/integrations/ui-style-kit.css";
 import "layout-style-css";
 ```
 
-The Layout integration bridge contains structural mappings but no package imports. The removed `all-with-ui-kit*` aggregates have no v2 replacement because dependency ownership stays with the application.
+The Layout integration bridge contains structural mappings but no package imports. It remains available as deprecated compatibility for legacy UI-prefixed structural aliases. The removed `all-with-ui-kit*` aggregates have no v2 replacement because dependency ownership stays with the application.
 
 ## Structural Aliases
 
@@ -43,8 +42,8 @@ The removed v1 `.ly-surface--raised` selector is not restored by `legacy.css`; i
 
 | Library | Verified fixture | Consumer requirement |
 | --- | --- | --- |
-| Layout Style CSS | `2.0.0` | Required for this API |
-| UI Style Kit CSS | `2.0.1` | Optional |
-| Interactive Surface CSS | `1.4.0` `state-core.css` | Optional |
+| Layout Style CSS | `2.1.0` | Required for this API |
+| UI Style Kit CSS | `2.1.0` visual CSS and manifest | Optional staged fixture |
+| Interactive Surface CSS | `1.5.0` `state-core.css` | Optional released fixture |
 
 Current evergreen Chromium, Firefox, and WebKit are covered by the release gate.

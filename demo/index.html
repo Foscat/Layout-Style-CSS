@@ -5,8 +5,8 @@
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta http-equiv="content-language" content="en-US">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="title" content="layout-style-css 2.0 Interactive Layout Lab">
-    <meta name="description" content="Explore container-first wrappers, recipes, and layout personalities in layout-style-css 2.0 with optional UI Style Kit and Interactive Surface integrations.">
+    <meta name="title" content="layout-style-css 2.1 Interactive Layout Lab">
+    <meta name="description" content="Explore container-first wrappers, recipes, and layout personalities in layout-style-css 2.1 with optional UI Style Kit and Interactive Surface integrations.">
     <meta name="keywords" content="CSS layout library, container queries, layout recipes, UI Style Kit CSS, Interactive Surface CSS, responsive CSS">
     <meta name="author" content="Foscat">
     <meta name="creator" content="Foscat">
@@ -36,7 +36,7 @@
     <meta name="color-scheme" content="light dark">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="en_US">
-    <meta property="og:title" content="layout-style-css 2.0 Interactive Layout Lab">
+    <meta property="og:title" content="layout-style-css 2.1 Interactive Layout Lab">
     <meta property="og:description" content="Test semantic wrappers, container-responsive recipes, and sixteen spatial personalities without coupling layout to paint.">
     <meta property="og:image" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
     <meta property="og:image:secure_url" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
@@ -48,11 +48,11 @@
     <meta property="og:site_name" content="layout-style-css">
     <meta property="og:updated_time" content="2026-07-20T00:00:00-05:00">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="layout-style-css 2.0 Interactive Layout Lab">
-    <meta name="twitter:description" content="Container-first responsive layouts that pair cleanly with UI Style Kit CSS 2.0.1 and Interactive Surface CSS 1.4.0.">
+    <meta name="twitter:title" content="layout-style-css 2.1 Interactive Layout Lab">
+    <meta name="twitter:description" content="Container-first responsive layouts that pair cleanly with UI Style Kit CSS 2.1 visual builds and Interactive Surface CSS 1.5.0.">
     <meta name="twitter:image" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
     <meta name="twitter:image:alt" content="layout-style-css interactive layout lab social card">
-    <meta itemprop="name" content="layout-style-css 2.0 Interactive Layout Lab">
+    <meta itemprop="name" content="layout-style-css 2.1 Interactive Layout Lab">
     <meta itemprop="description" content="A live workbench for semantic wrappers, responsive recipes, and spatial personalities.">
     <meta itemprop="image" content="https://foscat.github.io/layout-style-css/assets/social-card.png">
     <link rel="canonical" href="https://foscat.github.io/layout-style-css/">
@@ -65,11 +65,12 @@
     <link rel="mask-icon" href="./assets/favicon.svg" color="#111827">
     <link rel="manifest" href="./site.webmanifest">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
-    <title>layout-style-css 2.0 Interactive Layout Lab</title>
+    <title>layout-style-css 2.1 Interactive Layout Lab</title>
 
-    <link id="uiKitStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css" integrity="sha384-3i/xBAMjaAMQiR/vK1Tq7SzY0TFLUvdYKQKJa4t4zMXXOSfZKY+FOtFtk43F/2J+" crossorigin="anonymous">
-    <link id="interactiveSurfaceStylesheet" rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.4.0/state-core.css" integrity="sha384-D2077FYjcZbu1Mk9p80y2x1I9XdkK3L6ndN1wyvfRq8icCgIXWdpsY0on2NSakA6" crossorigin="anonymous">
-    <link id="layoutIntegrationStylesheet" rel="stylesheet" href="../dist/integrations/ui-style-kit.css">
+    <link id="uiKitStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.1.0/dist/ui-style-kit.visual.min.css" integrity="sha384-DUhB5MkNLJffjy7NRg13prdEcPTUR6zdPtameCyfq3tId/cM8o3ojpyvU/xdxZ8t" crossorigin="anonymous">
+    <link id="uiKitInteractiveThemeStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.1.0/styles/interactive-surface-theme.css" integrity="sha384-t7ZuirMM/Qoeoz+/5+S4JxIGXs076pqlgMxv6FymZW3tGj7snT8J2ZlV2+sH6++j" crossorigin="anonymous">
+    <link id="interactiveSurfaceStylesheet" rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.5.0/state-core.css" integrity="sha384-v2NwNOzOcQ5ed7W7OHahaKHXspqfD0p8XO+kueqrsyfEcuBO2izsAQb/J/PxF0eX" crossorigin="anonymous">
+    <link id="layoutIntegrationStylesheet" rel="stylesheet" href="../dist/integrations/ui-style-kit.css" disabled data-deprecated="true">
     <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css">
     <link rel="stylesheet" href="./demo.css">
 
@@ -78,7 +79,7 @@
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "layout-style-css",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "description": "A dependency-free, container-first CSS layout library for semantic wrappers, composition primitives, responsive recipes, and spatial personalities.",
         "programmingLanguage": "CSS",
         "applicationCategory": "DeveloperApplication",
@@ -97,7 +98,7 @@
 
     <header class="demo-topbar">
       <div class="demo-brand">
-        <span class="demo-kicker">layout-style-css 2.0</span>
+        <span class="demo-kicker">layout-style-css 2.1</span>
         <strong>Interactive Layout Lab</strong>
       </div>
       <div class="demo-topbar-actions">
@@ -206,15 +207,16 @@
 
           <label for="themeSelect">Theme
             <select id="themeSelect" data-query-key="theme" data-ui-kit="select">
-              <option value="arctic-indigo">Arctic Indigo</option>
-              <option value="ocean-steel">Ocean Steel</option>
-              <option value="graphite-cyan">Graphite Cyan</option>
-              <option value="forest-moss">Forest Moss</option>
-              <option value="rose-quartz">Rose Quartz</option>
-              <option value="desert-sage">Desert Sage</option>
               <option value="midnight-gold">Midnight Gold</option>
-              <option value="cyber-lime">Cyber Lime</option>
+              <option value="ocean-steel">Ocean Steel</option>
+              <option value="forest-moss">Forest Moss</option>
               <option value="sunset-ember">Sunset Ember</option>
+              <option value="royal-plum">Royal Plum</option>
+              <option value="graphite-cyan">Graphite Cyan</option>
+              <option value="desert-sage">Desert Sage</option>
+              <option value="rose-quartz">Rose Quartz</option>
+              <option value="cyber-lime">Cyber Lime</option>
+              <option value="arctic-indigo">Arctic Indigo</option>
             </select>
           </label>
 
@@ -246,7 +248,7 @@
             </p>
           </div>
           <div class="demo-state-panel">
-            <span>Interactive Surface 1.4.0 state</span>
+            <span>Interactive Surface 1.5.0 state</span>
             <button type="button" id="stateToggle" class="interactive-surface" aria-pressed="false" data-surface-level="2" data-surface-variant="primary" data-demo-button data-ui-kit="button button-primary">
               Toggle active state
             </button>

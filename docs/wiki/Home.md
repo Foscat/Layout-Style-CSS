@@ -1,6 +1,6 @@
 # Layout Style CSS Wiki
 
-Version 2.0.0 is a container-first, dependency-free layout library. It ships semantic wrappers, composition primitives, seven recipes, sixteen layout personalities, focused exports, and a v2-only compatibility bundle.
+Version 2.1.0 is a container-first, dependency-free layout library. It ships semantic wrappers, composition primitives, seven recipes, sixteen layout personalities, focused exports, a v2-only compatibility bundle, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5.
 
 ## Start Here
 
@@ -22,7 +22,7 @@ Version 2.0.0 is a container-first, dependency-free layout library. It ships sem
 
 Layout Style CSS owns spatial behavior: containment, wrappers, flow, grids, areas, spans, sizing, and responsive arrangement. UI Style Kit owns visual paint. Interactive Surface owns interaction-state styling.
 
-The package has no runtime or peer dependencies. `ui-style-kit-css@2.0.1` and `interactive-surface-css@1.4.0` are development fixtures used to prove optional integration.
+The package has no runtime or peer dependencies. `ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are development fixtures used to prove optional integration; UI Style Kit is resolved from the sibling staged checkout until its approved 2.1.0 publication.
 
 ## Supported Baseline
 
@@ -30,4 +30,4 @@ The package has no runtime or peer dependencies. `ui-style-kit-css@2.0.1` and `i
 - Current evergreen Chromium, Firefox, and WebKit
 - Mobile-first DOM order with core thresholds at `48rem` and `64rem`, plus tested personality-specific overrides
 
-The UI Style Kit revision is a documented follow-up, not part of this 2.0 release.
+The deprecated UI structural bridge remains available for existing UI-prefixed layout aliases, but canonical 2.1 examples use UI Style Kit visual CSS, the UI token bridge, Interactive Surface `state-core.css`, and Layout core.

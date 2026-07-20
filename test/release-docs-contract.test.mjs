@@ -49,8 +49,8 @@ for (const requiredText of [
   "data-ly-area",
   "legacy.css",
   "removal in v3",
-  "ui-style-kit-css@2.0.1",
-  "interactive-surface-css@1.4.0"
+  "ui-style-kit-css@2.1.0",
+  "interactive-surface-css@1.5.0"
 ]) {
   assert(docsCorpus.includes(requiredText), `V2 documentation must explain ${requiredText}`);
 }
@@ -72,9 +72,9 @@ for (const exportPath of [
 }
 
 const allThreeOrder = [
-  'import "ui-style-kit-css/with-bridge.css";',
+  'import "ui-style-kit-css/visual.css";',
+  'import "ui-style-kit-css/interactive-surface-theme.css";',
   'import "interactive-surface-css/state-core.css";',
-  'import "layout-style-css/integrations/ui-style-kit.css";',
   'import "layout-style-css";'
 ].join("\n");
 assert(
@@ -88,6 +88,7 @@ for (const staleGuidance of [
   'import "layout-style-css/base.css";',
   'import "layout-style-css/bridge.css";',
   'import "interactive-surface-css/interactive-surface.css";',
+  'import "ui-style-kit-css/with-bridge.css";',
   "layout-style-css@1.1.2"
 ]) {
   assert(
@@ -138,8 +139,8 @@ for (const warning of [
   assert(migration.includes(warning), `Migration guide must include accessibility guidance: ${warning}`);
 }
 assert(
-  migration.includes("follow-up") && migration.includes("UI Style Kit"),
-  "Migration guide must keep the UI Style Kit revision as a follow-up"
+  migration.includes("ui-style-kit-css@2.1.0") && migration.includes("interactive-surface-css@1.5.0"),
+  "Migration guide must identify the 2.1 companion fixtures"
 );
 assert(
   recipesGuide.includes("complete recipe API") && recipesGuide.includes("only `data-ly-recipe"),
@@ -150,7 +151,7 @@ assert(
   changelog.includes("## [2.0.0] - 2026-07-19") && changelog.includes("Breaking"),
   "Changelog must identify the dated 2.0.0 breaking release"
 );
-assert(release.includes("layout-style-css@2.0.0") && release.includes("v2.0.0"));
+assert(release.includes("layout-style-css@2.1.0") && release.includes("v2.1.0"));
 assert(support.includes("`2.x` | Yes"), "Support table must identify the supported v2 line");
 
 assert(packageJson.files.includes("docs/wiki"), "The package must ship the migration guide with the wiki");
@@ -193,7 +194,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 }
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
-assert(publishWorkflow.includes("for example v2.0.0"));
+assert(publishWorkflow.includes("for example v2.1.0"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(publishWorkflow.includes("npm run release:verify"));
 assert(
