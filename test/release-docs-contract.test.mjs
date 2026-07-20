@@ -4,7 +4,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const read = (...parts) => readFileSync(join(root, ...parts), "utf8");
+const normalizeLineEndings = (value) => value.replace(/\r\n?/g, "\n");
+// Release documentation checks compare exact import blocks, so normalize
+// platform line endings without changing the authored markdown contract.
+const read = (...parts) => normalizeLineEndings(readFileSync(join(root, ...parts), "utf8"));
 const packageJson = JSON.parse(read("package.json"));
 const migrationPath = join(root, "docs", "wiki", "Migrating-To-2.0.md");
 
