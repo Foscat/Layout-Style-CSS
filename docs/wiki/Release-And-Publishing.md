@@ -6,7 +6,7 @@ This checklist prepares `layout-style-css@2.1.0`. Publishing, tagging, pushing, 
 
 - `package.json` and `package-lock.json` identify `2.1.0`.
 - Node.js 20 and 22 pass standalone CI.
-- `CHANGELOG.md` contains the dated breaking-release entry.
+- `CHANGELOG.md` contains the dated 2.1.0 release entry.
 - README, migration guide, wiki, demo, exports, and tarball describe the same v2 API.
 - No peer or runtime dependencies are present.
 
