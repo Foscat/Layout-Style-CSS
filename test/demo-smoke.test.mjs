@@ -12,27 +12,32 @@ const demoCssPath = join(root, "demo", "demo.css");
 const demoJsPath = join(root, "demo", "demo.js");
 const packagePath = join(root, "package.json");
 const testTempDir = join(root, ".tmp", "playwright");
-const uiKitCssPath = join(
-  root,
-  "node_modules",
-  "ui-style-kit-css",
-  "dist",
-  "ui-style-kit.with-bridge.min.css"
-);
+const uiKitPackageDir = join(root, "node_modules", "ui-style-kit-css");
+const uiKitManifestPath = join(uiKitPackageDir, "manifest.json");
+const uiKitVisualCssPath = join(uiKitPackageDir, "dist", "ui-style-kit.visual.min.css");
+const uiKitInteractiveThemeCssPath = join(uiKitPackageDir, "styles", "interactive-surface-theme.css");
 const interactiveSurfaceCssPath = join(
   root,
   "node_modules",
   "interactive-surface-css",
   "state-core.css"
 );
-const uiKitUrl =
-  "https://unpkg.com/ui-style-kit-css@2.0.1/dist/ui-style-kit.with-bridge.min.css";
+const uiKitVisualUrl =
+  "https://unpkg.com/ui-style-kit-css@2.1.0/dist/ui-style-kit.visual.min.css";
+const uiKitInteractiveThemeUrl =
+  "https://unpkg.com/ui-style-kit-css@2.1.0/styles/interactive-surface-theme.css";
+const uiKitManifestUrl = "https://unpkg.com/ui-style-kit-css@2.1.0/manifest.json";
 const interactiveSurfaceUrl =
-  "https://unpkg.com/interactive-surface-css@1.4.0/state-core.css";
+  "https://unpkg.com/interactive-surface-css@1.5.0/state-core.css";
 const fixtureIntegrity = (path) =>
   `sha384-${createHash("sha384").update(readFileSync(path)).digest("base64")}`;
-const uiKitIntegrity = fixtureIntegrity(uiKitCssPath);
+const uiKitVisualIntegrity = fixtureIntegrity(uiKitVisualCssPath);
+const uiKitInteractiveThemeIntegrity = fixtureIntegrity(uiKitInteractiveThemeCssPath);
 const interactiveSurfaceIntegrity = fixtureIntegrity(interactiveSurfaceCssPath);
+const uiKitManifest = JSON.parse(readFileSync(uiKitManifestPath, "utf8"));
+const uiKitPresetIds = uiKitManifest.presets.map((preset) => preset.id);
+const uiKitThemeIds = uiKitManifest.themes;
+const uiKitModeIds = uiKitManifest.modes;
 
 const recipes = [
   "app-shell",
@@ -67,31 +72,9 @@ const controlValues = {
   personalitySelect: personalities,
   containerSelect: ["auto", "40rem", "47rem", "49rem", "63rem", "65rem", "80rem"],
   densitySelect: ["compact", "comfortable", "spacious"],
-  uiSelect: [
-    "minimal-saas",
-    "bento",
-    "maximalist",
-    "bauhaus",
-    "tactile",
-    "neumorphism",
-    "retrofuturism",
-    "brutalism",
-    "cyberpunk",
-    "y2k",
-    "retro-glass"
-  ],
-  themeSelect: [
-    "arctic-indigo",
-    "ocean-steel",
-    "graphite-cyan",
-    "forest-moss",
-    "rose-quartz",
-    "desert-sage",
-    "midnight-gold",
-    "cyber-lime",
-    "sunset-ember"
-  ],
-  modeSelect: ["light", "dark", "contrast"],
+  uiSelect: uiKitPresetIds,
+  themeSelect: uiKitThemeIds,
+  modeSelect: uiKitModeIds,
   ecosystemSelect: ["layout-only", "layout-ui", "all-three"]
 };
 const recipeAreas = {
@@ -291,10 +274,15 @@ function assertStaticContract() {
   assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
   assert(existsSync(demoCssPath), "The v2 demo must move authored styles into demo/demo.css");
   assert(existsSync(demoJsPath), "The v2 demo must move behavior into demo/demo.js");
-  assert(existsSync(uiKitCssPath), "Demo smoke test requires ui-style-kit-css@2.0.1");
+  assert(existsSync(uiKitManifestPath), "Demo smoke test requires the UI Style Kit 2.1 manifest");
+  assert(existsSync(uiKitVisualCssPath), "Demo smoke test requires the UI Style Kit 2.1 visual bundle");
+  assert(
+    existsSync(uiKitInteractiveThemeCssPath),
+    "Demo smoke test requires the UI Style Kit 2.1 Interactive Surface token bridge"
+  );
   assert(
     existsSync(interactiveSurfaceCssPath),
-    "Demo smoke test requires interactive-surface-css@1.4.0"
+    "Demo smoke test requires interactive-surface-css@1.5.0"
   );
 
   const html = readFileSync(demoPath, "utf8");
@@ -345,6 +333,7 @@ function assertStaticContract() {
 
   const stylesheetIds = [
     "uiKitStylesheet",
+    "uiKitInteractiveThemeStylesheet",
     "interactiveSurfaceStylesheet",
     "layoutIntegrationStylesheet",
     "layoutCoreStylesheet"
@@ -354,12 +343,14 @@ function assertStaticContract() {
   assert.deepEqual(
     [...stylesheetPositions].sort((a, b) => a - b),
     stylesheetPositions,
-    "Ecosystem stylesheet DOM order must be UI, Interactive Surface, integration, then core"
+    "Ecosystem stylesheet DOM order must be UI visual, UI token bridge, Interactive Surface, deprecated integration, then core"
   );
-  assert(html.includes(uiKitUrl), "Demo must pin ui-style-kit-css@2.0.1");
-  assert(html.includes(interactiveSurfaceUrl), "Demo must pin interactive-surface-css@1.4.0");
+  assert(html.includes(uiKitVisualUrl), "Demo must pin the UI Style Kit 2.1 visual bundle");
+  assert(html.includes(uiKitInteractiveThemeUrl), "Demo must pin the UI Style Kit 2.1 token bridge");
+  assert(html.includes(interactiveSurfaceUrl), "Demo must pin interactive-surface-css@1.5.0");
   for (const [id, integrity] of [
-    ["uiKitStylesheet", uiKitIntegrity],
+    ["uiKitStylesheet", uiKitVisualIntegrity],
+    ["uiKitInteractiveThemeStylesheet", uiKitInteractiveThemeIntegrity],
     ["interactiveSurfaceStylesheet", interactiveSurfaceIntegrity]
   ]) {
     const link = html.match(new RegExp(`<link[^>]*id="${id}"[^>]*>`))?.[0] ?? "";
@@ -376,6 +367,20 @@ function assertStaticContract() {
   assert(html.includes("data-ly-area="), "Demo must use canonical area hooks");
 
   assert(script.includes("const ALLOWLISTS = Object.freeze"), "Query state must use explicit allowlists");
+  assert(
+    script.includes('const UI_STYLE_KIT_VERSION = "2.1.0"') &&
+      script.includes("UI_STYLE_KIT_MANIFEST_URL") &&
+      script.includes("/manifest.json"),
+    "Demo must load the UI Style Kit 2.1 manifest"
+  );
+  assert(
+    script.includes("UI_STYLE_KIT_MANIFEST_FALLBACK"),
+    "Demo must keep a bounded manifest fallback for unpublished or stale CDN edges"
+  );
+  assert(
+    script.includes("syncUiManifestSelectOptions"),
+    "Demo controls must derive UI options from the UI Style Kit manifest contract"
+  );
   assert(script.includes("URLSearchParams"), "Demo must restore and synchronize query state");
   assert(!script.includes("innerHTML"), "Demo JavaScript must never interpolate with innerHTML");
   assert(
@@ -462,13 +467,15 @@ async function verifyQueryAndEcosystem(page, baseUrl) {
     body: {
       layout: document.body.dataset.lyLayout,
       density: document.body.dataset.density,
-      ecosystem: document.body.dataset.ecosystem
+      ecosystem: document.body.dataset.ecosystem,
+      uiManifestVersion: document.body.dataset.uiManifestVersion
     },
     previewLayout: document.querySelector("#previewRoot")?.dataset.lyLayout,
     wrapperClass: document.querySelector("#previewWrapper")?.className,
     recipe: document.querySelector("#recipePreview")?.dataset.lyRecipe,
     links: [
       document.querySelector("#uiKitStylesheet")?.disabled,
+      document.querySelector("#uiKitInteractiveThemeStylesheet")?.disabled,
       document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
       document.querySelector("#layoutIntegrationStylesheet")?.disabled,
       document.querySelector("#layoutCoreStylesheet")?.disabled
@@ -491,18 +498,19 @@ async function verifyQueryAndEcosystem(page, baseUrl) {
   assert.deepEqual(restored.body, {
     layout: "synthwave",
     density: "compact",
-    ecosystem: "all-three"
+    ecosystem: "all-three",
+    uiManifestVersion: "2.1.0"
   });
   assert.equal(restored.previewLayout, "synthwave");
   assert.match(restored.wrapperClass, /\bly-wrapper--prose\b/);
   assert.equal(restored.recipe, "docs");
-  assert.deepEqual(restored.links, [false, false, false, false]);
+  assert.deepEqual(restored.links, [false, false, false, true, false]);
   assert.equal(
     restored.imports,
     [
-      'import "ui-style-kit-css/with-bridge.css";',
+      'import "ui-style-kit-css/visual.css";',
+      'import "ui-style-kit-css/interactive-surface-theme.css";',
       'import "interactive-surface-css/state-core.css";',
-      'import "layout-style-css/integrations/ui-style-kit.css";',
       'import "layout-style-css";'
     ].join("\n")
   );
@@ -562,43 +570,54 @@ async function verifyQueryAndEcosystem(page, baseUrl) {
   assert.deepEqual(
     await page.evaluate(() => [
       document.querySelector("#uiKitStylesheet")?.disabled,
+      document.querySelector("#uiKitInteractiveThemeStylesheet")?.disabled,
       document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
       document.querySelector("#layoutIntegrationStylesheet")?.disabled,
       document.querySelector("#layoutCoreStylesheet")?.disabled
     ]),
-    [true, true, true, false]
+    [true, true, true, true, false]
   );
 
   await page.selectOption("#ecosystemSelect", "layout-ui");
   assert.deepEqual(
     await page.evaluate(() => [
       document.querySelector("#uiKitStylesheet")?.disabled,
+      document.querySelector("#uiKitInteractiveThemeStylesheet")?.disabled,
       document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
       document.querySelector("#layoutIntegrationStylesheet")?.disabled,
       document.querySelector("#layoutCoreStylesheet")?.disabled
     ]),
-    [false, true, false, false]
+    [false, true, true, true, false]
   );
 
   await page.selectOption("#ecosystemSelect", "all-three");
   const stateBefore = await page.locator("#stateToggle").evaluate((element) => ({
     pressed: element.getAttribute("aria-pressed"),
-    opacity: Number.parseFloat(getComputedStyle(element, "::before").opacity)
+    layerOpacity: Number.parseFloat(getComputedStyle(element, "::before").opacity),
+    translate: getComputedStyle(element).translate,
+    boxShadow: getComputedStyle(element).boxShadow
   }));
   await page.click("#stateToggle");
-  await page.waitForFunction(() => {
-    const element = document.querySelector("#stateToggle");
-    return element && Number.parseFloat(getComputedStyle(element, "::before").opacity) > 0;
-  });
+  await page.waitForFunction(
+    () => document.querySelector("#stateToggle")?.getAttribute("aria-pressed") === "true"
+  );
+  await page.waitForTimeout(120);
   const stateAfter = await page.locator("#stateToggle").evaluate((element) => ({
     pressed: element.getAttribute("aria-pressed"),
-    opacity: Number.parseFloat(getComputedStyle(element, "::before").opacity)
+    layerOpacity: Number.parseFloat(getComputedStyle(element, "::before").opacity),
+    translate: getComputedStyle(element).translate,
+    boxShadow: getComputedStyle(element).boxShadow
   }));
   assert.equal(stateBefore.pressed, "false");
   assert.equal(stateAfter.pressed, "true");
   assert(
-    stateAfter.opacity > stateBefore.opacity,
-    `All-three active state should be visibly stronger; ${stateBefore.opacity} -> ${stateAfter.opacity}`
+    stateAfter.layerOpacity !== stateBefore.layerOpacity ||
+      stateAfter.translate !== stateBefore.translate ||
+      stateAfter.boxShadow !== stateBefore.boxShadow,
+    `All-three active state should resolve a visible state change; ${JSON.stringify({
+      before: stateBefore,
+      after: stateAfter
+    })}`
   );
 
   await page.click("#copyImports");
@@ -1283,10 +1302,24 @@ page.on("console", (message) => {
 page.on("pageerror", (error) => pageErrors.push(error.message));
 const corsHeaders = { "access-control-allow-origin": "*" };
 
-await page.route(uiKitUrl, (route) =>
+await page.route(uiKitVisualUrl, (route) =>
   route.fulfill({
-    path: uiKitCssPath,
+    path: uiKitVisualCssPath,
     contentType: "text/css",
+    headers: corsHeaders
+  })
+);
+await page.route(uiKitInteractiveThemeUrl, (route) =>
+  route.fulfill({
+    path: uiKitInteractiveThemeCssPath,
+    contentType: "text/css",
+    headers: corsHeaders
+  })
+);
+await page.route(uiKitManifestUrl, (route) =>
+  route.fulfill({
+    path: uiKitManifestPath,
+    contentType: "application/json",
     headers: corsHeaders
   })
 );
