@@ -603,7 +603,7 @@ const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"))
 const packageLock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
 const lockRoot = packageLock.packages[""];
 const uiKitFixtureSpec = "git+https://github.com/Foscat/ui-style-kit-css.git#2.1.0";
-const uiKitFixtureCommit = "8facc066e0fd63bd8ec7d78b928edfcecfb14665";
+const uiKitFixtureCommit = "d8a658c9b51c5aeabbde956ca724b50dc3e10ddd";
 const uiKitFixturePackage = JSON.parse(
   readFileSync(join(root, "node_modules", "ui-style-kit-css", "package.json"), "utf8")
 );
