@@ -602,8 +602,9 @@ function isLocalMarkdownLink(link) {
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
 const lockRoot = packageLock.packages[""];
-const uiKitFixtureSpec = "git+https://github.com/Foscat/ui-style-kit-css.git#2.1.0";
-const uiKitFixtureCommit = "5957e90858912d4a86a452fbdbf482cd7bb367a5";
+const uiKitFixtureSpec = "2.1.0";
+const uiKitFixtureTarball =
+  "https://registry.npmjs.org/ui-style-kit-css/-/ui-style-kit-css-2.1.0.tgz";
 const uiKitFixturePackage = JSON.parse(
   readFileSync(join(root, "node_modules", "ui-style-kit-css", "package.json"), "utf8")
 );
@@ -1237,11 +1238,11 @@ assert.equal(lockRoot.peerDependencies, undefined);
 assert.equal(lockRoot.peerDependenciesMeta, undefined);
 assert.equal(lockRoot.devDependencies["ui-style-kit-css"], uiKitFixtureSpec);
 assert.equal(lockRoot.devDependencies["interactive-surface-css"], "1.5.0");
-assert.equal(uiKitFixturePackage.version, "2.1.0", "UI Style Kit fixture must be the staged 2.1.0 line");
+assert.equal(uiKitFixturePackage.version, "2.1.0", "UI Style Kit fixture must be the released 2.1.0 line");
 assert.equal(
   packageLock.packages["node_modules/ui-style-kit-css"].resolved,
-  `git+https://github.com/Foscat/ui-style-kit-css.git#${uiKitFixtureCommit}`,
-  "Lockfile must resolve the pushed staged UI Style Kit fixture until 2.1.0 is published"
+  uiKitFixtureTarball,
+  "Lockfile must resolve the released UI Style Kit fixture from the npm registry"
 );
 assert.equal(
   packageLock.packages["node_modules/interactive-surface-css"].version,

@@ -92,7 +92,11 @@ for (const staleGuidance of [
   'import "layout-style-css/bridge.css";',
   'import "interactive-surface-css/interactive-surface.css";',
   'import "ui-style-kit-css/with-bridge.css";',
-  "layout-style-css@1.1.2"
+  "layout-style-css@1.1.2",
+  "staged development fixture",
+  "staged local fixture",
+  "pushed staged",
+  "approved 2.1.0 publication"
 ]) {
   assert(
     !currentGuidanceCorpus.includes(staleGuidance),
@@ -151,8 +155,10 @@ assert.doesNotMatch(
   "Current docs must not classify the released Interactive Surface 1.5.0 package as a development fixture"
 );
 assert(
-  currentGuidanceCorpus.includes("Interactive Surface 1.5.0 is the released registry fixture"),
-  "Current docs must identify Interactive Surface 1.5.0 as the released registry fixture"
+  currentGuidanceCorpus.includes(
+    "`ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are released registry fixtures"
+  ),
+  "Current docs must identify UI Style Kit 2.1.0 and Interactive Surface 1.5.0 as released registry fixtures"
 );
 assert(
   recipesGuide.includes("complete recipe API") && recipesGuide.includes("only `data-ly-recipe"),

@@ -50,7 +50,7 @@ import "interactive-surface-css/state-core.css";
 import "layout-style-css";
 ```
 
-The first import block is deprecated compatibility for legacy UI-prefixed structural aliases. Canonical 2.1 imports use `ui-style-kit-css@2.1.0` visual CSS, `ui-style-kit-css/interactive-surface-theme.css`, `interactive-surface-css@1.5.0` state core, and Layout core. UI Style Kit is a staged local fixture until its approved 2.1.0 publication; Interactive Surface 1.5.0 is released.
+The first import block is deprecated compatibility for legacy UI-prefixed structural aliases. Canonical 2.1 imports use the released `ui-style-kit-css@2.1.0` visual CSS, `ui-style-kit-css/interactive-surface-theme.css`, released `interactive-surface-css@1.5.0` state core, and Layout core.
 
 ## CDN
 

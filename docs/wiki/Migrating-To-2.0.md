@@ -6,7 +6,7 @@ Version 2.0 rebuilds Layout Style CSS as a container-first, dependency-free stru
 
 - Development and release scripts require Node.js 20 or newer.
 - The package has no runtime dependencies and no peer dependencies.
-- `ui-style-kit-css@2.1.0` is a staged development fixture and `interactive-surface-css@1.5.0` is the released registry fixture; neither is a consumer dependency.
+- `ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are released registry fixtures; neither is a consumer dependency.
 - Current evergreen Chromium, Firefox, and WebKit are supported.
 - Responsive recipes use core thresholds at `48rem` and `64rem`; personalities may add personality-specific thresholds.
 

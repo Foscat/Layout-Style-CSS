@@ -10,7 +10,7 @@ Container-first, dependency-free structural CSS for responsive application layou
 - Current evergreen Chromium, Firefox, or WebKit for consumers
 - No runtime or peer dependencies
 
-`ui-style-kit-css@2.1.0` is a staged development fixture resolved from the pushed `2.1.0` GitHub branch until 2.1.0 is approved and published. Interactive Surface 1.5.0 is the released registry fixture. Neither package is installed for consumers.
+`ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are released registry fixtures for optional ecosystem verification. Neither package is installed for consumers.
 
 ## Install
 

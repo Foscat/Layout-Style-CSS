@@ -1,6 +1,6 @@
 # UI Style Kit Compatibility
 
-Layout Style CSS is dependency-free. `ui-style-kit-css@2.1.0` is the visual fixture for 2.1 ecosystem verification; it is resolved from the pushed staged `2.1.0` GitHub branch until its approved publication and is not a runtime or peer dependency.
+Layout Style CSS is dependency-free. `ui-style-kit-css@2.1.0` is the released visual fixture for 2.1 ecosystem verification and is not a runtime or peer dependency.
 
 ## Ownership Boundary
 
@@ -43,7 +43,7 @@ The removed v1 `.ly-surface--raised` selector is not restored by `legacy.css`; i
 | Library | Verified fixture | Consumer requirement |
 | --- | --- | --- |
 | Layout Style CSS | `2.1.0` | Required for this API |
-| UI Style Kit CSS | `2.1.0` visual CSS and manifest | Optional staged fixture |
+| UI Style Kit CSS | `2.1.0` visual CSS and manifest | Optional released fixture |
 | Interactive Surface CSS | `1.5.0` `state-core.css` | Optional released fixture |
 
 Current evergreen Chromium, Firefox, and WebKit are covered by the release gate.

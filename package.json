@@ -56,7 +56,7 @@
     "@playwright/test": "1.61.1",
     "interactive-surface-css": "1.5.0",
     "stylelint": "17.14.0",
-    "ui-style-kit-css": "git+https://github.com/Foscat/ui-style-kit-css.git#2.1.0"
+    "ui-style-kit-css": "2.1.0"
   },
   "exports": {
     ".": "./dist/layout-style-css.css",
