@@ -1304,7 +1304,7 @@ assert.equal(
   "npm run check:full && npm audit --audit-level=moderate && npm run publish:dry-run"
 );
 assert.equal(packageJson.scripts.prepack, "npm run build && npm run test:static");
-assert.equal(packageJson.scripts.prepublishOnly, "npm run check:full");
+assert.equal(packageJson.scripts.prepublishOnly, "npm run release:verify");
 assert.equal(packageJson.publishConfig.access, "public");
 assert.deepEqual(packageJson.exports, expectedV2Exports);
 for (const name of personalityNames) {

@@ -181,6 +181,11 @@ assert(
   packageJson.scripts["release:verify"].includes("npm audit --audit-level=moderate"),
   "Release verification must enforce the documented moderate audit before publish"
 );
+assert.equal(
+  packageJson.scripts.prepublishOnly,
+  "npm run release:verify",
+  "Direct npm publish must use the same full release verification gate"
+);
 for (const [name, document] of [
   ["README", readme],
   ["release guide", release]
@@ -190,6 +195,10 @@ for (const [name, document] of [
     `${name} must state that release:verify includes the exact moderate audit command`
   );
 }
+assert(
+  /prepublishOnly[^\n]*`npm run release:verify`/.test(release),
+  "Release guide must state that direct npm publish runs the full release verification gate"
+);
 assert(
   !release.includes("npm audit --audit-level=moderate\nnpm run release:verify"),
   "Release checklist must not ask operators to run the audit redundantly before release:verify"

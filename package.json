@@ -47,7 +47,7 @@
     "publish:dry-run": "npm publish --dry-run --access public --ignore-scripts",
     "release:verify": "npm run check:full && npm audit --audit-level=moderate && npm run publish:dry-run",
     "prepack": "npm run build && npm run test:static",
-    "prepublishOnly": "npm run check:full"
+    "prepublishOnly": "npm run release:verify"
   },
   "publishConfig": {
     "access": "public"

@@ -35,6 +35,8 @@ git diff --check
 
 `release:verify` runs build, lint, JavaScript syntax, static contracts, the Pages artifact, Chromium, Firefox, WebKit, the intentional tarball listing, `npm audit --audit-level=moderate`, and an npm publish dry run. It does not publish.
 
+`prepublishOnly` runs `npm run release:verify`, so a direct `npm publish` still has the full release verification gate.
+
 ## Tag And Version Validation
 
 The publish workflow checks out the selected tag and fails unless it equals `v${package.version}`. For this release the only valid tag is `v2.1.0`.
