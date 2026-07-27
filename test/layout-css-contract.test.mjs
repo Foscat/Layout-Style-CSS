@@ -284,6 +284,12 @@ const personalityContracts = {
   }
 };
 
+const safeTwoTrackPersonalityShellThresholds = new Map([
+  ["tactile", "48rem"],
+  ["neumorphism", "52rem"],
+  ["split-screen", "48rem"]
+]);
+
 const task2WrapperVariants = [
   [".ly-wrapper--compact", "--ly-wrapper-max: 40rem;"],
   [".ly-wrapper--prose", "--ly-wrapper-max: 68ch;"],
@@ -412,6 +418,42 @@ function findUnguardedGridTrackFloors(css, file) {
 
 function normalizeCssWhitespace(css) {
   return css.replace(/\s+/g, " ").trim();
+}
+
+function extractContainerBodies(css, condition) {
+  const bodies = [];
+  const marker = `@container ${condition}`;
+  let searchIndex = 0;
+
+  while (searchIndex < css.length) {
+    const atRuleStart = css.indexOf(marker, searchIndex);
+
+    if (atRuleStart === -1) {
+      break;
+    }
+
+    const bodyStart = css.indexOf("{", atRuleStart + marker.length);
+    assert.notEqual(bodyStart, -1, `Incomplete container query ${marker}`);
+
+    let depth = 1;
+    let bodyEnd = bodyStart + 1;
+
+    while (bodyEnd < css.length && depth > 0) {
+      if (css[bodyEnd] === "{") {
+        depth += 1;
+      } else if (css[bodyEnd] === "}") {
+        depth -= 1;
+      }
+
+      bodyEnd += 1;
+    }
+
+    assert.equal(depth, 0, `Unbalanced container query ${marker}`);
+    bodies.push(css.slice(bodyStart + 1, bodyEnd - 1));
+    searchIndex = bodyEnd;
+  }
+
+  return bodies;
 }
 
 function extractStyleRuleSelectors(css) {
@@ -610,8 +652,8 @@ const uiKitFixturePackage = JSON.parse(
 );
 const v2ContractFailures = [];
 
-if (packageJson.version !== "2.1.0") {
-  v2ContractFailures.push(`package version is ${packageJson.version}, expected 2.1.0`);
+if (packageJson.version !== "2.1.1") {
+  v2ContractFailures.push(`package version is ${packageJson.version}, expected 2.1.1`);
 }
 if (packageJson.engines?.node !== ">=20") {
   v2ContractFailures.push(`Node engine is ${packageJson.engines?.node ?? "missing"}, expected >=20`);
@@ -763,6 +805,21 @@ assert(
 );
 assert(recipes.includes("grid-template-areas:"), "Recipes must use named grid areas");
 assert(
+  extractContainerBodies(recipes, "(min-width: 64rem)").some((body) =>
+    normalizeCssWhitespace(body).includes(
+      normalizeCssWhitespace(
+        `:where(.ly-docs, [data-ly-recipe="docs"]) {
+          grid-template-areas:
+            "nav header"
+            "nav main"
+            "nav aside"
+            "nav footer";`
+      )
+    )
+  ),
+  "Docs must use its distinct two-column navigation-and-content shell at 64rem"
+);
+assert(
   !/(?:^|[;{}\n\r])\s*order\s*:/.test(recipes),
   "Built-in recipes must preserve DOM order and never declare CSS order"
 );
@@ -877,10 +934,12 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
     `${path} must establish the personality containment scope`
   );
   assert(
-    normalizedCss.includes(
-      normalizeCssWhitespace(`@container ly-personality (min-width: ${contract.threshold})`)
-    ),
-    `${path} must enhance at its ${contract.threshold} personality threshold`
+    !css.includes("@container ly-personality"),
+    `${path} personality enhancements must query the nearest inline-size container`
+  );
+  assert(
+    normalizedCss.includes(normalizeCssWhitespace(`@container (min-width: ${contract.threshold})`)),
+    `${path} must preserve its authored ${contract.threshold} enhancement rhythm`
   );
   assert(
     normalizedCss.includes(
@@ -907,6 +966,15 @@ for (const [name, contract] of Object.entries(personalityContracts)) {
   assert(
     normalizedCss.includes(normalizeCssWhitespace(`grid-template-areas: ${contract.areas};`)),
     `${path} must implement its ${contract.family} named-area signature`
+  );
+  const shellThreshold = safeTwoTrackPersonalityShellThresholds.get(name) ?? "64rem";
+  assert(
+    extractContainerBodies(css, `(min-width: ${shellThreshold})`).some((body) =>
+      normalizeCssWhitespace(body).includes(
+        normalizeCssWhitespace(`grid-template-areas: ${contract.areas};`)
+      )
+    ),
+    `${path} must activate its app-shell signature at the safe ${shellThreshold} local threshold`
   );
   assert(
     normalizedCss.includes(
@@ -1211,7 +1279,7 @@ assert(!minified.includes("\n\n"), "Minified bundle should not preserve expanded
 assert(!minified.includes("@import"), "Minified bundle must be layout-only and flattened");
 
 assert.equal(packageJson.name, "layout-style-css");
-assert.equal(packageJson.version, "2.1.0");
+assert.equal(packageJson.version, "2.1.1");
 assert.equal(packageJson.license, "MIT");
 assert.equal(packageJson.private, undefined);
 assert.match(packageJson.description, /dependency-free/i);
@@ -1230,8 +1298,8 @@ assert.equal(packageJson.devDependencies["ui-style-kit-css"], uiKitFixtureSpec);
 assert.equal(packageJson.devDependencies["interactive-surface-css"], "1.5.0");
 assert(packageJson.devDependencies.stylelint, "Stylelint must be installed for CSS linting");
 assert(packageJson.devDependencies["@playwright/test"], "Playwright must be installed for demo smoke checks");
-assert.equal(packageLock.version, "2.1.0");
-assert.equal(lockRoot.version, "2.1.0");
+assert.equal(packageLock.version, "2.1.1");
+assert.equal(lockRoot.version, "2.1.1");
 assert.equal(lockRoot.engines.node, ">=20");
 assert.equal(lockRoot.dependencies, undefined);
 assert.equal(lockRoot.peerDependencies, undefined);
@@ -1516,8 +1584,8 @@ for (const htmlBlock of extractFencedBlocks(readme, "html")) {
 }
 
 assert(
-  readme.includes("https://unpkg.com/layout-style-css@2.1.0/dist/layout-style-css.min.css") &&
-    readme.includes("https://cdn.jsdelivr.net/npm/layout-style-css@2.1.0/dist/layout-style-css.min.css"),
+  readme.includes("https://unpkg.com/layout-style-css@2.1.1/dist/layout-style-css.min.css") &&
+    readme.includes("https://cdn.jsdelivr.net/npm/layout-style-css@2.1.1/dist/layout-style-css.min.css"),
   "README CDN examples should pin the v2.1 package"
 );
 
@@ -1547,13 +1615,13 @@ assert(changelog.includes("wiki"), "CHANGELOG.md should mention the new wiki doc
 
 const wikiHome = readFileSync(join(root, "docs/wiki/Home.md"), "utf8");
 assert(wikiHome.includes("# Layout Style CSS Wiki"), "Wiki home should use a clear product heading");
-assert(wikiHome.includes("Version 2.1.0"), "Wiki home should identify the documented release");
+assert(wikiHome.includes("Version 2.1.1"), "Wiki home should identify the documented release");
 const releaseChecklist = readFileSync(join(root, "docs/wiki/Release-And-Publishing.md"), "utf8");
 assert(
-  releaseChecklist.includes("layout-style-css@2.1.0") &&
-    releaseChecklist.includes("git tag v2.1.0") &&
-    releaseChecklist.includes("release_tag` set to `v2.1.0`"),
-  "Release checklist should identify the 2.1.0 package, tag, and workflow recovery path"
+  releaseChecklist.includes("layout-style-css@2.1.1") &&
+    releaseChecklist.includes("git tag v2.1.1") &&
+    releaseChecklist.includes("release_tag` set to `v2.1.1`"),
+  "Release checklist should identify the 2.1.1 package, tag, and workflow recovery path"
 );
 for (const file of requiredDocumentationFiles.filter((file) => file.startsWith("docs/wiki/"))) {
   const content = readFileSync(join(root, file), "utf8");
@@ -1576,7 +1644,7 @@ assert(
 assert(
     npmPublishWorkflow.includes("workflow_dispatch:") &&
     npmPublishWorkflow.includes("release_tag:") &&
-    npmPublishWorkflow.includes('description: "Release tag to publish, for example v2.1.0"'),
+    npmPublishWorkflow.includes('description: "Release tag to publish, for example v2.1.1"'),
   "npm publish workflow should expose a manual recovery dispatch with an explicit release tag"
 );
 assert(

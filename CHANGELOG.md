@@ -2,6 +2,23 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [2.1.1] - 2026-07-27
+
+### Fixed
+
+- Made personality enhancements query the nearest inline-size container while preserving the named personality containment scope for compatibility.
+- Deferred three- and four-track application-shell signatures until their local container reaches `64rem`; existing safe two-track signatures retain their authored thresholds.
+- Gave the Docs recipe a distinct wide two-column shell with navigation spanning the left column and `header`, `main`, `aside`, and `footer` stacked in the right column.
+
+### Tests
+
+- Added root-wide, local-container fixtures at `47rem`, `49rem`, `63rem`, and `65rem` across all sixteen personalities, including internal overflow, zero-width region, DOM order, and keyboard order checks.
+- Added static contracts for nearest-container personality queries and distinct Dashboard and Docs wide geometry.
+
+### Security
+
+- Refreshed the development lockfile to patched `fast-uri` and `postcss` releases so the release audit reports no known vulnerabilities; the published CSS package remains dependency-free.
+
 ## [2.1.0] - 2026-07-20
 
 ### Changed

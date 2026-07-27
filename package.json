@@ -1,6 +1,6 @@
 {
   "name": "layout-style-css",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Dependency-free structural CSS for responsive wrappers, composition primitives, recipes, utilities, and layout personalities.",
   "type": "module",
   "license": "MIT",

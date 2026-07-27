@@ -239,8 +239,7 @@
         minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
     }
 
-    :where(.ly-dashboard, [data-ly-recipe="dashboard"]),
-    :where(.ly-docs, [data-ly-recipe="docs"]) {
+    :where(.ly-dashboard, [data-ly-recipe="dashboard"]) {
       grid-template-areas:
         "nav header header"
         "nav main aside"
@@ -249,6 +248,15 @@
         minmax(min(100%, var(--ly-recipe-rail)), auto)
         minmax(0, 1fr)
         minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    }
+
+    :where(.ly-docs, [data-ly-recipe="docs"]) {
+      grid-template-areas:
+        "nav header"
+        "nav main"
+        "nav aside"
+        "nav footer";
+      grid-template-columns: minmax(min(100%, var(--ly-recipe-rail)), auto) minmax(0, 1fr);
     }
 
     :where(.ly-list-detail, [data-ly-recipe="list-detail"]) {

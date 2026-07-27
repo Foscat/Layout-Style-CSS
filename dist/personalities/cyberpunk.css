@@ -15,7 +15,14 @@
     min-inline-size: 0;
   }
 
-  @container ly-personality (min-width: 44rem) {
+  @container (min-width: 44rem) {
+    :where(.ly-root[data-ly-layout="cyberpunk"]) .ly-grid > :nth-child(4n + 2) {
+      grid-column: span 3;
+    }
+  }
+
+  /* The three-track shell waits for a locally feasible allocation. */
+  @container (min-width: 64rem) {
     :where(.ly-root[data-ly-layout="cyberpunk"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
@@ -27,10 +34,6 @@
         minmax(min(100%, 13rem), 0.2fr)
         minmax(0, 1fr)
         minmax(min(100%, 19rem), 0.32fr);
-    }
-
-    :where(.ly-root[data-ly-layout="cyberpunk"]) .ly-grid > :nth-child(4n + 2) {
-      grid-column: span 3;
     }
   }
 }

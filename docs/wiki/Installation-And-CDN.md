@@ -5,7 +5,7 @@ Layout Style CSS 2.0 is dependency-free and has no peer dependency contract. Nod
 ## npm
 
 ```bash
-npm install layout-style-css@2.1.0
+npm install layout-style-css@2.1.1
 ```
 
 ## Focused Exports
@@ -57,8 +57,8 @@ The first import block is deprecated compatibility for legacy UI-prefixed struct
 Layout only:
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.0/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.1/dist/layout-style-css.min.css">
 ```
 
 For optional companions, preserve the same order as the package imports: UI Style Kit visual CSS, UI Style Kit `interactive-surface-theme.css`, Interactive Surface 1.5.0 `state-core.css`, then Layout core. Load `layout-style-css/integrations/ui-style-kit.css` only for deprecated structural aliases.

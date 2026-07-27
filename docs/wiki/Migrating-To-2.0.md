@@ -13,7 +13,7 @@ Version 2.0 rebuilds Layout Style CSS as a container-first, dependency-free stru
 Install companions explicitly only when the application uses them:
 
 ```bash
-npm install layout-style-css@2.1.0
+npm install layout-style-css@2.1.1
 npm install ui-style-kit-css@2.1.0 interactive-surface-css@1.5.0
 ```
 

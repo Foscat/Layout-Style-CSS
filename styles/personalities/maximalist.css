@@ -14,14 +14,29 @@
     min-inline-size: 0;
   }
 
-  @container ly-personality (min-width: 48rem) {
+  @container (min-width: 48rem) {
     :where(.ly-root[data-ly-layout="maximalist"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-columns: minmax(min(100%, 18rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
-  @container ly-personality (min-width: 56rem) {
+  @container (min-width: 56rem) {
+    :where(.ly-root[data-ly-layout="maximalist"]) .ly-grid > :nth-child(7n + 1) {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+
+    :where(.ly-root[data-ly-layout="maximalist"])
+      :where(.ly-gallery, [data-ly-recipe="gallery"])
+      > :nth-child(5n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+  /* The four-track shell waits for a locally feasible allocation. */
+  @container (min-width: 64rem) {
     :where(.ly-root[data-ly-layout="maximalist"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
@@ -34,18 +49,6 @@
         minmax(0, 0.6fr)
         minmax(min(100%, 15rem), 0.32fr)
         minmax(min(100%, 18rem), 0.38fr);
-    }
-
-    :where(.ly-root[data-ly-layout="maximalist"]) .ly-grid > :nth-child(7n + 1) {
-      grid-column: span 3;
-      grid-row: span 2;
-    }
-
-    :where(.ly-root[data-ly-layout="maximalist"])
-      :where(.ly-gallery, [data-ly-recipe="gallery"])
-      > :nth-child(5n + 1) {
-      grid-column: span 2;
-      grid-row: span 2;
     }
   }
 }

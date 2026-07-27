@@ -169,7 +169,7 @@ assert(
   changelog.includes("## [2.0.0] - 2026-07-19") && changelog.includes("Breaking"),
   "Changelog must identify the dated 2.0.0 breaking release"
 );
-assert(release.includes("layout-style-css@2.1.0") && release.includes("v2.1.0"));
+assert(release.includes("layout-style-css@2.1.1") && release.includes("v2.1.1"));
 assert(support.includes("`2.x` | Yes"), "Support table must identify the supported v2 line");
 
 assert(packageJson.files.includes("docs/wiki"), "The package must ship the migration guide with the wiki");
@@ -221,7 +221,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 }
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
-assert(publishWorkflow.includes("for example v2.1.0"));
+assert(publishWorkflow.includes("for example v2.1.1"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(publishWorkflow.includes("npm run release:verify"));
 assert(

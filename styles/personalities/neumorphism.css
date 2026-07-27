@@ -15,14 +15,14 @@
     min-inline-size: 0;
   }
 
-  @container ly-personality (min-width: 48rem) {
+  @container (min-width: 48rem) {
     :where(.ly-root[data-ly-layout="neumorphism"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-columns: minmax(min(100%, 17rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
-  @container ly-personality (min-width: 52rem) {
+  @container (min-width: 52rem) {
     :where(.ly-root[data-ly-layout="neumorphism"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
