@@ -2,7 +2,7 @@
 
 Container-first, dependency-free structural CSS for responsive application layouts.
 
-`layout-style-css@2.1.0` provides semantic wrappers, composition primitives, seven functional recipes, ordering escape hatches, sixteen spatial personalities, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5. It owns layout only; color, typography, borders, shadows, component paint, and interactive states belong to other libraries.
+`layout-style-css@2.1.1` provides semantic wrappers, composition primitives, seven functional recipes, ordering escape hatches, sixteen spatial personalities, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5. It owns layout only; color, typography, borders, shadows, component paint, and interactive states belong to other libraries.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ Container-first, dependency-free structural CSS for responsive application layou
 ## Install
 
 ```bash
-npm install layout-style-css@2.1.0
+npm install layout-style-css@2.1.1
 ```
 
 Standalone use needs one import:
@@ -87,7 +87,7 @@ Every `.ly-wrapper` has fluid logical gutters, safe-area compensation, and `cont
 </main>
 ```
 
-Wrappers and recipe roots respond to the nearest container. The mobile single-column fallback is authoritative; core recipes and primitives enhance at the `48rem` and `64rem` core thresholds, not viewport widths. Personalities may introduce personality-specific thresholds to create a distinct spatial rhythm while preserving source order.
+Wrappers, recipe roots, and personality enhancements respond to the nearest inline-size container. The mobile single-column fallback is authoritative; core recipes and primitives enhance at the `48rem` and `64rem` core thresholds, not viewport widths. Personality grid rhythms retain their authored thresholds, safe two-track application shells retain their authored thresholds, and every three- or four-track application shell waits for a locally feasible `64rem` allocation.
 
 ## Recipes And Areas
 
@@ -183,8 +183,8 @@ The v1 `.ly-surface--raised` selector is intentionally removed, including from `
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.0/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.1/dist/layout-style-css.min.css">
 ```
 
 Companion CDN styles must appear in the same order as the package imports: UI Style Kit visual CSS, UI Style Kit `interactive-surface-theme.css`, Interactive Surface `state-core.css`, then Layout core. Load `layout-style-css/integrations/ui-style-kit.css` only for deprecated structural aliases.

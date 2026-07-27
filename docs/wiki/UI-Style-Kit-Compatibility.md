@@ -42,7 +42,7 @@ The removed v1 `.ly-surface--raised` selector is not restored by `legacy.css`; i
 
 | Library | Verified fixture | Consumer requirement |
 | --- | --- | --- |
-| Layout Style CSS | `2.1.0` | Required for this API |
+| Layout Style CSS | `2.1.1` | Required for this API |
 | UI Style Kit CSS | `2.1.0` visual CSS and manifest | Optional released fixture |
 | Interactive Surface CSS | `1.5.0` `state-core.css` | Optional released fixture |
 

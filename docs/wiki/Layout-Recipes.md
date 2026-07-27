@@ -36,7 +36,7 @@ Place regions in the order that makes sense on a narrow screen. The recipe uses 
 
 ## Content And Media Recipes
 
-`docs` creates a documentation shell. `list-detail` arranges primary, secondary, and action regions. `split-hero` arranges content, media, and actions. `gallery` and `card-grid` create responsive repeated-item grids.
+`docs` creates a documentation shell. At `64rem`, its navigation spans the left column while `header`, `main`, `aside`, and `footer` remain in source order and stack in the right column; Dashboard retains its three-column wide shell. `list-detail` arranges primary, secondary, and action regions. `split-hero` arranges content, media, and actions. `gallery` and `card-grid` create responsive repeated-item grids.
 
 ```html
 <section class="ly-split-hero" data-ly-recipe="split-hero">

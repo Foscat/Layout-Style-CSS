@@ -15,8 +15,14 @@
     min-inline-size: 0;
   }
 
-  /* Named areas rearrange the shell without changing its mobile DOM or focus order. */
-  @container ly-personality (min-width: 48rem) {
+  @container (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="minimal-saas"]) .ly-grid > :nth-child(4n + 1) {
+      grid-column: span 2;
+    }
+  }
+
+  /* The three-track shell waits for a locally feasible allocation. */
+  @container (min-width: 64rem) {
     :where(.ly-root[data-ly-layout="minimal-saas"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
@@ -28,10 +34,6 @@
         minmax(min(100%, 15rem), 0.24fr)
         minmax(0, 1fr)
         minmax(min(100%, 16rem), 0.28fr);
-    }
-
-    :where(.ly-root[data-ly-layout="minimal-saas"]) .ly-grid > :nth-child(4n + 1) {
-      grid-column: span 2;
     }
   }
 }

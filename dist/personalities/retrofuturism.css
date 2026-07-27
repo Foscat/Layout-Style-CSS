@@ -15,7 +15,14 @@
     min-inline-size: 0;
   }
 
-  @container ly-personality (min-width: 48rem) {
+  @container (min-width: 48rem) {
+    :where(.ly-root[data-ly-layout="retrofuturism"]) .ly-grid > :nth-child(6n + 1) {
+      grid-column: span 2;
+    }
+  }
+
+  /* The three-track shell waits for a locally feasible allocation. */
+  @container (min-width: 64rem) {
     :where(.ly-root[data-ly-layout="retrofuturism"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
@@ -27,10 +34,6 @@
         minmax(min(100%, 14rem), 0.24fr)
         minmax(0, 1fr)
         minmax(min(100%, 17rem), 0.3fr);
-    }
-
-    :where(.ly-root[data-ly-layout="retrofuturism"]) .ly-grid > :nth-child(6n + 1) {
-      grid-column: span 2;
     }
   }
 }

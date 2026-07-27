@@ -137,21 +137,21 @@ const personalityShellAreas = {
   "split-screen": '"header header" "main sidebar" "aside sidebar" "footer footer"'
 };
 const personalityShellThresholds = {
-  "minimal-saas": 48,
-  bauhaus: 52,
+  "minimal-saas": 64,
+  bauhaus: 64,
   tactile: 48,
-  cyberpunk: 44,
-  "f-pattern": 56,
-  brutalism: 48,
+  cyberpunk: 64,
+  "f-pattern": 64,
+  brutalism: 64,
   neumorphism: 52,
-  y2k: 48,
-  "retro-glass": 56,
-  "z-pattern": 60,
-  retrofuturism: 48,
-  mondrian: 52,
+  y2k: 64,
+  "retro-glass": 64,
+  "z-pattern": 64,
+  retrofuturism: 64,
+  mondrian: 64,
   synthwave: 64,
-  bento: 48,
-  maximalist: 56,
+  bento: 64,
+  maximalist: 64,
   "split-screen": 48
 };
 const mobileAppShellAreas = '"header" "sidebar" "main" "aside" "footer"';
@@ -171,7 +171,7 @@ const coreRecipeAreas = {
   docs: {
     mobile: '"header" "nav" "main" "aside" "footer"',
     medium: '"header header" "nav main" "nav aside" "footer footer"',
-    large: '"nav header header" "nav main aside" "nav footer footer"'
+    large: '"nav header" "nav main" "nav aside" "nav footer"'
   },
   "list-detail": {
     mobile: '"primary" "secondary" "actions"',
@@ -1262,6 +1262,113 @@ async function verifyNestedThresholdsAndFocus(page, baseUrl) {
   assert(scroll.scrollHeight > scroll.clientHeight, "List detail must exercise bounded scrolling");
 }
 
+async function verifyRootWideLocalPersonalityThresholds(page, baseUrl) {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&container=auto&recipe=app-shell&personality=minimal-saas`,
+    { waitUntil: "networkidle" }
+  );
+  await waitForReady(page);
+
+  const localWidths = ["47rem", "49rem", "63rem", "65rem"];
+
+  for (const localWidth of localWidths) {
+    const snapshots = await page.evaluate(
+      ({ personalityNames, width }) => {
+        const personalityControl = document.querySelector("#personalitySelect");
+        const wrapper = document.querySelector("#previewWrapper");
+
+        /*
+          The root intentionally remains wide while the semantic wrapper supplies
+          the nearest queryable allocation for the nested app shell.
+        */
+        wrapper.style.setProperty("--ly-wrapper-max", width);
+
+        return personalityNames.map((personality) => {
+          personalityControl.value = personality;
+          personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
+
+          const recipeRoot = document.querySelector("#recipePreview");
+          const previewRoot = document.querySelector("#previewRoot");
+          const frame = document.querySelector("#previewFrame");
+          const style = getComputedStyle(recipeRoot);
+          const childWidths = [...recipeRoot.children].map(
+            (element) => element.getBoundingClientRect().width
+          );
+
+          return {
+            personality,
+            rootWidth: previewRoot.getBoundingClientRect().width,
+            localWidth: wrapper.getBoundingClientRect().width,
+            areas: style.gridTemplateAreas,
+            sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
+            childWidths,
+            overflow: {
+              recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
+              wrapper: wrapper.scrollWidth - wrapper.clientWidth,
+              previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
+              frame: frame.scrollWidth - frame.clientWidth
+            }
+          };
+        });
+      },
+      { personalityNames: personalities, width: localWidth }
+    );
+
+    for (const snapshot of snapshots) {
+      const context = `${snapshot.personality} with wide root and ${localWidth} local container`;
+
+      assert(
+        snapshot.rootWidth > 65 * 16,
+        `${context} fixture must keep the personality root above the widest threshold`
+      );
+      assert(
+        Math.abs(snapshot.localWidth - Number.parseInt(localWidth, 10) * 16) <= 2,
+        `${context} fixture must expose the authored local inline size`
+      );
+      assert.equal(
+        snapshot.areas,
+        expectedAppShellAreas(snapshot.personality, snapshot.localWidth),
+        `${context} must respond to the nearest inline-size container`
+      );
+      assert.deepEqual(
+        snapshot.sequence,
+        recipeSequence["app-shell"],
+        `${context} must preserve authoritative DOM order`
+      );
+      assert(
+        snapshot.childWidths.every((width) => width > 0),
+        `${context} must not collapse an app-shell region to zero width`
+      );
+
+      for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
+        assert(overflow <= 4, `${context} ${scope} overflowed internally by ${overflow}px`);
+      }
+    }
+
+    for (const personality of personalities) {
+      await selectDemoOption(page, "personalitySelect", personality);
+      await page.locator("#recipePreview [data-demo-focus]").first().focus();
+      const tabOrder = [];
+
+      for (let index = 0; index < recipeSequence["app-shell"].length; index += 1) {
+        tabOrder.push(await page.evaluate(() => document.activeElement?.dataset.demoFocus));
+        await page.keyboard.press("Tab");
+      }
+
+      assert.deepEqual(
+        tabOrder,
+        recipeSequence["app-shell"],
+        `${personality} at ${localWidth} must preserve authoritative keyboard order`
+      );
+    }
+  }
+
+  await page.locator("#previewWrapper").evaluate((wrapper) => {
+    wrapper.style.removeProperty("--ly-wrapper-max");
+  });
+}
+
 assertStaticContract();
 
 const server = createStaticServer();
@@ -1341,6 +1448,7 @@ try {
   await verifyPersonalityRecipeSelectorParity(page, baseUrl);
   await verifyWrapperMeasureMatrix(page, baseUrl);
   await verifyNestedThresholdsAndFocus(page, baseUrl);
+  await verifyRootWideLocalPersonalityThresholds(page, baseUrl);
   assert.deepEqual(consoleErrors, [], `Demo should not log console errors: ${consoleErrors.join(" | ")}`);
   assert.deepEqual(pageErrors, [], `Demo should not throw page errors: ${pageErrors.join(" | ")}`);
 } finally {

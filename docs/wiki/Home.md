@@ -1,6 +1,6 @@
 # Layout Style CSS Wiki
 
-Version 2.1.0 is a container-first, dependency-free layout library. It ships semantic wrappers, composition primitives, seven recipes, sixteen layout personalities, focused exports, a v2-only compatibility bundle, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5.
+Version 2.1.1 is a container-first, dependency-free layout library. It ships semantic wrappers, composition primitives, seven recipes, sixteen layout personalities, focused exports, a v2-only compatibility bundle, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5.
 
 ## Start Here
 
@@ -28,6 +28,6 @@ The package has no runtime or peer dependencies. `ui-style-kit-css@2.1.0` and `i
 
 - Node.js 20 or newer for package development
 - Current evergreen Chromium, Firefox, and WebKit
-- Mobile-first DOM order with core thresholds at `48rem` and `64rem`, plus tested personality-specific overrides
+- Mobile-first DOM order with core thresholds at `48rem` and `64rem`, nearest-container personality overrides, and `64rem` feasibility gates for three- and four-track application shells
 
 The deprecated UI structural bridge remains available for existing UI-prefixed layout aliases, but canonical 2.1 examples use UI Style Kit visual CSS, the UI token bridge, Interactive Surface `state-core.css`, and Layout core.

@@ -69,14 +69,14 @@ assert(
   "Pages demo should preserve the source demo canonical URL"
 );
 assert(
-  index.includes('"version": "2.1.0"') && index.includes("layout-style-css 2.1 Interactive Layout Lab"),
+  index.includes('"version": "2.1.1"') && index.includes("layout-style-css 2.1 Interactive Layout Lab"),
   "Pages metadata should identify the v2.1 interactive layout lab"
 );
 assert(
   manifest.description.includes("Container-first layout-style-css 2.1"),
   "Pages manifest should describe the v2.1 container-first demo"
 );
-assert(sitemap.includes("<lastmod>2026-07-20</lastmod>"), "Pages sitemap should carry current v2 metadata");
+assert(sitemap.includes("<lastmod>2026-07-27</lastmod>"), "Pages sitemap should carry current v2 metadata");
 
 const pagesWorkflow = readFileSync(pagesWorkflowPath, "utf8");
 const pagesPreflightStep = pagesWorkflow.indexOf("- name: Verify Pages configuration");

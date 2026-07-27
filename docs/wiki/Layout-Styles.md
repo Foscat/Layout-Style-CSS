@@ -27,7 +27,7 @@ V2 calls spatial styles “personalities” and selects them with the canonical 
 | Mosaic | `maximalist` | Staggered editorial spans and broad measure. |
 | Equal split | `split-screen` | Two equally weighted primary regions. |
 
-Every personality changes at least two structural characteristics, such as area placement, shell direction, grid/span rhythm, wrapper measure, or responsive threshold. Personalities never set UI paint or change DOM order.
+Every personality changes at least two structural characteristics, such as area placement, shell direction, grid/span rhythm, wrapper measure, or responsive threshold. Enhancements query the nearest inline-size container: grid rhythms retain their authored thresholds, safe two-track application shells retain their authored thresholds, and three- or four-track application shells wait until the local allocation reaches `64rem`. Personalities never set UI paint or change DOM order.
 
 The v1 `data-layout`, `layout-style`, `.ly-layout-*`, and `.ly-style-*` hooks are available only through `layout-style-css/legacy.css`. New code must use `data-ly-layout`.
 

@@ -16,14 +16,22 @@
   }
 
   /* Cap the fallback rail until the wider personality template is eligible. */
-  @container ly-personality (min-width: 48rem) {
+  @container (min-width: 48rem) {
     :where(.ly-root[data-ly-layout="bauhaus"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-columns: minmax(min(100%, 14rem), 0.3fr) minmax(0, 1fr);
     }
   }
 
-  @container ly-personality (min-width: 52rem) {
+  @container (min-width: 52rem) {
+    :where(.ly-root[data-ly-layout="bauhaus"]) .ly-grid > :nth-child(3n + 1) {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+  /* The four-track shell waits for a locally feasible allocation. */
+  @container (min-width: 64rem) {
     :where(.ly-root[data-ly-layout="bauhaus"])
       :where(.ly-app-shell, [data-ly-recipe="app-shell"]) {
       grid-template-areas:
@@ -36,11 +44,6 @@
         minmax(0, 0.7fr)
         minmax(0, 1.3fr)
         minmax(min(100%, 18rem), 0.3fr);
-    }
-
-    :where(.ly-root[data-ly-layout="bauhaus"]) .ly-grid > :nth-child(3n + 1) {
-      grid-column: span 2;
-      grid-row: span 2;
     }
   }
 }
