@@ -497,8 +497,8 @@ body[data-ecosystem="all-three"] .demo-status {
     inset-block-start: 6rem;
     display: block;
     max-block-size: calc(100vh - 7rem);
-    max-block-size: calc(100dvh - 7rem);
     max-block-size: calc(100svh - 7rem);
+    max-block-size: calc(100dvh - 7rem);
     overflow: auto;
   }
 }
@@ -519,8 +519,8 @@ body[data-ecosystem="all-three"] .demo-status {
     z-index: 40;
     inline-size: min(24rem, calc(100% - 1rem));
     max-block-size: 100vh;
-    max-block-size: 100dvh;
     max-block-size: 100svh;
+    max-block-size: 100dvh;
     padding:
       max(1rem, env(safe-area-inset-top, 0px))
       max(1rem, env(safe-area-inset-right, 0px))

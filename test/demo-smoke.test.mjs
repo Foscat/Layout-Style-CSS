@@ -179,7 +179,29 @@ const assertStaticDemoContract = () => {
   assert.match(demoCss, /--demo-container-block-size/);
   assert.match(demoCss, /data-demo-height-tier="short"/);
   assert.match(demoCss, /data-demo-height-tier="shallow"/);
-  assert.match(demoCss, /100dvh/);
+  assert.equal(
+    (
+      demoCss.match(
+        /min-block-size:\s*100vh;\s*min-block-size:\s*100svh;\s*min-block-size:\s*100dvh;/g
+      ) ?? []
+    ).length,
+    1,
+    "The page minimum height must prefer dvh after its vh and svh fallbacks."
+  );
+  assert.equal(
+    (
+      demoCss.match(
+        /max-block-size:\s*100vh;\s*max-block-size:\s*100svh;\s*max-block-size:\s*100dvh;/g
+      ) ?? []
+    ).length,
+    1,
+    "The mobile controls drawer must prefer dvh after its vh and svh fallbacks."
+  );
+  assert.match(
+    demoCss,
+    /max-block-size:\s*calc\(100vh - 7rem\);\s*max-block-size:\s*calc\(100svh - 7rem\);\s*max-block-size:\s*calc\(100dvh - 7rem\);/,
+    "The desktop controls must prefer dvh after their vh and svh fallbacks."
+  );
 };
 
 const contentTypes = {
@@ -507,6 +529,21 @@ const verifyHeightBehavior = async (page, baseUrl) => {
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
+  const standaloneStickyPosition = await page.evaluate(() => {
+    const fixture = document.createElement("header");
+    fixture.className = "ly-header--sticky";
+    fixture.style.setProperty("--ly-sticky-position", "initial");
+    document.body.append(fixture);
+    const position = getComputedStyle(fixture).position;
+    fixture.remove();
+    return position;
+  });
+  assert.equal(
+    standaloneStickyPosition,
+    "sticky",
+    "A sticky header outside a token scope must retain its safe default."
+  );
+
   const samples = [
     { height: 464, shell: "auto", position: "static", tier: "shallow" },
     { height: 496, shell: "100dvh", position: "sticky", tier: "short" },
@@ -564,6 +601,49 @@ const verifyHeightBehavior = async (page, baseUrl) => {
       `${recipe} placed required content outside normal document flow.`
     );
     assert.equal(reachability.shell, "auto", `${recipe} retained a forced shell height.`);
+  }
+};
+
+const verifyDefaultFontHeightTiers = async (baseUrl) => {
+  if (browserName !== "chromium") return;
+
+  /*
+    Chromium can apply a real browser-default font preference at launch.
+    This validates rem conversion without overriding the page's authored root size.
+  */
+  const fontBrowser = await chromium.launch({
+    headless: true,
+    args: ["--blink-settings=defaultFontSize=20"]
+  });
+  const fontPage = await fontBrowser.newPage();
+
+  try {
+    await installExternalFixtures(fontPage);
+
+    for (const sample of [
+      { height: 550, tier: "shallow" },
+      { height: 800, tier: "short" },
+      { height: 920, tier: "regular" }
+    ]) {
+      await fontPage.setViewportSize({ width: 1440, height: sample.height });
+      await fontPage.goto(
+        `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem`,
+        { waitUntil: "domcontentloaded" }
+      );
+      await fontPage.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+      const result = await fontPage.evaluate(() => ({
+        fontSize: getComputedStyle(document.documentElement).fontSize,
+        tier: document.querySelector(".demo-preview-root").dataset.demoHeightTier
+      }));
+      assert.deepEqual(
+        result,
+        { fontSize: "20px", tier: sample.tier },
+        `The ${sample.height}px viewport ignored the 20px browser default font size.`
+      );
+    }
+  } finally {
+    await fontBrowser.close();
   }
 };
 
@@ -801,6 +881,10 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
 
       if (primitive === "scroll") {
         assert(result.vertical > 2 && result.overflowY === "auto", "Scroll must be vertically bounded.");
+        assert(
+          !["auto", "scroll", "visible"].includes(result.overflowX),
+          `The bounded vertical scroll primitive exposed inline overflow as ${result.overflowX}.`
+        );
       } else {
         assert(
           !(result.vertical > 2 && ["auto", "scroll"].includes(result.overflowY)),
@@ -862,6 +946,7 @@ try {
   await verifyTopologyEdges(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);
   await verifyHeightBehavior(page, server.baseUrl);
+  await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
