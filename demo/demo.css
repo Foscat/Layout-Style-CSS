@@ -62,8 +62,8 @@ html {
 
 body {
   min-block-size: 100vh;
-  min-block-size: 100dvh;
   min-block-size: 100svh;
+  min-block-size: 100dvh;
   margin: 0;
   overflow-x: clip;
   background: var(--demo-bg);

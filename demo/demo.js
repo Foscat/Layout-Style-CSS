@@ -512,18 +512,20 @@ function activeAllocation() {
     };
   }
 
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
   return {
     width: CONTAINER_WIDTHS[state.container],
     height: CONTAINER_HEIGHTS[state.height],
-    requestedWidth: state.container === "auto" ? null : Number.parseFloat(state.container) * 16,
-    requestedHeight: state.height === "auto" ? null : Number.parseFloat(state.height) * 16,
+    requestedWidth: state.container === "auto" ? null : Number.parseFloat(state.container) * rootFontSize,
+    requestedHeight: state.height === "auto" ? null : Number.parseFloat(state.height) * rootFontSize,
     label: "Custom"
   };
 }
 
 function syncHeightTier(allocation = activeAllocation()) {
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
   const availableHeight = allocation.requestedHeight ?? window.innerHeight;
-  const tier = availableHeight <= 30 * 16 ? "shallow" : availableHeight <= 44 * 16 ? "short" : "regular";
+  const tier = availableHeight <= 30 * rootFontSize ? "shallow" : availableHeight <= 44 * rootFontSize ? "short" : "regular";
   previewRoot.dataset.demoHeightTier = tier;
 }
 

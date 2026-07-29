@@ -24,7 +24,7 @@
   }
 
   .ly-header--sticky {
-    position: var(--ly-sticky-position);
+    position: var(--ly-sticky-position, sticky);
     inset-block-start: 0;
     z-index: var(--ly-z-header, 20);
   }
@@ -176,6 +176,7 @@
   .ly-scroll {
     min-block-size: 0;
     max-block-size: var(--ly-scroll-max);
+    overflow-x: clip;
     overflow-y: auto;
     overscroll-behavior-block: contain;
   }
