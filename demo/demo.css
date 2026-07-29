@@ -61,6 +61,8 @@ html {
 }
 
 body {
+  min-block-size: 100vh;
+  min-block-size: 100dvh;
   min-block-size: 100svh;
   margin: 0;
   overflow-x: clip;
@@ -194,9 +196,15 @@ h3 {
 
 .demo-status,
 .demo-copy-status,
-#containerReadout {
+.demo-readouts {
   color: var(--demo-muted);
   font-size: 0.875rem;
+}
+
+.demo-readouts {
+  display: grid;
+  justify-items: end;
+  gap: 0.125rem;
 }
 
 .demo-status {
@@ -305,13 +313,17 @@ body[data-ecosystem="all-three"] .demo-status {
 
 .demo-preview-frame {
   --demo-container-inline-size: 100%;
+  --demo-container-block-size: auto;
 
   container-name: demo-preview;
   container-type: inline-size;
   inline-size: min(100%, var(--demo-container-inline-size));
+  block-size: var(--demo-container-block-size);
+  max-block-size: none;
   min-inline-size: 0;
+  min-block-size: 0;
   margin-inline: auto;
-  overflow: clip;
+  overflow: auto;
   border: 1px dashed var(--demo-line);
   border-radius: calc(var(--demo-radius) * 0.85);
   background: var(--demo-bg);
@@ -319,31 +331,55 @@ body[data-ecosystem="all-three"] .demo-status {
 
 /* The nested root lets personalities respond to preview width, not viewport width. */
 .demo-preview-root {
+  --ly-cover-min: 100%;
+  --ly-shell-min: 100%;
+
+  block-size: 100%;
   min-block-size: 0;
   min-inline-size: 0;
   padding-block: 0.75rem;
 }
 
 .demo-preview-root > .ly-wrapper {
-  /* The width control represents the queried content box exactly at 48rem/64rem. */
-  --ly-wrapper-gutter: 0px;
+  /*
+    Preview allocations represent the nearest queried content box exactly;
+    safe-area behavior remains exercised by the outer document root.
+  */
+  --ly-wrapper-fluid-gutter: 0px;
+  --ly-wrapper-local-gutter: 0px;
 
+  block-size: 100%;
   min-inline-size: 0;
 }
 
 .demo-recipe {
-  min-block-size: 30rem;
+  min-block-size: 100%;
   min-inline-size: 0;
   gap: var(--demo-density-gap);
 }
 
-.demo-recipe:is(.ly-gallery, [data-ly-recipe="gallery"]),
-.demo-recipe:is(.ly-card-grid, [data-ly-recipe="card-grid"]) {
+.demo-recipe:is([data-ly-recipe="gallery"], [data-ly-recipe="card-grid"]) {
   min-block-size: auto;
 }
 
-.demo-recipe:is(.ly-app-shell, [data-ly-recipe="app-shell"]) {
-  min-block-size: 32rem;
+.demo-preview-root[data-demo-height-tier="short"] {
+  --ly-gap: min(var(--demo-density-gap), 1rem);
+  --ly-grid-gap: var(--ly-gap);
+  --ly-section-padding-block: clamp(1.5rem, 6%, 3rem);
+  --ly-header-height: 3.5rem;
+  --ly-scroll-max: min(62%, 34rem);
+}
+
+.demo-preview-root[data-demo-height-tier="shallow"] {
+  --ly-cover-min: auto;
+  --ly-shell-min: auto;
+  --ly-sticky-position: static;
+  --ly-section-padding-block: 1.5rem;
+  --ly-scroll-max: max(12rem, calc(100% - 8rem));
+}
+
+.demo-preview-root[data-demo-height-tier="shallow"] .demo-recipe {
+  min-block-size: auto;
 }
 
 .demo-region {
@@ -460,6 +496,8 @@ body[data-ecosystem="all-three"] .demo-status {
     position: sticky;
     inset-block-start: 6rem;
     display: block;
+    max-block-size: calc(100vh - 7rem);
+    max-block-size: calc(100dvh - 7rem);
     max-block-size: calc(100svh - 7rem);
     overflow: auto;
   }
@@ -480,6 +518,8 @@ body[data-ecosystem="all-three"] .demo-status {
     inset-inline-end: 0;
     z-index: 40;
     inline-size: min(24rem, calc(100% - 1rem));
+    max-block-size: 100vh;
+    max-block-size: 100dvh;
     max-block-size: 100svh;
     padding:
       max(1rem, env(safe-area-inset-top, 0px))
@@ -513,6 +553,33 @@ body[data-ecosystem="all-three"] .demo-status {
   .demo-code-card-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-height: 44rem) {
+  .demo-page {
+    padding-block: 0.75rem 2rem;
+  }
+
+  .demo-main {
+    gap: 1rem;
+  }
+
+  .demo-intro,
+  .demo-lab {
+    padding-block: 1rem;
+  }
+}
+
+@media (max-height: 30rem) {
+  .demo-topbar,
+  .demo-controls {
+    position: static;
+    max-block-size: none;
+  }
+
+  .demo-preview-frame {
+    max-block-size: none;
   }
 }
 

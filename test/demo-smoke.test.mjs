@@ -1,43 +1,37 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { createReadStream, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, normalize, sep } from "node:path";
+import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, firefox, webkit } from "@playwright/test";
 
 const root = normalize(fileURLToPath(new URL("..", import.meta.url))).replace(/[\\/]$/, "");
-const demoPath = join(root, "demo", "index.html");
-const demoCssPath = join(root, "demo", "demo.css");
-const demoJsPath = join(root, "demo", "demo.js");
-const packagePath = join(root, "package.json");
-const testTempDir = join(root, ".tmp", "playwright");
-const uiKitPackageDir = join(root, "node_modules", "ui-style-kit-css");
-const uiKitManifestPath = join(uiKitPackageDir, "manifest.json");
-const uiKitVisualCssPath = join(uiKitPackageDir, "dist", "ui-style-kit.visual.min.css");
-const uiKitInteractiveThemeCssPath = join(uiKitPackageDir, "styles", "interactive-surface-theme.css");
-const interactiveSurfaceCssPath = join(
-  root,
-  "node_modules",
-  "interactive-surface-css",
-  "state-core.css"
+const demoHtml = readFileSync(join(root, "demo", "index.html"), "utf8");
+const demoCss = readFileSync(join(root, "demo", "demo.css"), "utf8");
+const demoJs = readFileSync(join(root, "demo", "demo.js"), "utf8");
+const uiManifest = JSON.parse(
+  readFileSync(join(root, "node_modules", "ui-style-kit-css", "manifest.json"), "utf8")
 );
-const uiKitVisualUrl =
-  "https://unpkg.com/ui-style-kit-css@2.1.0/dist/ui-style-kit.visual.min.css";
-const uiKitInteractiveThemeUrl =
-  "https://unpkg.com/ui-style-kit-css@2.1.0/styles/interactive-surface-theme.css";
-const uiKitManifestUrl = "https://unpkg.com/ui-style-kit-css@2.1.0/manifest.json";
-const interactiveSurfaceUrl =
-  "https://unpkg.com/interactive-surface-css@1.5.0/state-core.css";
-const fixtureIntegrity = (path) =>
-  `sha384-${createHash("sha384").update(readFileSync(path)).digest("base64")}`;
-const uiKitVisualIntegrity = fixtureIntegrity(uiKitVisualCssPath);
-const uiKitInteractiveThemeIntegrity = fixtureIntegrity(uiKitInteractiveThemeCssPath);
-const interactiveSurfaceIntegrity = fixtureIntegrity(interactiveSurfaceCssPath);
-const uiKitManifest = JSON.parse(readFileSync(uiKitManifestPath, "utf8"));
-const uiKitPresetIds = uiKitManifest.presets.map((preset) => preset.id);
-const uiKitThemeIds = uiKitManifest.themes;
-const uiKitModeIds = uiKitManifest.modes;
+const companionCssFixtures = Object.freeze({
+  "ui-style-kit.visual.min.css": readFileSync(
+    join(root, "node_modules", "ui-style-kit-css", "dist", "ui-style-kit.visual.min.css")
+  ),
+  "interactive-surface-theme.css": readFileSync(
+    join(root, "node_modules", "ui-style-kit-css", "styles", "interactive-surface-theme.css")
+  ),
+  "state-core.css": readFileSync(
+    join(root, "node_modules", "interactive-surface-css", "state-core.css")
+  )
+});
+
+const browserName =
+  process.argv.find((argument) => argument.startsWith("--browser="))?.split("=")[1] ??
+  "chromium";
+const quick = process.argv.includes("--quick");
+const browserTypes = { chromium, firefox, webkit };
+const browserType = browserTypes[browserName];
+
+assert(browserType, `Unsupported browser "${browserName}".`);
 
 const recipes = [
   "app-shell",
@@ -66,1395 +60,695 @@ const personalities = [
   "maximalist",
   "split-screen"
 ];
-const controlValues = {
-  wrapperSelect: ["default", "compact", "prose", "content", "wide", "full", "breakout"],
-  recipeSelect: recipes,
-  personalitySelect: personalities,
-  containerSelect: ["auto", "40rem", "47rem", "49rem", "63rem", "65rem", "80rem"],
-  densitySelect: ["compact", "comfortable", "spacious"],
-  uiSelect: uiKitPresetIds,
-  themeSelect: uiKitThemeIds,
-  modeSelect: uiKitModeIds,
-  ecosystemSelect: ["layout-only", "layout-ui", "all-three"]
+const wrappers = ["default", "compact", "prose", "content", "wide", "full", "breakout"];
+const devices = {
+  "phone-portrait": { width: 360, height: 800 },
+  "phone-landscape": { width: 800, height: 360 },
+  "tablet-portrait": { width: 768, height: 1024 },
+  "tablet-landscape": { width: 1024, height: 768 },
+  "desktop-landscape": { width: 1440, height: 900 },
+  "desktop-portrait": { width: 900, height: 1440 }
 };
-const recipeAreas = {
-  "app-shell": ["header", "nav", "main", "aside", "footer"],
-  dashboard: ["header", "nav", "main", "aside", "footer"],
-  docs: ["header", "nav", "main", "aside", "footer"],
-  "list-detail": ["primary", "secondary", "actions"],
-  "split-hero": ["content", "media", "actions"],
-  gallery: [],
-  "card-grid": []
-};
-const recipeSequence = {
-  ...recipeAreas,
-  gallery: ["item-1", "item-2", "item-3", "item-4", "item-5"],
-  "card-grid": ["item-1", "item-2", "item-3", "item-4", "item-5", "item-6"]
-};
-const recipeClasses = {
-  "app-shell": "ly-app-shell",
-  dashboard: "ly-dashboard",
-  docs: "ly-docs",
-  "list-detail": "ly-list-detail",
-  "split-hero": "ly-split-hero",
-  gallery: "ly-gallery",
-  "card-grid": "ly-card-grid"
-};
-const personalitySignatures = {
-  "minimal-saas": { gridColumns: "4", gridMin: "16rem", wrapperMax: "88rem" },
-  bauhaus: { gridColumns: "6", gridMin: "13rem", wrapperMax: "96rem" },
-  tactile: { gridColumns: "5", gridMin: "15rem", wrapperMax: "82rem" },
-  cyberpunk: { gridColumns: "8", gridMin: "12rem", wrapperMax: "112rem" },
-  "f-pattern": { gridColumns: "6", gridMin: "14rem", wrapperMax: "92rem" },
-  brutalism: { gridColumns: "6", gridMin: "14rem", wrapperMax: "100rem" },
-  neumorphism: { gridColumns: "4", gridMin: "17rem", wrapperMax: "84rem" },
-  y2k: { gridColumns: "5", gridMin: "13rem", wrapperMax: "90rem" },
-  "retro-glass": { gridColumns: "8", gridMin: "15rem", wrapperMax: "104rem" },
-  "z-pattern": { gridColumns: "8", gridMin: "14rem", wrapperMax: "108rem" },
-  retrofuturism: { gridColumns: "6", gridMin: "14rem", wrapperMax: "106rem" },
-  mondrian: { gridColumns: "10", gridMin: "11rem", wrapperMax: "112rem" },
-  synthwave: { gridColumns: "12", gridMin: "14rem", wrapperMax: "112rem" },
-  bento: { gridColumns: "6", gridMin: "12rem", wrapperMax: "112rem" },
-  maximalist: { gridColumns: "12", gridMin: "10rem", wrapperMax: "100%" },
-  "split-screen": { gridColumns: "2", gridMin: "20rem", wrapperMax: "100%" }
-};
-const personalityShellAreas = {
-  "minimal-saas": '"sidebar header header" "sidebar main aside" "sidebar footer footer"',
-  bauhaus: '"sidebar header header aside" "sidebar main main aside" "sidebar footer footer footer"',
-  tactile: '"sidebar header" "sidebar main" "sidebar aside" "sidebar footer"',
-  cyberpunk: '"sidebar header aside" "sidebar main aside" "sidebar footer aside"',
-  "f-pattern": '"sidebar header header" "sidebar main aside" "sidebar footer aside"',
-  brutalism: '"header header sidebar" "main aside sidebar" "footer footer sidebar"',
-  neumorphism: '"header sidebar" "main sidebar" "aside sidebar" "footer sidebar"',
-  y2k: '"header header sidebar" "aside main sidebar" "footer footer sidebar"',
-  "retro-glass": '"header header sidebar" "main main sidebar" "aside footer footer"',
-  "z-pattern": '"header header sidebar" "main aside sidebar" "footer aside sidebar"',
-  retrofuturism: '"sidebar header aside" "sidebar main aside" "sidebar footer aside"',
-  mondrian: '"sidebar header header" "sidebar main aside" "footer footer aside"',
-  synthwave: '"header header header" "sidebar main aside" "footer footer footer"',
-  bento: '"header header header" "sidebar main main" "aside main main" "footer footer footer"',
-  maximalist: '"header header header header" "main main sidebar aside" "main main footer footer"',
-  "split-screen": '"header header" "main sidebar" "aside sidebar" "footer footer"'
-};
-const personalityShellThresholds = {
-  "minimal-saas": 64,
-  bauhaus: 64,
-  tactile: 48,
-  cyberpunk: 64,
-  "f-pattern": 64,
-  brutalism: 64,
-  neumorphism: 52,
-  y2k: 64,
-  "retro-glass": 64,
-  "z-pattern": 64,
-  retrofuturism: 64,
-  mondrian: 64,
-  synthwave: 64,
-  bento: 64,
-  maximalist: 64,
-  "split-screen": 48
-};
-const mobileAppShellAreas = '"header" "sidebar" "main" "aside" "footer"';
-const mediumAppShellAreas = '"header header" "sidebar main" "aside main" "footer footer"';
-const largeAppShellAreas = '"sidebar header header" "sidebar main aside" "sidebar footer footer"';
-const coreRecipeAreas = {
-  "app-shell": {
-    mobile: mobileAppShellAreas,
-    medium: mediumAppShellAreas,
-    large: largeAppShellAreas
+const topologyEdges = [
+  {
+    recipe: "split-hero",
+    below: "41rem",
+    above: "43rem",
+    belowTracks: 1,
+    aboveTracks: 2,
+    belowLabel: "Stacked",
+    aboveLabel: "Medium",
+    areas: ["content", "media"]
   },
-  dashboard: {
-    mobile: '"header" "nav" "main" "aside" "footer"',
-    medium: '"header header" "nav nav" "main aside" "footer footer"',
-    large: '"nav header header" "nav main aside" "nav footer footer"'
+  {
+    recipe: "list-detail",
+    below: "43rem",
+    above: "45rem",
+    belowTracks: 1,
+    aboveTracks: 2,
+    belowLabel: "Stacked",
+    aboveLabel: "Medium",
+    areas: ["primary", "secondary"]
   },
-  docs: {
-    mobile: '"header" "nav" "main" "aside" "footer"',
-    medium: '"header header" "nav main" "nav aside" "footer footer"',
-    large: '"nav header" "nav main" "nav aside" "nav footer"'
+  {
+    recipe: "docs",
+    below: "47rem",
+    above: "49rem",
+    belowTracks: 1,
+    aboveTracks: 2,
+    belowLabel: "Stacked",
+    aboveLabel: "Medium",
+    areas: ["nav", "main"]
   },
-  "list-detail": {
-    mobile: '"primary" "secondary" "actions"',
-    medium: '"primary secondary" "actions actions"',
-    large: '"primary secondary" "actions actions"'
+  {
+    recipe: "app-shell",
+    below: "51rem",
+    above: "53rem",
+    belowTracks: 1,
+    aboveTracks: 2,
+    belowLabel: "Stacked",
+    aboveLabel: "Medium",
+    areas: ["sidebar", "main"]
   },
-  "split-hero": {
-    mobile: '"content" "media" "actions"',
-    medium: '"content media" "actions media"',
-    large: '"content media" "actions media"'
+  {
+    recipe: "dashboard",
+    below: "51rem",
+    above: "53rem",
+    belowTracks: 1,
+    aboveTracks: 2,
+    belowLabel: "Stacked",
+    aboveLabel: "Medium",
+    areas: ["nav", "main"]
   },
-  gallery: { mobile: "none", medium: "none", large: "none" },
-  "card-grid": { mobile: "none", medium: "none", large: "none" }
-};
-const wrapperMeasureTokens = {
-  compact: "40rem",
-  prose: "68ch",
-  content: "72rem",
-  wide: "112rem",
-  full: "100%"
-};
-const personalityRecipeParityCases = [
-  { personality: "tactile", recipe: "list-detail", ratio: [0.5, 0.9] },
-  { personality: "neumorphism", recipe: "list-detail", ratio: [1.1, 1.7] },
-  { personality: "f-pattern", recipe: "split-hero", ratio: [1.7, 2.4] },
-  { personality: "z-pattern", recipe: "split-hero", ratio: [2.4, 3.6] },
-  { personality: "bento", recipe: "card-grid", columnSpan: true },
-  { personality: "maximalist", recipe: "gallery", columnSpan: true, rowSpan: true },
-  { personality: "split-screen", recipe: "split-hero", ratio: [0.9, 1.1] },
-  { personality: "split-screen", recipe: "list-detail", ratio: [0.9, 1.1] }
+  {
+    recipe: "app-shell",
+    below: "71rem",
+    above: "73rem",
+    belowTracks: 2,
+    aboveTracks: 3,
+    belowLabel: "Medium",
+    aboveLabel: "Wide",
+    areas: ["main", "aside"]
+  },
+  {
+    recipe: "dashboard",
+    below: "71rem",
+    above: "73rem",
+    belowTracks: 2,
+    aboveTracks: 3,
+    belowLabel: "Medium",
+    aboveLabel: "Wide",
+    areas: ["main", "aside"]
+  }
 ];
-const viewports = [
-  { width: 375, height: 667 },
-  { width: 768, height: 1024 },
-  { width: 1280, height: 900 },
-  { width: 1440, height: 900 }
-];
-const browserTypes = Object.freeze({ chromium, firefox, webkit });
-const browserArguments = process.argv.filter((argument) => argument.startsWith("--browser="));
 
-assert(browserArguments.length <= 1, "Demo smoke accepts at most one --browser argument");
-const browserName = browserArguments[0]?.slice("--browser=".length) ?? "chromium";
-assert(
-  Object.hasOwn(browserTypes, browserName),
-  `Unsupported browser ${browserName}; expected chromium, firefox, or webkit`
-);
-const quickGate = process.argv.includes("--quick") || process.env.DEMO_SMOKE_QUICK === "1";
+const assertStaticDemoContract = () => {
+  assert.match(demoHtml, /Layout Style CSS v3/);
+  assert.match(demoHtml, /content="3\.0\.0"/);
+  assert.match(demoHtml, /id="deviceSelect"/);
+  assert.match(demoHtml, /id="containerSelect"/);
+  assert.match(demoHtml, /id="heightSelect"/);
+  assert.match(demoHtml, /id="responsiveSelect"/);
+  assert.match(demoHtml, /id="topologyReadout"/);
+  assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
+  assert.doesNotMatch(demoHtml, /class="ly-(?:app-shell|dashboard|docs|list-detail|split-hero|gallery|card-grid)/);
 
-mkdirSync(testTempDir, { recursive: true });
-process.env.TEMP = testTempDir;
-process.env.TMP = testTempDir;
+  assert.match(demoJs, /phone-portrait/);
+  assert.match(demoJs, /desktop-portrait/);
+  assert.match(demoJs, /data-ly-responsive/);
+  assert.match(demoJs, /ResizeObserver/);
+  assert.match(demoJs, /URLSearchParams/);
+  assert.doesNotMatch(demoJs, /RECIPE_CLASSES/);
+  assert.doesNotMatch(demoJs, /layoutIntegrationStylesheet/);
 
-const mimeTypes = new Map([
-  [".css", "text/css; charset=utf-8"],
-  [".html", "text/html; charset=utf-8"],
-  [".js", "text/javascript; charset=utf-8"],
-  [".json", "application/json; charset=utf-8"],
-  [".png", "image/png"],
-  [".svg", "image/svg+xml; charset=utf-8"],
-  [".xml", "application/xml; charset=utf-8"]
-]);
+  assert.match(demoCss, /--demo-container-block-size/);
+  assert.match(demoCss, /data-demo-height-tier="short"/);
+  assert.match(demoCss, /data-demo-height-tier="shallow"/);
+  assert.match(demoCss, /100dvh/);
+};
 
-function createStaticServer() {
-  return createServer((request, response) => {
-    const requestPath = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
-    const relativePath = requestPath === "/" ? "/demo/index.html" : requestPath;
-    const normalized = normalize(join(root, relativePath));
+const contentTypes = {
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8"
+};
 
-    // The local fixture server must never expose paths outside the package root.
-    if (!normalized.startsWith(root + sep) && normalized !== root) {
-      response.writeHead(403);
-      response.end("Forbidden");
+const startServer = async () => {
+  const server = createServer((request, response) => {
+    const requestUrl = new URL(request.url ?? "/", "http://127.0.0.1");
+    const pathname = decodeURIComponent(requestUrl.pathname);
+    const relativePath = pathname === "/" ? "demo/index.html" : pathname.replace(/^\/+/, "");
+    const candidate = resolve(root, relativePath);
+    const rootPrefix = `${resolve(root)}${sep}`;
+
+    if (candidate !== resolve(root) && !candidate.startsWith(rootPrefix)) {
+      response.writeHead(403).end("Forbidden");
       return;
     }
 
-    if (!existsSync(normalized)) {
-      response.writeHead(404);
-      response.end("Not found");
+    if (!existsSync(candidate) || !statSync(candidate).isFile()) {
+      response.writeHead(404).end("Not found");
       return;
     }
 
     response.writeHead(200, {
-      "content-type": mimeTypes.get(extname(normalized)) ?? "application/octet-stream"
+      "Cache-Control": "no-store",
+      "Content-Type": contentTypes[extname(candidate)] ?? "application/octet-stream"
     });
-    createReadStream(normalized).pipe(response);
+    response.end(readFileSync(candidate));
   });
-}
 
-function listen(server) {
-  return new Promise((resolve) => {
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      assert(address && typeof address === "object", "Demo smoke server did not bind to a port");
-      resolve(address.port);
-    });
-  });
-}
+  await new Promise((resolveStarted) => server.listen(0, "127.0.0.1", resolveStarted));
+  const address = server.address();
+  assert(address && typeof address === "object");
 
-function assertStaticContract() {
-  assert(existsSync(demoPath), "Demo smoke test requires demo/index.html");
-  assert(existsSync(demoCssPath), "The v2 demo must move authored styles into demo/demo.css");
-  assert(existsSync(demoJsPath), "The v2 demo must move behavior into demo/demo.js");
-  assert(existsSync(uiKitManifestPath), "Demo smoke test requires the UI Style Kit 2.1 manifest");
-  assert(existsSync(uiKitVisualCssPath), "Demo smoke test requires the UI Style Kit 2.1 visual bundle");
-  assert(
-    existsSync(uiKitInteractiveThemeCssPath),
-    "Demo smoke test requires the UI Style Kit 2.1 Interactive Surface token bridge"
+  return {
+    baseUrl: `http://127.0.0.1:${address.port}/demo/index.html`,
+    close: () => new Promise((resolveClosed) => server.close(resolveClosed))
+  };
+};
+
+const setControl = async (page, id, value) => {
+  await page.locator(`#${id}`).selectOption(value, { force: true });
+  await page.waitForFunction(
+    ({ controlId, expected }) =>
+      document.getElementById(controlId)?.value === expected &&
+      document.body.dataset.demoReady === "true",
+    { controlId: id, expected: value }
   );
-  assert(
-    existsSync(interactiveSurfaceCssPath),
-    "Demo smoke test requires interactive-surface-css@1.5.0"
+};
+
+const setCustomAllocation = async (page, width, height = "auto") => {
+  await setControl(page, "containerSelect", width);
+  await setControl(page, "heightSelect", height);
+  assert.equal(await page.locator("#deviceSelect").inputValue(), "custom");
+};
+
+const assertTopologyReadout = async (page, expected) => {
+  await page.waitForFunction(
+    (label) => document.querySelector("#topologyReadout")?.textContent === `Topology: ${label}`,
+    expected
   );
+};
 
-  const html = readFileSync(demoPath, "utf8");
-  const css = readFileSync(demoCssPath, "utf8");
-  const script = readFileSync(demoJsPath, "utf8");
-  const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
-
-  assert(html.includes('href="./demo.css"'), "Demo must load its external stylesheet");
-  assert(html.includes('src="./demo.js"'), "Demo must load its external JavaScript");
-  assert(!html.includes("<style"), "Demo HTML must not retain a monolithic inline style block");
-  assert(
-    !/<script(?![^>]*type=["']application\/ld\+json["'])(?![^>]*\bsrc=)[^>]*>/i.test(html),
-    "Demo behavior must not remain in an inline script"
-  );
-
-  for (const [id, values] of Object.entries(controlValues)) {
-    assert(html.includes(`id="${id}"`), `Demo missing #${id}`);
-    const selectMatch = html.match(new RegExp(`<select[^>]*id="${id}"[\\s\\S]*?<\\/select>`));
-    assert(selectMatch, `Demo must render #${id} as a select`);
-    const actualValues = [...selectMatch[0].matchAll(/<option value="([^"]+)">/g)].map(
-      ([, value]) => value
+const layoutSnapshot = async (page) =>
+  page.evaluate(() => {
+    const documentElement = document.documentElement;
+    const frame = document.querySelector(".demo-preview-frame");
+    const wrapper = document.querySelector("#previewWrapper");
+    const recipe = document.querySelector("[data-ly-recipe]");
+    const regions = [...document.querySelectorAll("[data-ly-area]")];
+    const computedRecipe = getComputedStyle(recipe);
+    const responsiveScope = wrapper ?? recipe;
+    const width = responsiveScope.getBoundingClientRect().width;
+    const regionRectangles = regions.map((region) => ({
+      area: region.dataset.lyArea,
+      rectangle: region.getBoundingClientRect()
+    }));
+    const overlaps = regionRectangles.flatMap((first, firstIndex) =>
+      regionRectangles.slice(firstIndex + 1).flatMap((second) => {
+        const overlapWidth =
+          Math.min(first.rectangle.right, second.rectangle.right) -
+          Math.max(first.rectangle.left, second.rectangle.left);
+        const overlapHeight =
+          Math.min(first.rectangle.bottom, second.rectangle.bottom) -
+          Math.max(first.rectangle.top, second.rectangle.top);
+        return overlapWidth > 1 && overlapHeight > 1
+          ? [`${first.area}/${second.area}`]
+          : [];
+      })
     );
-    assert.deepEqual(actualValues, values, `#${id} must expose the exact allowlisted values`);
-  }
 
-  for (const id of ["uiSelect", "themeSelect", "modeSelect"]) {
-    assert(html.includes(`id="${id}"`), `Demo missing #${id}`);
-  }
+    return {
+      documentOverflow: documentElement.scrollWidth - documentElement.clientWidth,
+      frameOverflow: frame.scrollWidth - frame.clientWidth,
+      frameWidth: frame.getBoundingClientRect().width,
+      requestedWidth: frame.style.getPropertyValue("--demo-container-inline-size"),
+      selectedWidth: document.querySelector("#containerSelect").value,
+      wrapperOverflow: wrapper ? wrapper.scrollWidth - wrapper.clientWidth : 0,
+      recipeOverflow: recipe.scrollWidth - recipe.clientWidth,
+      width,
+      columns: computedRecipe.gridTemplateColumns,
+      trackCount: computedRecipe.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+      areas: computedRecipe.gridTemplateAreas,
+      overlaps,
+      clippedRegions: regions
+        .filter(
+          (region) =>
+            region.scrollWidth - region.clientWidth > 2 ||
+            region.scrollHeight - region.clientHeight > 2
+        )
+        .map((region) => region.dataset.lyArea),
+      regionWidths: regions.map((region) => region.getBoundingClientRect().width),
+      domAreas: regions.map((region) => region.dataset.lyArea),
+      focusAreas: regions
+        .flatMap((region) => [...region.querySelectorAll("[data-demo-focus]")])
+        .map((control) => control.closest("[data-ly-area]")?.dataset.lyArea)
+    };
+  });
+
+const assertNoHorizontalFailures = (snapshot, label) => {
+  assert(
+    snapshot.documentOverflow <= 2,
+    `${label}: document overflowed horizontally by ${snapshot.documentOverflow}px.`
+  );
+  assert(snapshot.frameOverflow <= 2, `${label}: preview frame overflowed horizontally.`);
+  assert(snapshot.wrapperOverflow <= 2, `${label}: wrapper overflowed horizontally.`);
+  assert(snapshot.recipeOverflow <= 2, `${label}: recipe overflowed horizontally.`);
+  assert(
+    snapshot.regionWidths.every((width) => width > 0),
+    `${label}: a rendered region collapsed to zero width.`
+  );
+  assert.deepEqual(snapshot.overlaps, [], `${label}: regions overlapped.`);
+  assert.deepEqual(snapshot.clippedRegions, [], `${label}: required region content was clipped.`);
+};
+
+const installExternalFixtures = async (page) => {
+  await page.route("https://unpkg.com/**", async (route) => {
+    const url = route.request().url();
+    if (url.endsWith("/manifest.json")) {
+      await route.fulfill({
+        body: JSON.stringify(uiManifest),
+        contentType: "application/json",
+        status: 200
+      });
+      return;
+    }
+
+    const [fixtureName, fixtureBody] =
+      Object.entries(companionCssFixtures).find(([name]) => url.endsWith(`/${name}`)) ?? [];
+    assert(fixtureName && fixtureBody, `No local fixture exists for ${url}.`);
+    await route.fulfill({ body: fixtureBody, contentType: "text/css", status: 200 });
+  });
+};
+
+const verifyIdentityAndControls = async (page, baseUrl) => {
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  await page.waitForFunction(() => /\d+\s*×\s*\d+/.test(document.querySelector("#containerReadout")?.textContent));
+
+  assert.equal(await page.title(), "Layout Style CSS v3 — Intrinsic Responsive Demo");
+  await page.locator("main").waitFor();
+  await page.locator("[data-ly-recipe]").waitFor();
+  await page.locator("#topologyReadout").waitFor();
+  assert.match(await page.locator("#containerReadout").textContent(), /\d+\s*×\s*\d+/);
+  assert.match(await page.locator("#topologyReadout").textContent(), /(stacked|intrinsic|medium|wide)/i);
 
   for (const id of [
-    "demoControlsToggle",
-    "demoControlsDrawer",
-    "demoControlsBackdrop",
-    "demoControlsClose",
-    "importsSnippet",
-    "markupSnippet",
-    "copyImports",
-    "copyMarkup",
-    "copyStatus",
-    "previewFrame",
-    "previewWrapper",
-    "previewRoot",
-    "recipePreview",
-    "stateToggle"
+    "deviceSelect",
+    "containerSelect",
+    "heightSelect",
+    "responsiveSelect",
+    "wrapperSelect",
+    "recipeSelect",
+    "personalitySelect"
   ]) {
-    assert(html.includes(`id="${id}"`), `Demo missing #${id}`);
+    assert.equal(await page.locator(`#${id}`).count(), 1, `Missing #${id}.`);
   }
 
-  const stylesheetIds = [
-    "uiKitStylesheet",
-    "uiKitInteractiveThemeStylesheet",
-    "interactiveSurfaceStylesheet",
-    "layoutIntegrationStylesheet",
-    "layoutCoreStylesheet"
-  ];
-  const stylesheetPositions = stylesheetIds.map((id) => html.indexOf(`id="${id}"`));
-  assert(stylesheetPositions.every((position) => position >= 0), "Demo missing ecosystem links");
-  assert.deepEqual(
-    [...stylesheetPositions].sort((a, b) => a - b),
-    stylesheetPositions,
-    "Ecosystem stylesheet DOM order must be UI visual, UI token bridge, Interactive Surface, deprecated integration, then core"
+  await page.goto(
+    `${baseUrl}?device=custom&container=49rem&height=31rem&responsive=manual&wrapper=wide&recipe=docs&personality=bauhaus&ecosystem=layout-only`,
+    { waitUntil: "domcontentloaded" }
   );
-  assert(html.includes(uiKitVisualUrl), "Demo must pin the UI Style Kit 2.1 visual bundle");
-  assert(html.includes(uiKitInteractiveThemeUrl), "Demo must pin the UI Style Kit 2.1 token bridge");
-  assert(html.includes(interactiveSurfaceUrl), "Demo must pin interactive-surface-css@1.5.0");
-  for (const [id, integrity] of [
-    ["uiKitStylesheet", uiKitVisualIntegrity],
-    ["uiKitInteractiveThemeStylesheet", uiKitInteractiveThemeIntegrity],
-    ["interactiveSurfaceStylesheet", interactiveSurfaceIntegrity]
-  ]) {
-    const link = html.match(new RegExp(`<link[^>]*id="${id}"[^>]*>`))?.[0] ?? "";
-
-    assert(link.includes(`integrity="${integrity}"`), `${id} must pin its local fixture SHA-384`);
-    assert(link.includes('crossorigin="anonymous"'), `${id} must use anonymous CORS for SRI`);
-  }
-  assert(html.includes("../dist/integrations/ui-style-kit.css"), "Demo must load the integration bridge");
-  assert(html.includes("../dist/layout-style-css.css"), "Demo must load the default v2 bundle");
-  assert(!html.includes("data-layout="), "V2 demo markup must not use the legacy data-layout hook");
-  assert(!html.includes("layout-style="), "V2 demo markup must not use the legacy layout-style hook");
-  assert(html.includes("data-ly-layout="), "Demo must use the canonical personality hook");
-  assert(html.includes("data-ly-recipe="), "Demo must use the canonical recipe hook");
-  assert(html.includes("data-ly-area="), "Demo must use canonical area hooks");
-
-  assert(script.includes("const ALLOWLISTS = Object.freeze"), "Query state must use explicit allowlists");
-  assert(
-    script.includes('const UI_STYLE_KIT_VERSION = "2.1.0"') &&
-      script.includes("UI_STYLE_KIT_MANIFEST_URL") &&
-      script.includes("/manifest.json"),
-    "Demo must load the UI Style Kit 2.1 manifest"
-  );
-  assert(
-    script.includes("UI_STYLE_KIT_MANIFEST_FALLBACK"),
-    "Demo must keep a bounded manifest fallback for unpublished or stale CDN edges"
-  );
-  assert(
-    script.includes("syncUiManifestSelectOptions"),
-    "Demo controls must derive UI options from the UI Style Kit manifest contract"
-  );
-  assert(script.includes("URLSearchParams"), "Demo must restore and synchronize query state");
-  assert(!script.includes("innerHTML"), "Demo JavaScript must never interpolate with innerHTML");
-  assert(
-    script.includes("importsSnippet.textContent") && script.includes("markupSnippet.textContent"),
-    "Generated snippets must be assigned with textContent"
-  );
-  assert(script.includes("replaceChildren"), "Dynamic recipes must use safe DOM construction");
-  assert(css.includes("container-type: inline-size"), "Demo stage must exercise nested containment");
-  assert(css.includes("safe-area-inset"), "Mobile drawer chrome must respect safe-area insets");
-
-  assert(packageJson.files.includes("demo/demo.css"), "npm package must include demo/demo.css");
-  assert(packageJson.files.includes("demo/demo.js"), "npm package must include demo/demo.js");
-  assert(packageJson.scripts.lint.includes("demo/**/*.css"), "Stylelint must cover demo CSS");
-  assert.equal(
-    packageJson.scripts["check:demo-js"],
-    "node --check demo/demo.js",
-    "Package checks must validate demo JavaScript syntax"
-  );
-  assert.equal(
-    packageJson.scripts["test:demo:quick"],
-    "node test/demo-smoke.test.mjs --quick --browser=chromium",
-    "Package scripts must expose the Chromium quick gate"
-  );
-}
-
-async function waitForReady(page) {
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
-}
+  assert.equal(await page.locator("#deviceSelect").inputValue(), "custom");
+  assert.equal(await page.locator("#containerSelect").inputValue(), "49rem");
+  assert.equal(await page.locator("#heightSelect").inputValue(), "31rem");
+  assert.equal(await page.locator("#responsiveSelect").inputValue(), "manual");
+  assert.equal(await page.locator("#wrapperSelect").inputValue(), "wide");
+  assert.equal(await page.locator("#recipeSelect").inputValue(), "docs");
+  assert.equal(await page.locator("#personalitySelect").inputValue(), "bauhaus");
+  assert.equal(await page.locator("[data-ly-recipe]").getAttribute("data-ly-responsive"), "manual");
+};
 
-async function selectDemoOption(page, id, value) {
-  await page.locator(`#${id}`).evaluate((control, nextValue) => {
-    control.value = nextValue;
-    control.dispatchEvent(new Event("change", { bubbles: true }));
-  }, value);
-}
-
-function expectedAppShellAreas(personality, inlineSize) {
-  const sizeInRem = inlineSize / 16;
-
-  if (sizeInRem >= personalityShellThresholds[personality]) {
-    return personalityShellAreas[personality];
-  }
-
-  if (sizeInRem < 48) {
-    return mobileAppShellAreas;
-  }
-
-  return sizeInRem < 64 ? mediumAppShellAreas : largeAppShellAreas;
-}
-
-function expectedCoreAreas(recipe, inlineSize) {
-  const sizeInRem = inlineSize / 16;
-  const threshold = sizeInRem < 48 ? "mobile" : sizeInRem < 64 ? "medium" : "large";
-
-  return coreRecipeAreas[recipe][threshold];
-}
-
-function gridTrackRatio(columns) {
-  const tracks = [...columns.matchAll(/([\d.]+)px/g)].map((match) => Number.parseFloat(match[1]));
-
-  return tracks.length >= 2 ? tracks[0] / tracks[1] : null;
-}
-
-async function verifyQueryAndEcosystem(page, baseUrl) {
-  const restoredUrl =
-    `${baseUrl}?wrapper=prose&recipe=docs&personality=synthwave&container=49rem` +
-    "&density=compact&ui=cyberpunk&theme=cyber-lime&mode=dark&ecosystem=all-three";
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto(restoredUrl, { waitUntil: "networkidle" });
-  await waitForReady(page);
-
-  const restored = await page.evaluate(() => ({
-    state: {
-      wrapper: document.querySelector("#wrapperSelect")?.value,
-      recipe: document.querySelector("#recipeSelect")?.value,
-      personality: document.querySelector("#personalitySelect")?.value,
-      container: document.querySelector("#containerSelect")?.value,
-      density: document.querySelector("#densitySelect")?.value,
-      ui: document.querySelector("#uiSelect")?.value,
-      theme: document.querySelector("#themeSelect")?.value,
-      mode: document.querySelector("#modeSelect")?.value,
-      ecosystem: document.querySelector("#ecosystemSelect")?.value
-    },
-    body: {
-      layout: document.body.dataset.lyLayout,
-      density: document.body.dataset.density,
-      ecosystem: document.body.dataset.ecosystem,
-      uiManifestVersion: document.body.dataset.uiManifestVersion
-    },
-    previewLayout: document.querySelector("#previewRoot")?.dataset.lyLayout,
-    wrapperClass: document.querySelector("#previewWrapper")?.className,
-    recipe: document.querySelector("#recipePreview")?.dataset.lyRecipe,
-    links: [
-      document.querySelector("#uiKitStylesheet")?.disabled,
-      document.querySelector("#uiKitInteractiveThemeStylesheet")?.disabled,
-      document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
-      document.querySelector("#layoutIntegrationStylesheet")?.disabled,
-      document.querySelector("#layoutCoreStylesheet")?.disabled
-    ],
-    imports: document.querySelector("#importsSnippet")?.textContent,
-    markup: document.querySelector("#markupSnippet")?.textContent
-  }));
-
-  assert.deepEqual(restored.state, {
-    wrapper: "prose",
-    recipe: "docs",
-    personality: "synthwave",
-    container: "49rem",
-    density: "compact",
-    ui: "cyberpunk",
-    theme: "cyber-lime",
-    mode: "dark",
-    ecosystem: "all-three"
+const verifyTopologyEdges = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
   });
-  assert.deepEqual(restored.body, {
-    layout: "synthwave",
-    density: "compact",
-    ecosystem: "all-three",
-    uiManifestVersion: "2.1.0"
-  });
-  assert.equal(restored.previewLayout, "synthwave");
-  assert.match(restored.wrapperClass, /\bly-wrapper--prose\b/);
-  assert.equal(restored.recipe, "docs");
-  assert.deepEqual(restored.links, [false, false, false, true, false]);
-  assert.equal(
-    restored.imports,
-    [
-      'import "ui-style-kit-css/visual.css";',
-      'import "ui-style-kit-css/interactive-surface-theme.css";',
-      'import "interactive-surface-css/state-core.css";',
-      'import "layout-style-css";'
-    ].join("\n")
-  );
-  assert(restored.markup.includes('data-ly-recipe="docs"'));
-  assert(restored.markup.includes('data-ly-layout="synthwave"'));
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
+  for (const edge of topologyEdges) {
+    await setControl(page, "recipeSelect", edge.recipe);
+    await setControl(page, "responsiveSelect", "auto");
+    await setCustomAllocation(page, edge.below);
+    const below = await layoutSnapshot(page);
+    await assertTopologyReadout(page, edge.belowLabel);
+    assert.equal(
+      below.trackCount,
+      edge.belowTracks,
+      `${edge.recipe} enhanced below its threshold: ${JSON.stringify(below)}`
+    );
+
+    await setCustomAllocation(page, edge.above);
+    const above = await layoutSnapshot(page);
+    await assertTopologyReadout(page, edge.aboveLabel);
+    assert.equal(
+      above.trackCount,
+      edge.aboveTracks,
+      `${edge.recipe} had the wrong track count above ${edge.above}.`
+    );
+    for (const area of edge.areas) {
+      assert.match(above.areas, new RegExp(area), `${edge.recipe} missed area ${area}.`);
+    }
+    assertNoHorizontalFailures(above, `${edge.recipe} at ${edge.above}`);
+  }
+};
+
+const verifyManualAndNearestContainer = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(
-    `${baseUrl}?wrapper=javascript%3Aalert(1)&recipe=unknown&personality=%3Cscript%3E` +
-      "&container=999rem&density=unsafe&ui=unknown&theme=unknown&mode=unknown&ecosystem=unknown",
-    { waitUntil: "networkidle" }
+    `${baseUrl}?ecosystem=layout-only&device=custom&container=73rem&wrapper=full&recipe=docs&responsive=manual`,
+    { waitUntil: "domcontentloaded" }
   );
-  await waitForReady(page);
-  const rejected = await page.evaluate(() => {
-    const expectedModuleUrl = new URL("./demo.js", window.location.href).href;
-    const unexpectedScripts = [...document.scripts].filter((script) => {
-      const isStructuredData = script.type === "application/ld+json" && script.src === "";
-      const isDemoModule = script.type === "module" && script.src === expectedModuleUrl;
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-      return !isStructuredData && !isDemoModule;
+  assert.equal((await layoutSnapshot(page)).trackCount, 1, "Manual mode did not retain the stack.");
+  await page.addStyleTag({
+    content: `
+      @container ly-scope (min-width: 56rem) {
+        [data-ly-recipe="docs"][data-ly-responsive="manual"] {
+          grid-template-areas:
+            "header header"
+            "nav main"
+            "footer footer";
+          grid-template-columns: minmax(10rem, 16rem) minmax(0, 1fr);
+        }
+      }
+    `
+  });
+  assert.match(
+    (await layoutSnapshot(page)).areas,
+    /"nav main"/,
+    "Consumer-owned manual topology did not apply."
+  );
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  await setControl(page, "responsiveSelect", "auto");
+  await setControl(page, "recipeSelect", "split-hero");
+  await setCustomAllocation(page, "73rem");
+  await page.evaluate(() => {
+    const root = document.querySelector(".demo-preview-root");
+    const wrapper = document.querySelector("#previewWrapper");
+    const recipe = document.querySelector("[data-ly-recipe]");
+    root.append(recipe);
+    wrapper.remove();
+  });
+  assert.match(
+    (await layoutSnapshot(page)).areas,
+    /"content media"/,
+    "A recipe used directly in .ly-root did not enhance."
+  );
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  await setControl(page, "responsiveSelect", "auto");
+  await setControl(page, "recipeSelect", "split-hero");
+  await setControl(page, "wrapperSelect", "compact");
+  await setCustomAllocation(page, "73rem");
+  assert.equal(
+    (await layoutSnapshot(page)).trackCount,
+    1,
+    "A nested recipe ignored the nearest compact wrapper."
+  );
+};
+
+const verifyHeightBehavior = async (page, baseUrl) => {
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem`,
+    { waitUntil: "domcontentloaded" }
+  );
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const samples = [
+    { height: 464, shell: "auto", position: "static", tier: "shallow" },
+    { height: 496, shell: "100dvh", position: "sticky", tier: "short" },
+    { height: 688, shell: "100dvh", position: "sticky", tier: "short" },
+    { height: 720, shell: "100dvh", position: "sticky", tier: "regular" }
+  ];
+
+  for (const sample of samples) {
+    await page.setViewportSize({ width: 1440, height: sample.height });
+    await page.waitForFunction(
+      (expectedTier) =>
+        document.querySelector(".demo-preview-root")?.dataset.demoHeightTier === expectedTier,
+      sample.tier
+    );
+    const result = await page.evaluate(() => {
+      const rootStyle = getComputedStyle(document.body);
+      const sticky = document.querySelector(".ly-header--sticky");
+      return {
+        shell: rootStyle.getPropertyValue("--ly-shell-min").trim(),
+        position: getComputedStyle(sticky).position,
+        tier: document.querySelector(".demo-preview-root").dataset.demoHeightTier
+      };
     });
+    assert.equal(result.shell, sample.shell, `Unexpected shell behavior at ${sample.height}px.`);
+    assert.equal(result.position, sample.position, `Unexpected sticky behavior at ${sample.height}px.`);
+    assert.equal(result.tier, sample.tier, `Unexpected demo height tier at ${sample.height}px.`);
+  }
+};
 
-    return {
-      values: [
-        document.querySelector("#wrapperSelect")?.value,
-        document.querySelector("#recipeSelect")?.value,
-        document.querySelector("#personalitySelect")?.value,
-        document.querySelector("#containerSelect")?.value,
-        document.querySelector("#densitySelect")?.value,
-        document.querySelector("#uiSelect")?.value,
-        document.querySelector("#themeSelect")?.value,
-        document.querySelector("#modeSelect")?.value,
-        document.querySelector("#ecosystemSelect")?.value
-      ],
-      search: window.location.search,
-      scriptCount: document.scripts.length,
-      unexpectedScriptCount: unexpectedScripts.length
-    };
+const verifyDeviceMatrix = async (page, baseUrl) => {
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
   });
-  assert.deepEqual(rejected.values, [
-    "default",
-    "app-shell",
-    "minimal-saas",
-    "auto",
-    "comfortable",
-    "minimal-saas",
-    "arctic-indigo",
-    "light",
-    "all-three"
-  ]);
-  assert(!rejected.search.includes("javascript"));
-  assert(!rejected.search.includes("script"));
-  assert.equal(rejected.scriptCount, 2, "Demo must retain only its structured data and module scripts");
-  assert.equal(rejected.unexpectedScriptCount, 0, "Rejected query values must not add ordinary scripts");
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  const wrapperSet = quick ? ["default", "full", "breakout"] : wrappers;
 
-  await page.selectOption("#ecosystemSelect", "layout-only");
-  await page.waitForFunction(() => new URLSearchParams(location.search).get("ecosystem") === "layout-only");
-  assert.deepEqual(
-    await page.evaluate(() => [
-      document.querySelector("#uiKitStylesheet")?.disabled,
-      document.querySelector("#uiKitInteractiveThemeStylesheet")?.disabled,
-      document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
-      document.querySelector("#layoutIntegrationStylesheet")?.disabled,
-      document.querySelector("#layoutCoreStylesheet")?.disabled
-    ]),
-    [true, true, true, true, false]
-  );
-
-  await page.selectOption("#ecosystemSelect", "layout-ui");
-  assert.deepEqual(
-    await page.evaluate(() => [
-      document.querySelector("#uiKitStylesheet")?.disabled,
-      document.querySelector("#uiKitInteractiveThemeStylesheet")?.disabled,
-      document.querySelector("#interactiveSurfaceStylesheet")?.disabled,
-      document.querySelector("#layoutIntegrationStylesheet")?.disabled,
-      document.querySelector("#layoutCoreStylesheet")?.disabled
-    ]),
-    [false, true, true, true, false]
-  );
-
-  await page.selectOption("#ecosystemSelect", "all-three");
-  const stateBefore = await page.locator("#stateToggle").evaluate((element) => ({
-    pressed: element.getAttribute("aria-pressed"),
-    layerOpacity: Number.parseFloat(getComputedStyle(element, "::before").opacity),
-    translate: getComputedStyle(element).translate,
-    boxShadow: getComputedStyle(element).boxShadow
-  }));
-  await page.click("#stateToggle");
-  await page.waitForFunction(
-    () => document.querySelector("#stateToggle")?.getAttribute("aria-pressed") === "true"
-  );
-  await page.waitForTimeout(120);
-  const stateAfter = await page.locator("#stateToggle").evaluate((element) => ({
-    pressed: element.getAttribute("aria-pressed"),
-    layerOpacity: Number.parseFloat(getComputedStyle(element, "::before").opacity),
-    translate: getComputedStyle(element).translate,
-    boxShadow: getComputedStyle(element).boxShadow
-  }));
-  assert.equal(stateBefore.pressed, "false");
-  assert.equal(stateAfter.pressed, "true");
-  assert(
-    stateAfter.layerOpacity !== stateBefore.layerOpacity ||
-      stateAfter.translate !== stateBefore.translate ||
-      stateAfter.boxShadow !== stateBefore.boxShadow,
-    `All-three active state should resolve a visible state change; ${JSON.stringify({
-      before: stateBefore,
-      after: stateAfter
-    })}`
-  );
-
-  await page.click("#copyImports");
-  await page.waitForFunction(() => document.querySelector("#copyStatus")?.dataset.copyState === "success");
-  assert.match(await page.locator("#copyStatus").textContent(), /Copied imports/i);
-  assert.equal(
-    (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n"),
-    restored.imports
-  );
-
-  const currentMarkup = await page.locator("#markupSnippet").textContent();
-  await page.click("#copyMarkup");
-  await page.waitForFunction(
-    () =>
-      document.querySelector("#copyStatus")?.dataset.copyState === "success" &&
-      document.querySelector("#copyStatus")?.textContent.includes("markup")
-  );
-  assert.match(await page.locator("#copyStatus").textContent(), /Copied markup/i);
-  assert.equal(
-    (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n"),
-    currentMarkup
-  );
-}
-
-async function verifyMobileDrawer(page, baseUrl, viewport) {
-  await page.setViewportSize(viewport);
-  await page.goto(baseUrl, { waitUntil: "networkidle" });
-  await waitForReady(page);
-
-  const closed = await page.evaluate(() => {
-    const drawer = document.querySelector("#demoControlsDrawer");
-    const toggle = document.querySelector("#demoControlsToggle");
-    const toggleRect = toggle?.getBoundingClientRect();
-    return {
-      expanded: toggle?.getAttribute("aria-expanded"),
-      hidden: drawer?.hidden,
-      ariaHidden: drawer?.getAttribute("aria-hidden"),
-      inert: drawer?.inert,
-      toggleSize: [toggleRect?.width, toggleRect?.height],
-      overflow: document.documentElement.scrollWidth - innerWidth
-    };
-  });
-  assert.deepEqual(closed, {
-    expanded: "false",
-    hidden: true,
-    ariaHidden: "true",
-    inert: true,
-    toggleSize: closed.toggleSize,
-    overflow: closed.overflow
-  });
-  assert(closed.toggleSize[0] >= 44 && closed.toggleSize[1] >= 44, "Drawer toggle needs a 44px touch target");
-  assert(closed.overflow <= 4, `Closed drawer overflowed by ${closed.overflow}px`);
-
-  await page.click("#demoControlsToggle");
-  const open = await page.evaluate(() => {
-    const drawer = document.querySelector("#demoControlsDrawer");
-    const firstControl = document.querySelector("#wrapperSelect");
-    const drawerRect = drawer?.getBoundingClientRect();
-    const controlRect = firstControl?.getBoundingClientRect();
-    return {
-      expanded: document.querySelector("#demoControlsToggle")?.getAttribute("aria-expanded"),
-      hidden: drawer?.hidden,
-      ariaHidden: drawer?.getAttribute("aria-hidden"),
-      inert: drawer?.inert,
-      activeId: document.activeElement?.id,
-      drawerRect: drawerRect?.toJSON(),
-      controlSize: [controlRect?.width, controlRect?.height]
-    };
-  });
-  assert.equal(open.expanded, "true");
-  assert.equal(open.hidden, false);
-  assert.equal(open.ariaHidden, "false");
-  assert.equal(open.inert, false);
-  assert(open.activeId === "demoControlsClose" || open.activeId === "wrapperSelect");
-  assert(open.drawerRect.left >= -1 && open.drawerRect.right <= viewport.width + 1);
-  assert(open.controlSize[1] >= 44, "Drawer controls need usable touch targets");
-
-  await page.keyboard.press("Shift+Tab");
-  assert.equal(
-    await page.evaluate(() => document.activeElement?.id),
-    "ecosystemSelect",
-    "Shift+Tab from the first drawer control must wrap to the last control"
-  );
-  await page.keyboard.press("Tab");
-  assert.equal(
-    await page.evaluate(() => document.activeElement?.id),
-    "demoControlsClose",
-    "Tab from the last drawer control must wrap to the first control"
-  );
-
-  await page.keyboard.press("Escape");
-  assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
-  assert.equal(await page.evaluate(() => document.activeElement?.id), "demoControlsToggle");
-
-  await page.click("#demoControlsToggle");
-  await page.click("#demoControlsBackdrop", { position: { x: 8, y: 8 } });
-  assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
-
-  await page.click("#demoControlsToggle");
-  await page.click("#demoControlsClose");
-  assert.equal(await page.locator("#demoControlsToggle").getAttribute("aria-expanded"), "false");
-}
-
-async function verifyRecipeAndPersonalityMatrix(page, baseUrl) {
-  const matrixViewports = quickGate ? [viewports[0], viewports[2]] : viewports;
-  const matrixPersonalities = quickGate
-    ? ["minimal-saas", "retro-glass", "bento", "split-screen"]
-    : personalities;
-
-  for (const viewport of matrixViewports) {
+  for (const [device, viewport] of Object.entries(devices)) {
     await page.setViewportSize(viewport);
-    await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full&container=auto`, {
-      waitUntil: "networkidle"
-    });
-    await waitForReady(page);
+    await setControl(page, "deviceSelect", device);
+    for (const wrapper of wrapperSet) {
+      await setControl(page, "wrapperSelect", wrapper);
+      for (const recipe of recipes) {
+        await setControl(page, "recipeSelect", recipe);
+        const snapshot = await layoutSnapshot(page);
+        assertNoHorizontalFailures(snapshot, `${device}, ${wrapper}, ${recipe}`);
+        assert.deepEqual(
+          snapshot.focusAreas,
+          snapshot.domAreas,
+          `${device}, ${recipe}: focus order diverged from DOM order.`
+        );
+      }
+    }
+  }
+};
 
+const verifyPersonalityMatrix = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  const profileSet = quick ? personalities.slice(0, 4) : personalities;
+  const allocations = quick
+    ? [{ width: "32rem", height: "auto" }, { width: "73rem", height: "31rem" }]
+    : [
+        { width: "32rem", height: "auto" },
+        { width: "53rem", height: "auto" },
+        { width: "73rem", height: "auto" },
+        { width: "73rem", height: "31rem" }
+      ];
+
+  for (const personality of profileSet) {
+    await setControl(page, "personalitySelect", personality);
+    for (const allocation of allocations) {
+      await setCustomAllocation(page, allocation.width, allocation.height);
+      for (const recipe of recipes) {
+        await setControl(page, "recipeSelect", recipe);
+        assertNoHorizontalFailures(
+          await layoutSnapshot(page),
+          `${personality}, ${allocation.width} × ${allocation.height}, ${recipe}`
+        );
+      }
+    }
+  }
+};
+
+const verifyMinimumWidth = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&device=custom&container=auto`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  for (const wrapper of wrappers) {
+    await setControl(page, "wrapperSelect", wrapper);
     for (const recipe of recipes) {
-      await selectDemoOption(page, "recipeSelect", recipe);
-      const snapshots = await page.evaluate((personalityNames) => {
-        const personalityControl = document.querySelector("#personalitySelect");
-
-        return personalityNames.map((personality) => {
-          personalityControl.value = personality;
-          personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
-
-          const recipeRoot = document.querySelector("#recipePreview");
-          const previewRoot = document.querySelector("#previewRoot");
-          const wrapper = document.querySelector("#previewWrapper");
-          const frame = document.querySelector("#previewFrame");
-          const rootStyle = getComputedStyle(previewRoot);
-          const recipeStyle = getComputedStyle(recipeRoot);
-
-          return {
-            personality,
-            appliedPersonality: previewRoot.dataset.lyLayout,
-            recipe: recipeRoot.dataset.lyRecipe,
-            areas: [...recipeRoot.children]
-              .map((element) => element.dataset.lyArea)
-              .filter(Boolean),
-            sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
-            rect: recipeRoot.getBoundingClientRect().toJSON(),
-            display: recipeStyle.display,
-            gridAreas: recipeStyle.gridTemplateAreas,
-            personalityInlineSize: previewRoot.getBoundingClientRect().width,
-            signature: {
-              gridColumns: rootStyle.getPropertyValue("--ly-grid-columns").trim(),
-              gridMin: rootStyle.getPropertyValue("--ly-grid-min").trim(),
-              wrapperMax: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim()
-            },
-            semanticWrapperMax: getComputedStyle(wrapper).getPropertyValue("--ly-wrapper-max").trim(),
-            overflow: {
-              recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
-              wrapper: wrapper.scrollWidth - wrapper.clientWidth,
-              previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
-              frame: frame.scrollWidth - frame.clientWidth,
-              page: document.documentElement.scrollWidth - innerWidth
-            }
-          };
-        });
-      }, matrixPersonalities);
-
-      for (const snapshot of snapshots) {
-        const context = `${recipe} + ${snapshot.personality} at ${viewport.width}px`;
-        assert.equal(snapshot.appliedPersonality, snapshot.personality, `${context} personality hook drifted`);
-        assert.equal(snapshot.recipe, recipe, `${context} recipe hook drifted`);
-        assert.deepEqual(
-          snapshot.signature,
-          personalitySignatures[snapshot.personality],
-          `${context} must apply authored personality spatial tokens`
-        );
-        assert.deepEqual(snapshot.areas, recipeAreas[recipe], `${context} semantic area order drifted`);
-        assert.deepEqual(snapshot.sequence, recipeSequence[recipe], `${context} DOM order drifted`);
-        assert.equal(
-          snapshot.semanticWrapperMax,
-          "100%",
-          `${context} full wrapper must override the personality default`
-        );
-        assert.equal(snapshot.display, "grid", `${context} should render as a grid recipe`);
-        assert(snapshot.rect.width > 0 && snapshot.rect.height > 0, `${context} should be visible`);
-
-        for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
-          assert(overflow <= 4, `${context} ${scope} overflowed internally by ${overflow}px`);
-        }
-
-        if (recipe === "app-shell") {
-          assert.equal(
-            snapshot.gridAreas,
-            expectedAppShellAreas(snapshot.personality, snapshot.personalityInlineSize),
-            `${context} must apply the correct core or personality named-area signature`
-          );
-        }
-      }
+      await setControl(page, "recipeSelect", recipe);
+      assertNoHorizontalFailures(
+        await layoutSnapshot(page),
+        `320px minimum, ${wrapper}, ${recipe}`
+      );
     }
   }
-}
+};
 
-async function verifyAttributeOnlyRecipeMatrix(page, baseUrl) {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&personality=minimal-saas`,
-    { waitUntil: "networkidle" }
-  );
-  await waitForReady(page);
+const verifyBreakoutGeometry = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-  const thresholdWidths = ["47rem", "49rem", "63rem", "65rem"];
-  const activePersonalities = quickGate
-    ? ["minimal-saas", "retro-glass", "synthwave", "split-screen"]
-    : personalities;
+  const widths = await page.evaluate(() => {
+    document.body.removeAttribute("data-ly-layout");
+    const wrapper = document.createElement("section");
+    wrapper.className = "ly-wrapper ly-wrapper--breakout";
+    wrapper.setAttribute("aria-label", "Breakout geometry fixture");
 
-  for (const recipe of recipes) {
-    await selectDemoOption(page, "recipeSelect", recipe);
+    const lanes = ["content", "feature", "full"].map((lane) => {
+      const element = document.createElement("div");
+      element.dataset.lyLane = lane;
+      element.textContent = lane;
+      return element;
+    });
+    wrapper.append(...lanes);
+    document.body.append(wrapper);
 
-    for (const width of thresholdWidths) {
-      await selectDemoOption(page, "containerSelect", width);
-      const snapshots = await page.evaluate(
-        ({ className, personalityNames }) => {
-          const personalityControl = document.querySelector("#personalitySelect");
-
-          return personalityNames.map((personality) => {
-            personalityControl.value = personality;
-            personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
-
-            const recipeRoot = document.querySelector("#recipePreview");
-            const previewRoot = document.querySelector("#previewRoot");
-            const wrapper = document.querySelector("#previewWrapper");
-            const frame = document.querySelector("#previewFrame");
-
-            recipeRoot.classList.remove(className);
-            const style = getComputedStyle(recipeRoot);
-
-            return {
-              personality,
-              classPresent: recipeRoot.classList.contains(className),
-              dataRecipe: recipeRoot.dataset.lyRecipe,
-              frameWidth: frame.getBoundingClientRect().width,
-              display: style.display,
-              containerType: style.containerType,
-              areas: style.gridTemplateAreas,
-              columns: style.gridTemplateColumns,
-              sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
-              overflow: {
-                recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
-                wrapper: wrapper.scrollWidth - wrapper.clientWidth,
-                previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
-                frame: frame.scrollWidth - frame.clientWidth
-              }
-            };
-          });
-        },
-        { className: recipeClasses[recipe], personalityNames: activePersonalities }
-      );
-
-      for (const snapshot of snapshots) {
-        const context = `attribute-only ${recipe} + ${snapshot.personality} at ${width}`;
-        const expectedAreas =
-          recipe === "app-shell"
-            ? expectedAppShellAreas(snapshot.personality, snapshot.frameWidth)
-            : expectedCoreAreas(recipe, snapshot.frameWidth);
-
-        assert.equal(snapshot.classPresent, false, `${context} must remove the companion class`);
-        assert.equal(snapshot.dataRecipe, recipe, `${context} must retain the public data hook`);
-        assert.equal(snapshot.display, "grid", `${context} must remain independently functional`);
-        assert.equal(snapshot.containerType, "inline-size", `${context} must retain containment`);
-        assert.equal(snapshot.areas, expectedAreas, `${context} named-area geometry drifted`);
-        assert.notEqual(snapshot.columns, "none", `${context} must retain grid track geometry`);
-        assert.deepEqual(
-          snapshot.sequence,
-          recipeSequence[recipe],
-          `${context} must preserve authoritative DOM order`
-        );
-
-        for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
-          assert(overflow <= 4, `${context} ${scope} overflowed internally by ${overflow}px`);
-        }
-      }
-    }
-  }
-}
-
-async function verifyPersonalityRecipeSelectorParity(page, baseUrl) {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&container=47rem&recipe=list-detail&personality=tactile`,
-    { waitUntil: "networkidle" }
-  );
-  await waitForReady(page);
-
-  for (const parityCase of personalityRecipeParityCases) {
-    await selectDemoOption(page, "personalitySelect", parityCase.personality);
-    await selectDemoOption(page, "recipeSelect", parityCase.recipe);
-
-    for (const width of ["47rem", "65rem"]) {
-      await selectDemoOption(page, "containerSelect", width);
-      const snapshot = await page.evaluate((className) => {
-        const recipeRoot = document.querySelector("#recipePreview");
-        const wrapper = document.querySelector("#previewWrapper");
-        const previewRoot = document.querySelector("#previewRoot");
-        const frame = document.querySelector("#previewFrame");
-        const captureGeometry = () => {
-          const style = getComputedStyle(recipeRoot);
-          const firstChildStyle = getComputedStyle(recipeRoot.firstElementChild);
-
-          return {
-            display: style.display,
-            containerType: style.containerType,
-            areas: style.gridTemplateAreas,
-            columns: style.gridTemplateColumns,
-            rows: style.gridTemplateRows,
-            firstChild: {
-              columnStart: firstChildStyle.gridColumnStart,
-              columnEnd: firstChildStyle.gridColumnEnd,
-              rowStart: firstChildStyle.gridRowStart,
-              rowEnd: firstChildStyle.gridRowEnd
-            },
-            overflow: {
-              recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
-              wrapper: wrapper.scrollWidth - wrapper.clientWidth,
-              previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
-              frame: frame.scrollWidth - frame.clientWidth
-            }
-          };
-        };
-        const classGeometry = captureGeometry();
-
-        recipeRoot.classList.remove(className);
-
-        return {
-          classPresent: recipeRoot.classList.contains(className),
-          classGeometry,
-          attributeGeometry: captureGeometry()
-        };
-      }, recipeClasses[parityCase.recipe]);
-      const context = `${parityCase.personality} ${parityCase.recipe} selector parity at ${width}`;
-
-      assert.equal(snapshot.classPresent, false, `${context} must exercise an attribute-only root`);
-      assert.deepEqual(
-        snapshot.attributeGeometry,
-        snapshot.classGeometry,
-        `${context} must preserve the exact personality geometry without its class`
-      );
-
-      for (const [scope, overflow] of Object.entries(snapshot.attributeGeometry.overflow)) {
-        assert(overflow <= 4, `${context} ${scope} overflowed by ${overflow}px`);
-      }
-
-      if (width !== "65rem") {
-        continue;
-      }
-
-      if (parityCase.ratio) {
-        const ratio = gridTrackRatio(snapshot.classGeometry.columns);
-        const [minimum, maximum] = parityCase.ratio;
-
-        assert(
-          ratio !== null && ratio >= minimum && ratio <= maximum,
-          `${context} must retain its personality track ratio; received ${snapshot.classGeometry.columns}`
-        );
-      }
-
-      if (parityCase.columnSpan) {
-        assert(
-          `${snapshot.classGeometry.firstChild.columnStart} ${snapshot.classGeometry.firstChild.columnEnd}`.includes(
-            "span 2"
-          ),
-          `${context} must retain its first-child two-column mosaic span`
-        );
-      }
-
-      if (parityCase.rowSpan) {
-        assert(
-          `${snapshot.classGeometry.firstChild.rowStart} ${snapshot.classGeometry.firstChild.rowEnd}`.includes(
-            "span 2"
-          ),
-          `${context} must retain its first-child two-row mosaic span`
-        );
-      }
-    }
-  }
-}
-
-async function verifyWrapperMeasureMatrix(page, baseUrl) {
-  await page.setViewportSize({ width: 2400, height: 1000 });
-  await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=default&container=auto&recipe=card-grid`,
-    { waitUntil: "networkidle" }
-  );
-  await waitForReady(page);
-
-  for (const personality of personalities) {
-    await selectDemoOption(page, "personalitySelect", personality);
-    const widths = {};
-
-    for (const wrapperChoice of controlValues.wrapperSelect) {
-      await selectDemoOption(page, "wrapperSelect", wrapperChoice);
-      const snapshot = await page.evaluate(() => {
-        const previewRoot = document.querySelector("#previewRoot");
-        const wrapper = document.querySelector("#previewWrapper");
-        const rootStyle = getComputedStyle(previewRoot);
-        const wrapperStyle = getComputedStyle(wrapper);
-        const probe = document.createElement("div");
-
-        probe.style.blockSize = "0";
-        probe.style.inlineSize = wrapperStyle.getPropertyValue("--ly-wrapper-max").trim();
-        probe.style.overflow = "hidden";
-        probe.style.padding = "0";
-        previewRoot.append(probe);
-        const tokenWidth = probe.getBoundingClientRect().width;
-        probe.remove();
-
-        return {
-          personalityDefault: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim(),
-          wrapperMax: wrapperStyle.getPropertyValue("--ly-wrapper-max").trim(),
-          width: wrapper.getBoundingClientRect().width,
-          parentWidth: previewRoot.clientWidth,
-          tokenWidth,
-          overflow: wrapper.scrollWidth - wrapper.clientWidth
-        };
-      });
-      const expectedToken =
-        wrapperChoice === "default" || wrapperChoice === "breakout"
-          ? personalitySignatures[personality].wrapperMax
-          : wrapperMeasureTokens[wrapperChoice];
-      const expectedWidth =
-        wrapperChoice === "breakout"
-          ? snapshot.parentWidth
-          : Math.min(snapshot.parentWidth, snapshot.tokenWidth);
-      const context = `${personality} + ${wrapperChoice} wrapper`;
-
-      assert.equal(
-        snapshot.personalityDefault,
-        personalitySignatures[personality].wrapperMax,
-        `${context} personality default token drifted`
-      );
-      assert.equal(snapshot.wrapperMax, expectedToken, `${context} semantic token lost precedence`);
-      assert(
-        Math.abs(snapshot.width - expectedWidth) <= 1,
-        `${context} measured ${snapshot.width}px; expected ${expectedWidth}px`
-      );
-      assert(snapshot.overflow <= 4, `${context} overflowed internally by ${snapshot.overflow}px`);
-      widths[wrapperChoice] = snapshot.width;
-    }
-
-    assert(
-      widths.wide > widths.compact,
-      `${personality} demo wrapper control must visibly change compact and wide measures`
+    return Object.fromEntries(
+      lanes.map((lane) => [lane.dataset.lyLane, lane.getBoundingClientRect().width])
     );
-    assert(
-      widths.content < widths.full,
-      `${personality} content wrapper must remain narrower than the explicit full wrapper`
-    );
-  }
-}
+  });
 
-async function verifyNestedThresholdsAndFocus(page, baseUrl) {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=dashboard&personality=minimal-saas`,
-    { waitUntil: "networkidle" }
+  assert(
+    widths.content + 2 < widths.feature,
+    `Feature lane ${widths.feature}px did not exceed content lane ${widths.content}px.`
   );
-  await waitForReady(page);
+  assert(
+    widths.feature + 2 < widths.full,
+    `Full lane ${widths.full}px did not exceed feature lane ${widths.feature}px.`
+  );
+};
 
-  const thresholdWidths = ["47rem", "49rem", "63rem", "65rem"];
+const verifyPrimitiveOverflow = async (page, baseUrl) => {
+  const primitives = [
+    "stack",
+    "cluster",
+    "center",
+    "cover",
+    "switcher",
+    "sidebar",
+    "grid",
+    "split",
+    "panes",
+    "media",
+    "reel",
+    "frame",
+    "scroll"
+  ];
 
-  for (const recipe of recipes) {
-    await selectDemoOption(page, "recipeSelect", recipe);
-    const snapshots = await page.evaluate((widths) => {
-      const containerControl = document.querySelector("#containerSelect");
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-      return widths.map((width) => {
-        containerControl.value = width;
-        containerControl.dispatchEvent(new Event("change", { bubbles: true }));
-
-        // Core threshold proof isolates recipe queries from personality overrides.
-        document.body.removeAttribute("data-ly-layout");
-        document.querySelector("#previewRoot").removeAttribute("data-ly-layout");
-
-        const recipeRoot = document.querySelector("#recipePreview");
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 800 });
+    for (const primitive of primitives) {
+      const result = await page.evaluate((primitiveName) => {
         const wrapper = document.querySelector("#previewWrapper");
-        const previewRoot = document.querySelector("#previewRoot");
-        const frame = document.querySelector("#previewFrame");
-        const style = getComputedStyle(recipeRoot);
-        const tracks = [...style.gridTemplateColumns.matchAll(/([\d.]+)px/g)].map((match) =>
-          Number.parseFloat(match[1])
-        );
+        const fixture = document.createElement("section");
+        fixture.className = `ly-${primitiveName}`;
+        fixture.style.setProperty("--ly-scroll-max", "8rem");
+        fixture.style.setProperty("--ly-cover-min", "20rem");
 
-        return {
-          width,
-          frameWidth: frame.getBoundingClientRect().width,
-          areas: style.gridTemplateAreas,
-          columns: style.gridTemplateColumns,
-          trackRatio: tracks.length >= 2 ? tracks[0] / tracks[1] : null,
-          galleryMin: style.getPropertyValue("--ly-gallery-min").trim(),
-          cardGridMin: style.getPropertyValue("--ly-card-grid-min").trim(),
-          sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
-          overflow: {
-            recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
-            wrapper: wrapper.scrollWidth - wrapper.clientWidth,
-            previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
-            frame: frame.scrollWidth - frame.clientWidth
+        const itemCount = primitiveName === "scroll" ? 20 : primitiveName === "reel" ? 8 : 3;
+        for (let index = 0; index < itemCount; index += 1) {
+          const item = document.createElement("div");
+          item.textContent =
+            primitiveName === "scroll"
+              ? `Bounded vertical item ${index + 1}`
+              : `Shrink-safe item ${index + 1}`;
+          if (primitiveName === "sidebar") {
+            item.dataset.lySidebar = index === 0 ? "side" : "content";
           }
+          if (primitiveName === "media" && index === 2) {
+            item.dataset.lyMedia = "actions";
+          }
+          fixture.append(item);
+        }
+
+        wrapper.replaceChildren(fixture);
+        const style = getComputedStyle(fixture);
+        return {
+          documentOverflow:
+            document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          horizontal: fixture.scrollWidth - fixture.clientWidth,
+          vertical: fixture.scrollHeight - fixture.clientHeight,
+          overflowX: style.overflowX,
+          overflowY: style.overflowY
         };
-      });
-    }, thresholdWidths);
-    const byWidth = Object.fromEntries(snapshots.map((snapshot) => [snapshot.width, snapshot]));
+      }, primitive);
 
-    assert(byWidth["47rem"].frameWidth < 48 * 16, `${recipe} 47rem fixture must be below medium`);
-    assert(byWidth["49rem"].frameWidth > 48 * 16, `${recipe} 49rem fixture must be above medium`);
-    assert(byWidth["63rem"].frameWidth < 64 * 16, `${recipe} 63rem fixture must be below large`);
-    assert(byWidth["65rem"].frameWidth > 64 * 16, `${recipe} 65rem fixture must be above large`);
-
-    for (const snapshot of snapshots) {
-      assert.deepEqual(
-        snapshot.sequence,
-        recipeSequence[recipe],
-        `${recipe} at ${snapshot.width} must preserve authoritative DOM order`
-      );
-      for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
-        assert(overflow <= 4, `${recipe} at ${snapshot.width} ${scope} overflowed by ${overflow}px`);
+      assert(result.documentOverflow <= 2, `${primitive} overflowed the ${width}px document.`);
+      if (primitive === "reel") {
+        assert(result.horizontal > 2 && result.overflowX === "auto", "Reel must scroll internally.");
+      } else {
+        assert(result.horizontal <= 2, `${primitive} introduced horizontal scrolling.`);
       }
-    }
 
-    if (recipe === "gallery") {
-      assert.deepEqual(
-        snapshots.map(({ galleryMin }) => galleryMin),
-        ["12rem", "14rem", "14rem", "16rem"],
-        "Gallery must cross both authored container thresholds"
-      );
-    } else if (recipe === "card-grid") {
-      assert.deepEqual(
-        snapshots.map(({ cardGridMin }) => cardGridMin),
-        ["16rem", "18rem", "18rem", "20rem"],
-        "Card grid must cross both authored container thresholds"
-      );
-    } else {
-      assert.notEqual(
-        byWidth["47rem"].areas,
-        byWidth["49rem"].areas,
-        `${recipe} must change named areas across the 48rem threshold`
-      );
-
-      if (["app-shell", "dashboard", "docs"].includes(recipe)) {
-        assert.notEqual(
-          byWidth["63rem"].areas,
-          byWidth["65rem"].areas,
-          `${recipe} must change named areas across the 64rem threshold`
-        );
+      if (primitive === "scroll") {
+        assert(result.vertical > 2 && result.overflowY === "auto", "Scroll must be vertically bounded.");
       } else {
         assert(
-          Math.abs(byWidth["63rem"].trackRatio - byWidth["65rem"].trackRatio) > 0.1,
-          `${recipe} must change track rhythm across the 64rem threshold; ` +
-            `received ${byWidth["63rem"].columns} and ${byWidth["65rem"].columns}`
+          !(result.vertical > 2 && ["auto", "scroll"].includes(result.overflowY)),
+          `${primitive} introduced a vertical scroll region.`
         );
       }
     }
   }
+};
 
-  await selectDemoOption(page, "recipeSelect", "app-shell");
-  for (const width of thresholdWidths) {
-    await selectDemoOption(page, "containerSelect", width);
-    const snapshots = await page.evaluate((personalityNames) => {
-      const personalityControl = document.querySelector("#personalitySelect");
+const verifyInteractions = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-      return personalityNames.map((personality) => {
-        personalityControl.value = personality;
-        personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
+  const drawerToggle = page.locator("#demoControlsToggle");
+  await drawerToggle.click();
+  assert.equal(await drawerToggle.getAttribute("aria-expanded"), "true");
+  assert.equal(await page.locator("#demoControlsDrawer").getAttribute("aria-hidden"), "false");
+  await page.keyboard.press("Escape");
+  assert.equal(await drawerToggle.getAttribute("aria-expanded"), "false");
 
-        const recipeRoot = document.querySelector("#recipePreview");
-        const previewRoot = document.querySelector("#previewRoot");
-        const wrapper = document.querySelector("#previewWrapper");
-        const frame = document.querySelector("#previewFrame");
-        const rootStyle = getComputedStyle(previewRoot);
-
-        return {
-          personality,
-          frameWidth: frame.getBoundingClientRect().width,
-          areas: getComputedStyle(recipeRoot).gridTemplateAreas,
-          sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
-          signature: {
-            gridColumns: rootStyle.getPropertyValue("--ly-grid-columns").trim(),
-            gridMin: rootStyle.getPropertyValue("--ly-grid-min").trim(),
-            wrapperMax: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim()
-          },
-          semanticWrapperMax: getComputedStyle(wrapper).getPropertyValue("--ly-wrapper-max").trim(),
-          overflow: {
-            recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
-            wrapper: wrapper.scrollWidth - wrapper.clientWidth,
-            previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
-            frame: frame.scrollWidth - frame.clientWidth
-          }
-        };
-      });
-    }, personalities);
-
-    for (const snapshot of snapshots) {
-      const context = `${snapshot.personality} app-shell at nested ${width}`;
-      assert.deepEqual(
-        snapshot.signature,
-        personalitySignatures[snapshot.personality],
-        `${context} spatial tokens drifted`
-      );
-      assert.deepEqual(snapshot.sequence, recipeSequence["app-shell"], `${context} DOM order drifted`);
-      assert.equal(
-        snapshot.semanticWrapperMax,
-        "100%",
-        `${context} full wrapper must override the personality default`
-      );
-      assert.equal(
-        snapshot.areas,
-        expectedAppShellAreas(snapshot.personality, snapshot.frameWidth),
-        `${context} named-area transition drifted`
-      );
-      for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
-        assert(overflow <= 4, `${context} ${scope} overflowed by ${overflow}px`);
-      }
-    }
-  }
-
-  await selectDemoOption(page, "recipeSelect", "dashboard");
-  await selectDemoOption(page, "personalitySelect", "minimal-saas");
-  for (const width of ["47rem", "65rem"]) {
-    await selectDemoOption(page, "containerSelect", width);
-    await page.locator("#recipePreview [data-demo-focus]").first().focus();
-    const tabOrder = [];
-    for (let index = 0; index < recipeSequence.dashboard.length; index += 1) {
-      tabOrder.push(await page.evaluate(() => document.activeElement?.dataset.demoFocus));
-      await page.keyboard.press("Tab");
-    }
-    assert.deepEqual(
-      tabOrder,
-      recipeSequence.dashboard,
-      `Keyboard order at ${width} must follow the authoritative mobile DOM order`
+  await setControl(page, "recipeSelect", "docs");
+  await setControl(page, "responsiveSelect", "auto");
+  const expectedFocusAreas = (await layoutSnapshot(page)).focusAreas;
+  await page.locator("[data-demo-focus]").first().focus();
+  const tabbedAreas = [];
+  for (let index = 0; index < expectedFocusAreas.length; index += 1) {
+    tabbedAreas.push(
+      await page.evaluate(
+        () => document.activeElement?.closest("[data-ly-area]")?.dataset.lyArea ?? null
+      )
     );
+    await page.keyboard.press("Tab");
   }
+  assert.deepEqual(tabbedAreas, expectedFocusAreas, "Keyboard focus order did not follow source order.");
 
-  await selectDemoOption(page, "recipeSelect", "list-detail");
-  const scroll = await page.locator(".ly-scroll").evaluate((element) => ({
-    overflowY: getComputedStyle(element).overflowY,
-    clientHeight: element.clientHeight,
-    scrollHeight: element.scrollHeight
-  }));
-  assert(["auto", "scroll"].includes(scroll.overflowY));
-  assert(scroll.scrollHeight > scroll.clientHeight, "List detail must exercise bounded scrolling");
-}
+  await page.locator("#stateToggle").click();
+  assert.equal(await page.locator("#stateToggle").getAttribute("aria-pressed"), "true");
+  await page.locator("#copyMarkup").click();
+  assert.match(await page.locator("#copyStatus").textContent(), /(Copied|ready)/i);
+};
 
-async function verifyRootWideLocalPersonalityThresholds(page, baseUrl) {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&container=auto&recipe=app-shell&personality=minimal-saas`,
-    { waitUntil: "networkidle" }
-  );
-  await waitForReady(page);
+assertStaticDemoContract();
 
-  const localWidths = ["47rem", "49rem", "63rem", "65rem"];
-
-  for (const localWidth of localWidths) {
-    const snapshots = await page.evaluate(
-      ({ personalityNames, width }) => {
-        const personalityControl = document.querySelector("#personalitySelect");
-        const wrapper = document.querySelector("#previewWrapper");
-
-        /*
-          The root intentionally remains wide while the semantic wrapper supplies
-          the nearest queryable allocation for the nested app shell.
-        */
-        wrapper.style.setProperty("--ly-wrapper-max", width);
-
-        return personalityNames.map((personality) => {
-          personalityControl.value = personality;
-          personalityControl.dispatchEvent(new Event("change", { bubbles: true }));
-
-          const recipeRoot = document.querySelector("#recipePreview");
-          const previewRoot = document.querySelector("#previewRoot");
-          const frame = document.querySelector("#previewFrame");
-          const style = getComputedStyle(recipeRoot);
-          const childWidths = [...recipeRoot.children].map(
-            (element) => element.getBoundingClientRect().width
-          );
-
-          return {
-            personality,
-            rootWidth: previewRoot.getBoundingClientRect().width,
-            localWidth: wrapper.getBoundingClientRect().width,
-            areas: style.gridTemplateAreas,
-            sequence: [...recipeRoot.children].map((element) => element.dataset.demoSequence),
-            childWidths,
-            overflow: {
-              recipe: recipeRoot.scrollWidth - recipeRoot.clientWidth,
-              wrapper: wrapper.scrollWidth - wrapper.clientWidth,
-              previewRoot: previewRoot.scrollWidth - previewRoot.clientWidth,
-              frame: frame.scrollWidth - frame.clientWidth
-            }
-          };
-        });
-      },
-      { personalityNames: personalities, width: localWidth }
-    );
-
-    for (const snapshot of snapshots) {
-      const context = `${snapshot.personality} with wide root and ${localWidth} local container`;
-
-      assert(
-        snapshot.rootWidth > 65 * 16,
-        `${context} fixture must keep the personality root above the widest threshold`
-      );
-      assert(
-        Math.abs(snapshot.localWidth - Number.parseInt(localWidth, 10) * 16) <= 2,
-        `${context} fixture must expose the authored local inline size`
-      );
-      assert.equal(
-        snapshot.areas,
-        expectedAppShellAreas(snapshot.personality, snapshot.localWidth),
-        `${context} must respond to the nearest inline-size container`
-      );
-      assert.deepEqual(
-        snapshot.sequence,
-        recipeSequence["app-shell"],
-        `${context} must preserve authoritative DOM order`
-      );
-      assert(
-        snapshot.childWidths.every((width) => width > 0),
-        `${context} must not collapse an app-shell region to zero width`
-      );
-
-      for (const [scope, overflow] of Object.entries(snapshot.overflow)) {
-        assert(overflow <= 4, `${context} ${scope} overflowed internally by ${overflow}px`);
-      }
-    }
-
-    for (const personality of personalities) {
-      await selectDemoOption(page, "personalitySelect", personality);
-      await page.locator("#recipePreview [data-demo-focus]").first().focus();
-      const tabOrder = [];
-
-      for (let index = 0; index < recipeSequence["app-shell"].length; index += 1) {
-        tabOrder.push(await page.evaluate(() => document.activeElement?.dataset.demoFocus));
-        await page.keyboard.press("Tab");
-      }
-
-      assert.deepEqual(
-        tabOrder,
-        recipeSequence["app-shell"],
-        `${personality} at ${localWidth} must preserve authoritative keyboard order`
-      );
-    }
-  }
-
-  await page.locator("#previewWrapper").evaluate((wrapper) => {
-    wrapper.style.removeProperty("--ly-wrapper-max");
-  });
-}
-
-assertStaticContract();
-
-const server = createStaticServer();
-const port = await listen(server);
-const browser = await browserTypes[browserName].launch();
-const context = await browser.newContext(
-  browserName === "chromium" ? { permissions: ["clipboard-read", "clipboard-write"] } : {}
-);
-
-if (browserName !== "chromium") {
-  /*
-    Firefox and WebKit do not expose Playwright clipboard permissions. A page-local
-    clipboard keeps snippet assertions deterministic without relaxing application code.
-  */
-  await context.addInitScript(() => {
-    let clipboardText = "";
-
-    Object.defineProperty(navigator, "clipboard", {
-      configurable: true,
-      value: {
-        readText: async () => clipboardText,
-        writeText: async (value) => {
-          clipboardText = String(value);
-        }
-      }
-    });
-  });
-}
-const page = await context.newPage();
-const consoleErrors = [];
+const server = await startServer();
+const browser = await browserType.launch({ headless: true });
+const page = await browser.newPage();
 const pageErrors = [];
-
-page.on("console", (message) => {
-  if (message.type() === "error") {
-    consoleErrors.push(message.text());
-  }
-});
+const consoleErrors = [];
 page.on("pageerror", (error) => pageErrors.push(error.message));
-const corsHeaders = { "access-control-allow-origin": "*" };
-
-await page.route(uiKitVisualUrl, (route) =>
-  route.fulfill({
-    path: uiKitVisualCssPath,
-    contentType: "text/css",
-    headers: corsHeaders
-  })
-);
-await page.route(uiKitInteractiveThemeUrl, (route) =>
-  route.fulfill({
-    path: uiKitInteractiveThemeCssPath,
-    contentType: "text/css",
-    headers: corsHeaders
-  })
-);
-await page.route(uiKitManifestUrl, (route) =>
-  route.fulfill({
-    path: uiKitManifestPath,
-    contentType: "application/json",
-    headers: corsHeaders
-  })
-);
-await page.route(interactiveSurfaceUrl, (route) =>
-  route.fulfill({
-    path: interactiveSurfaceCssPath,
-    contentType: "text/css",
-    headers: corsHeaders
-  })
-);
+page.on("console", (message) => {
+  if (message.type() === "error") consoleErrors.push(message.text());
+});
 
 try {
-  const baseUrl = `http://127.0.0.1:${port}/demo/index.html`;
-  await verifyQueryAndEcosystem(page, baseUrl);
-  await verifyMobileDrawer(page, baseUrl, { width: 375, height: 667 });
-  await verifyMobileDrawer(page, baseUrl, { width: 768, height: 1024 });
-  await verifyRecipeAndPersonalityMatrix(page, baseUrl);
-  await verifyAttributeOnlyRecipeMatrix(page, baseUrl);
-  await verifyPersonalityRecipeSelectorParity(page, baseUrl);
-  await verifyWrapperMeasureMatrix(page, baseUrl);
-  await verifyNestedThresholdsAndFocus(page, baseUrl);
-  await verifyRootWideLocalPersonalityThresholds(page, baseUrl);
-  assert.deepEqual(consoleErrors, [], `Demo should not log console errors: ${consoleErrors.join(" | ")}`);
-  assert.deepEqual(pageErrors, [], `Demo should not throw page errors: ${pageErrors.join(" | ")}`);
-} finally {
-  await context.close();
-  await browser.close();
-  server.close();
-}
+  await installExternalFixtures(page);
+  await verifyIdentityAndControls(page, server.baseUrl);
+  await verifyTopologyEdges(page, server.baseUrl);
+  await verifyManualAndNearestContainer(page, server.baseUrl);
+  await verifyHeightBehavior(page, server.baseUrl);
+  await verifyDeviceMatrix(page, server.baseUrl);
+  await verifyPersonalityMatrix(page, server.baseUrl);
+  await verifyMinimumWidth(page, server.baseUrl);
+  await verifyBreakoutGeometry(page, server.baseUrl);
+  await verifyPrimitiveOverflow(page, server.baseUrl);
+  await verifyInteractions(page, server.baseUrl);
 
-console.log(`Demo v2 static and ${browserName} rendered checks look good.`);
+  assert.deepEqual(pageErrors, [], `Page errors:\n${pageErrors.join("\n")}`);
+  assert.deepEqual(consoleErrors, [], `Console errors:\n${consoleErrors.join("\n")}`);
+  console.log(
+    `Layout CSS v3 demo passed in ${browserName}${quick ? " (quick matrix)" : " (full matrix)"}.`
+  );
+} finally {
+  await browser.close();
+  await server.close();
+}

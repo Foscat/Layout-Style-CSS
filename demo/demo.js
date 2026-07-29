@@ -78,6 +78,15 @@ async function loadUiStyleKitManifest() {
 
 const UI_STYLE_KIT_MANIFEST = await loadUiStyleKitManifest();
 const ALLOWLISTS = Object.freeze({
+  device: Object.freeze([
+    "custom",
+    "phone-portrait",
+    "phone-landscape",
+    "tablet-portrait",
+    "tablet-landscape",
+    "desktop-landscape",
+    "desktop-portrait"
+  ]),
   wrapper: Object.freeze(["default", "compact", "prose", "content", "wide", "full", "breakout"]),
   recipe: Object.freeze([
     "app-shell",
@@ -106,7 +115,26 @@ const ALLOWLISTS = Object.freeze({
     "maximalist",
     "split-screen"
   ]),
-  container: Object.freeze(["auto", "40rem", "47rem", "49rem", "63rem", "65rem", "80rem"]),
+  container: Object.freeze([
+    "auto",
+    "20rem",
+    "32rem",
+    "40rem",
+    "41rem",
+    "43rem",
+    "45rem",
+    "47rem",
+    "49rem",
+    "51rem",
+    "53rem",
+    "63rem",
+    "65rem",
+    "71rem",
+    "73rem",
+    "80rem"
+  ]),
+  height: Object.freeze(["auto", "29rem", "31rem", "43rem", "45rem", "50rem"]),
+  responsive: Object.freeze(["auto", "manual"]),
   density: Object.freeze(["compact", "comfortable", "spacious"]),
   ui: Object.freeze(UI_STYLE_KIT_MANIFEST.presets.map((preset) => preset.id)),
   theme: Object.freeze(UI_STYLE_KIT_MANIFEST.themes),
@@ -115,10 +143,13 @@ const ALLOWLISTS = Object.freeze({
 });
 
 const DEFAULT_STATE = Object.freeze({
+  device: "custom",
   wrapper: "default",
   recipe: "app-shell",
   personality: "minimal-saas",
   container: "auto",
+  height: "auto",
+  responsive: "auto",
   density: "comfortable",
   ui: "minimal-saas",
   theme: "arctic-indigo",
@@ -128,12 +159,40 @@ const DEFAULT_STATE = Object.freeze({
 
 const CONTAINER_WIDTHS = Object.freeze({
   auto: "100%",
+  "20rem": "20rem",
+  "32rem": "32rem",
   "40rem": "40rem",
+  "41rem": "41rem",
+  "43rem": "43rem",
+  "45rem": "45rem",
   "47rem": "47rem",
   "49rem": "49rem",
+  "51rem": "51rem",
+  "53rem": "53rem",
   "63rem": "63rem",
   "65rem": "65rem",
+  "71rem": "71rem",
+  "73rem": "73rem",
   "80rem": "80rem"
+});
+
+const CONTAINER_HEIGHTS = Object.freeze({
+  auto: "auto",
+  "29rem": "29rem",
+  "31rem": "31rem",
+  "43rem": "43rem",
+  "45rem": "45rem",
+  "50rem": "50rem"
+});
+
+const DEVICE_PRESETS = Object.freeze({
+  custom: null,
+  "phone-portrait": Object.freeze({ width: 360, height: 800 }),
+  "phone-landscape": Object.freeze({ width: 800, height: 360 }),
+  "tablet-portrait": Object.freeze({ width: 768, height: 1024 }),
+  "tablet-landscape": Object.freeze({ width: 1024, height: 768 }),
+  "desktop-landscape": Object.freeze({ width: 1440, height: 900 }),
+  "desktop-portrait": Object.freeze({ width: 900, height: 1440 })
 });
 
 const DENSITY_GAPS = Object.freeze({
@@ -146,18 +205,8 @@ const UI_CLASS_PREFIXES = Object.freeze(
   Object.fromEntries(UI_STYLE_KIT_MANIFEST.presets.map((preset) => [preset.id, preset.prefix]))
 );
 
-const RECIPE_CLASSES = Object.freeze({
-  "app-shell": "ly-app-shell",
-  dashboard: "ly-dashboard",
-  docs: "ly-docs",
-  "list-detail": "ly-list-detail",
-  "split-hero": "ly-split-hero",
-  gallery: "ly-gallery",
-  "card-grid": "ly-card-grid"
-});
-
 const RECIPE_AREAS = Object.freeze({
-  "app-shell": Object.freeze(["header", "nav", "main", "aside", "footer"]),
+  "app-shell": Object.freeze(["header", "sidebar", "main", "aside", "footer"]),
   dashboard: Object.freeze(["header", "nav", "main", "aside", "footer"]),
   docs: Object.freeze(["header", "nav", "main", "aside", "footer"]),
   "list-detail": Object.freeze(["primary", "secondary", "actions"]),
@@ -197,10 +246,10 @@ const markupSnippet = document.querySelector("#markupSnippet");
 const copyStatus = document.querySelector("#copyStatus");
 const ecosystemStatus = document.querySelector("#ecosystemStatus");
 const containerReadout = document.querySelector("#containerReadout");
+const topologyReadout = document.querySelector("#topologyReadout");
 const uiKitStylesheet = document.querySelector("#uiKitStylesheet");
 const uiKitInteractiveThemeStylesheet = document.querySelector("#uiKitInteractiveThemeStylesheet");
 const interactiveSurfaceStylesheet = document.querySelector("#interactiveSurfaceStylesheet");
-const layoutIntegrationStylesheet = document.querySelector("#layoutIntegrationStylesheet");
 const layoutCoreStylesheet = document.querySelector("#layoutCoreStylesheet");
 const drawerToggle = document.querySelector("#demoControlsToggle");
 const drawer = document.querySelector("#demoControlsDrawer");
@@ -216,6 +265,7 @@ let state = readStateFromQuery();
 let drawerReturnFocus = null;
 let querySyncTimer = null;
 let hasSynchronizedQuery = false;
+let readoutFrame = null;
 
 function readStateFromQuery() {
   const query = new URLSearchParams(window.location.search);
@@ -287,13 +337,15 @@ function createRegion(area) {
   const semanticTags = {
     header: "header",
     nav: "nav",
+    sidebar: "aside",
     aside: "aside",
     footer: "footer",
     media: "figure",
     actions: "div"
   };
+  const structuralClass = area === "header" ? "ly-header ly-header--sticky " : "";
   const element = createElement(semanticTags[area] ?? "section", {
-    className: "demo-region",
+    className: `${structuralClass}demo-region`,
     attributes: { "data-ui-kit": "card" },
     data: { lyArea: area, demoSequence: area }
   });
@@ -340,8 +392,13 @@ function renderRecipe() {
     ? RECIPE_AREAS[recipe].map((area) => createRegion(area))
     : Array.from({ length: recipe === "gallery" ? 5 : 6 }, (_, index) => createGridItem(index + 1));
 
-  recipePreview.className = `${RECIPE_CLASSES[recipe]} demo-recipe`;
+  recipePreview.className = "demo-recipe";
   recipePreview.dataset.lyRecipe = recipe;
+  if (state.responsive === "manual") {
+    recipePreview.dataset.lyResponsive = "manual";
+  } else {
+    delete recipePreview.dataset.lyResponsive;
+  }
   recipePreview.replaceChildren(...children);
 }
 
@@ -416,15 +473,15 @@ function syncEcosystem() {
   uiKitStylesheet.disabled = !includesUi;
   uiKitInteractiveThemeStylesheet.disabled = !includesInteractiveSurface;
   interactiveSurfaceStylesheet.disabled = !includesInteractiveSurface;
-  layoutIntegrationStylesheet.disabled = true;
   layoutCoreStylesheet.disabled = false;
   ecosystemStatus.textContent = ECOSYSTEM_LABELS[state.ecosystem];
 }
 
 function buildMarkupSnippet() {
   const wrapperClass = state.wrapper === "default" ? "ly-wrapper" : `ly-wrapper ly-wrapper--${state.wrapper}`;
-  const rootClass = RECIPE_CLASSES[state.recipe];
   const areas = RECIPE_AREAS[state.recipe];
+  const responsiveAttribute =
+    state.responsive === "manual" ? ' data-ly-responsive="manual"' : "";
   const childMarkup = areas
     ? areas.map((area) => `    <section data-ly-area="${area}">${formatLabel(area)}</section>`).join("\n")
     : `    <article>Item 1</article>\n    <article>Item 2</article>`;
@@ -432,7 +489,7 @@ function buildMarkupSnippet() {
   return [
     `<div class="ly-root" data-ly-layout="${state.personality}">`,
     `  <div class="${wrapperClass}">`,
-    `  <div class="${rootClass}" data-ly-recipe="${state.recipe}">`,
+    `  <div data-ly-recipe="${state.recipe}"${responsiveAttribute}>`,
     childMarkup,
     "  </div>",
     "  </div>",
@@ -444,6 +501,80 @@ function syncSnippets() {
   // Snippets are rendered as inert text from allowlisted state, never parsed as HTML.
   importsSnippet.textContent = ECOSYSTEM_IMPORTS[state.ecosystem].join("\n");
   markupSnippet.textContent = buildMarkupSnippet();
+}
+
+function activeAllocation() {
+  const preset = DEVICE_PRESETS[state.device];
+
+  if (preset) {
+    return {
+      width: `${preset.width}px`,
+      height: `${preset.height}px`,
+      requestedWidth: preset.width,
+      requestedHeight: preset.height,
+      label: formatLabel(state.device)
+    };
+  }
+
+  return {
+    width: CONTAINER_WIDTHS[state.container],
+    height: CONTAINER_HEIGHTS[state.height],
+    requestedWidth: state.container === "auto" ? null : Number.parseFloat(state.container) * 16,
+    requestedHeight: state.height === "auto" ? null : Number.parseFloat(state.height) * 16,
+    label: "Custom"
+  };
+}
+
+function syncHeightTier(allocation = activeAllocation()) {
+  const availableHeight = allocation.requestedHeight ?? window.innerHeight;
+  const tier = availableHeight <= 30 * 16 ? "shallow" : availableHeight <= 44 * 16 ? "short" : "regular";
+  previewRoot.dataset.demoHeightTier = tier;
+}
+
+function describeTopology() {
+  if (state.responsive === "manual") {
+    return "Stacked fallback (manual)";
+  }
+
+  if (state.recipe === "gallery" || state.recipe === "card-grid") {
+    return "Intrinsic tracks";
+  }
+
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const scopeStyle = getComputedStyle(previewWrapper);
+  const scopeWidth =
+    previewWrapper.clientWidth -
+    Number.parseFloat(scopeStyle.paddingInlineStart) -
+    Number.parseFloat(scopeStyle.paddingInlineEnd);
+  const threshold = {
+    "split-hero": 42,
+    "list-detail": 44,
+    docs: 48,
+    "app-shell": 52,
+    dashboard: 52
+  }[state.recipe];
+
+  if (
+    ["app-shell", "dashboard"].includes(state.recipe) &&
+    scopeWidth >= 72 * rootFontSize
+  ) {
+    return "Wide";
+  }
+
+  return scopeWidth >= threshold * rootFontSize ? "Medium" : "Stacked";
+}
+
+function updatePreviewReadout() {
+  window.cancelAnimationFrame(readoutFrame);
+  readoutFrame = window.requestAnimationFrame(() => {
+    const allocation = activeAllocation();
+    const rectangle = previewFrame.getBoundingClientRect();
+    const renderedHeight = Math.max(previewFrame.clientHeight, rectangle.height);
+    containerReadout.textContent = `Preview: ${Math.round(rectangle.width)} × ${Math.round(
+      renderedHeight
+    )} px · ${allocation.label}`;
+    topologyReadout.textContent = `Topology: ${describeTopology()}`;
+  });
 }
 
 function applyState({ updateQuery = true } = {}) {
@@ -463,14 +594,19 @@ function applyState({ updateQuery = true } = {}) {
 
   previewWrapper.className =
     state.wrapper === "default" ? "ly-wrapper" : `ly-wrapper ly-wrapper--${state.wrapper}`;
+  const allocation = activeAllocation();
   previewFrame.dataset.containerWidth = state.container;
-  previewFrame.style.setProperty("--demo-container-inline-size", CONTAINER_WIDTHS[state.container]);
-  containerReadout.textContent = `Container: ${state.container}`;
+  previewFrame.dataset.containerHeight = state.height;
+  previewFrame.dataset.device = state.device;
+  previewFrame.style.setProperty("--demo-container-inline-size", allocation.width);
+  previewFrame.style.setProperty("--demo-container-block-size", allocation.height);
+  syncHeightTier(allocation);
 
   renderRecipe();
   syncUiKitClasses();
   syncEcosystem();
   syncSnippets();
+  updatePreviewReadout();
 
   if (updateQuery) {
     syncQuery();
@@ -569,7 +705,15 @@ for (const [key, control] of Object.entries(controls)) {
       return;
     }
 
-    state = { ...state, [key]: candidate };
+    state = {
+      ...state,
+      [key]: candidate,
+      /*
+        Direct dimension edits intentionally leave a named device preset so the
+        URL and readout always describe the allocation that is actually rendered.
+      */
+      ...(["container", "height"].includes(key) ? { device: "custom" } : {})
+    };
     applyState();
   });
 }
@@ -598,6 +742,14 @@ stateToggle.addEventListener("click", () => {
 
 document.querySelectorAll("[data-copy-target]").forEach((button) => {
   button.addEventListener("click", () => copySnippet(button));
+});
+
+const previewObserver = new ResizeObserver(updatePreviewReadout);
+previewObserver.observe(previewFrame);
+previewObserver.observe(previewWrapper);
+window.addEventListener("resize", () => {
+  syncHeightTier();
+  updatePreviewReadout();
 });
 
 applyState();
