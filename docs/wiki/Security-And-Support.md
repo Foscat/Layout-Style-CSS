@@ -1,36 +1,32 @@
 # Security And Support
 
-`layout-style-css` is dependency-free runtime CSS. It executes no consumer JavaScript, calls no services, reads no secrets, and processes no user input. The demo JavaScript uses allowlisted query values and `textContent` for generated snippets.
-
-## Supported Versions
+## Supported Lines
 
 | Version | Supported |
 | --- | --- |
-| `2.x` | Yes |
-| `1.1.x` | Migration support only |
-| `1.0.x` | No |
+| `3.x` | Yes |
+| `2.x` | Security fixes only during the v3 transition |
+| `1.x` | No |
 
-The v2 `legacy.css` compatibility bundle is scheduled for removal in v3.
+v3 is dependency-free at runtime. Development dependencies and release automation remain subject to the repository security policy.
 
-## Browser Baseline
+## Reporting
 
-Current evergreen Chromium, Firefox, and WebKit are supported. The mobile DOM-order fallback remains usable when container queries are unavailable, but current browser engines are the tested contract.
+Use the private process in the repository [SECURITY.md](../../SECURITY.md). Do not publish exploit details in a public issue before maintainers can assess them.
 
-## Report A Security Issue
+## Release Trust
 
-Use GitHub security advisories when available. Otherwise, open a minimal issue requesting a private coordination path without publishing exploit details.
+The npm workflow uses:
 
-Include the affected version, export or selector, reproduction, expected impact, and whether the issue affects package consumers, the demo, or GitHub Pages.
+- a protected npm environment with required reviewers
+- exact `refs/tags/v*` checkout
+- main-branch ancestry verification
+- least-privilege workflow permissions
+- registry provenance
+- an immutable commit sha
 
-## Release Checks
+Use npm trusted publishing when configured. A local green `release:verify` is evidence for a candidate, not authority to publish.
 
-```bash
-npm audit --audit-level=moderate
-npm run release:verify
-```
+## Structural Security Boundary
 
-The release gate checks authored/generated parity, structural ownership, documentation, tarball contents, Pages output, and the Chromium, Firefox, and WebKit rendered matrices.
-
-The npm publish workflow also enforces a strict tag namespace, exact tag/HEAD identity, protected-main ancestry, package-version alignment, an `npm` GitHub Environment with required reviewers, and npm provenance. The registry token is scoped to the final publish step. Replacing it with npm trusted publishing and pinning GitHub Actions to an immutable commit SHA remain explicit hardening follow-ups.
-
-The demo protects its two exact-version companion CDN fixtures with SHA-384 subresource integrity and anonymous CORS; rendered tests recompute those hashes from the pinned local fixtures.
+Layout CSS has no network calls, script execution, runtime dependencies, secrets, or user data processing. Security-sensitive application behavior remains outside this package.

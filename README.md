@@ -1,8 +1,8 @@
 # layout-style-css
 
-Container-first, dependency-free structural CSS for responsive application layouts.
+Zero-configuration, dependency-free structural CSS that responds to the width and height a layout actually receives.
 
-`layout-style-css@2.1.1` provides semantic wrappers, composition primitives, seven functional recipes, ordering escape hatches, sixteen spatial personalities, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5. It owns layout only; color, typography, borders, shadows, component paint, and interactive states belong to other libraries.
+`layout-style-css@3.0.0` is a clean-break release. It provides intrinsic wrappers, composition primitives, seven semantic recipes, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
 
 ## Requirements
 
@@ -10,74 +10,51 @@ Container-first, dependency-free structural CSS for responsive application layou
 - Current evergreen Chromium, Firefox, or WebKit for consumers
 - No runtime or peer dependencies
 
-`ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are released registry fixtures for optional ecosystem verification. Neither package is installed for consumers.
-
 ## Install
 
 ```bash
-npm install layout-style-css@2.1.1
+npm install layout-style-css@3.0.0
 ```
 
-Standalone use needs one import:
+Most applications need one import:
 
 ```js
 import "layout-style-css";
 ```
 
-The default and minified bundles contain the v2 core plus all personalities. Import focused modules when an application needs a smaller surface.
+The full bundle includes the core modules and all personality profiles. No breakpoint configuration, wrapper, JavaScript, or companion library is required.
 
-## Ecosystem Imports
+## Zero-Configuration Start
 
-Layout Style never imports companion packages. Install and import each layer explicitly.
+Use `.ly-root` as the responsive boundary and keep the mobile DOM order authoritative:
 
-Layout plus UI Style Kit:
-
-```js
-import "ui-style-kit-css/visual.css";
-import "layout-style-css";
+```html
+<body class="ly-root" data-ly-layout="minimal-saas">
+  <main data-ly-recipe="docs">
+    <header data-ly-area="header">Documentation</header>
+    <nav data-ly-area="nav" aria-label="Documentation">Navigation</nav>
+    <article data-ly-area="main">Guide</article>
+    <aside data-ly-area="aside">On this page</aside>
+    <footer data-ly-area="footer">Next steps</footer>
+  </main>
+</body>
 ```
 
-Layout plus UI Style Kit and Interactive Surface must use this order:
+`.ly-root`, wrappers, and recipe roots establish the named `ly-scope` inline-size container. A recipe works directly in the root; when it is nested in a wrapper, it responds to that nearest wrapper.
 
-```js
-import "ui-style-kit-css/visual.css";
-import "ui-style-kit-css/interactive-surface-theme.css";
-import "interactive-surface-css/state-core.css";
-import "layout-style-css";
-```
+## Wrappers
 
-UI Style Kit establishes visual paint, the UI token bridge maps theme roles for Interactive Surface, Interactive Surface contributes interaction states, and Layout core applies spatial behavior.
+Wrappers are optional measure and nesting controls. Every wrapper uses logical properties, fluid container-relative gutters, safe-area compensation, and shrink-safe sizing.
 
-## Public Exports
-
-| Import | Contents |
+| Wrapper | Purpose |
 | --- | --- |
-| `layout-style-css` | Full v2 core plus all personalities. |
-| `layout-style-css/min.css` | Minified full v2 bundle. |
-| `layout-style-css/core.css` | Wrappers, primitives, recipes, and utilities. |
-| `layout-style-css/wrappers.css` | Tokens, reset, and semantic wrappers. |
-| `layout-style-css/primitives.css` | Composition primitives. |
-| `layout-style-css/recipes.css` | Seven named responsive recipes. |
-| `layout-style-css/utilities.css` | Structural utilities and ordering escape hatches. |
-| `layout-style-css/personalities.css` | All sixteen personalities. |
-| `layout-style-css/personalities/minimal-saas.css` | One personality; substitute any public personality name. |
-| `layout-style-css/integrations/ui-style-kit.css` | Deprecated import-free structural bridge for legacy UI Style Kit structural aliases. |
-| `layout-style-css/legacy.css` | Full v2 bundle plus v1 compatibility aliases. |
-
-The old root-level personality files and `all-with-ui-kit*` aggregates were removed. See [Migrating To 2.0](docs/wiki/Migrating-To-2.0.md) for exact mappings.
-
-## Container-First Wrappers
-
-Every `.ly-wrapper` has fluid logical gutters, safe-area compensation, and `container-type: inline-size`. The default is the `72rem` content measure. Personalities may change only the plain-wrapper default; an explicit semantic wrapper variant always retains its documented measure.
-
-| Wrapper | Measure |
-| --- | --- |
-| `.ly-wrapper--compact` | `40rem` |
-| `.ly-wrapper--prose` | `68ch` |
-| `.ly-wrapper--content` | `72rem` and the default |
-| `.ly-wrapper--wide` | `112rem` |
+| `.ly-wrapper` | Personality-aware content measure |
+| `.ly-wrapper--compact` | `40rem` compact measure |
+| `.ly-wrapper--prose` | `68ch` reading measure |
+| `.ly-wrapper--content` | `72rem` content measure |
+| `.ly-wrapper--wide` | `112rem` wide measure |
 | `.ly-wrapper--full` | Full available inline size |
-| `.ly-wrapper--breakout` | Content, feature, and full-width grid lanes |
+| `.ly-wrapper--breakout` | Clamped content, feature, and full lanes |
 
 ```html
 <main class="ly-wrapper ly-wrapper--breakout">
@@ -87,149 +64,151 @@ Every `.ly-wrapper` has fluid logical gutters, safe-area compensation, and `cont
 </main>
 ```
 
-Wrappers, recipe roots, and personality enhancements respond to the nearest inline-size container. The mobile single-column fallback is authoritative; core recipes and primitives enhance at the `48rem` and `64rem` core thresholds, not viewport widths. Personality grid rhythms retain their authored thresholds, safe two-track application shells retain their authored thresholds, and every three- or four-track application shell waits for a locally feasible `64rem` allocation.
-
-## Recipes And Areas
-
-Use `data-ly-recipe` as the semantic public hook. Each value is independently functional without a matching class; matching classes remain available as an equivalent direct-composition API.
-
-- `app-shell`
-- `dashboard`
-- `docs`
-- `list-detail`
-- `split-hero`
-- `gallery`
-- `card-grid`
-
-Named regions use `data-ly-area`: `header`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, and `secondary`.
-
-```html
-<section class="ly-wrapper ly-wrapper--wide">
-  <div class="ly-dashboard" data-ly-recipe="dashboard">
-    <header data-ly-area="header">Dashboard</header>
-    <nav data-ly-area="nav" aria-label="Dashboard">Navigation</nav>
-    <main data-ly-area="main">Primary workspace</main>
-    <aside data-ly-area="aside">Supporting details</aside>
-    <footer data-ly-area="footer">Status</footer>
-  </div>
-</section>
-```
-
-Keep markup in the correct mobile DOM, reading, and focus order. Built-in recipes rearrange named grid areas at wider container sizes and never use CSS `order`.
+All lanes clamp to the available inline size, including allocations from 320px through ultrawide screens.
 
 ## Composition Primitives
 
-The v2 composition layer includes:
+The core includes:
 
-| Primitive | Purpose |
+- `.ly-stack`, `.ly-cluster`, `.ly-center`, and `.ly-cover`
+- `.ly-switcher`, `.ly-sidebar`, `.ly-grid`, and `.ly-split`
+- `.ly-panes` and `.ly-media`
+- `.ly-reel`, `.ly-frame`, and `.ly-scroll`
+
+Grid and flex primitives wrap intrinsically whenever track wrapping can replace a query. Page, cover, and bounded-scroll sizing use `vh` fallbacks followed by `100dvh`-aware behavior. Only `.ly-reel` deliberately scrolls horizontally; only `.ly-scroll` deliberately creates a bounded vertical scroll region.
+
+## Automatic Recipe Engine
+
+Recipes use attributes only. The stacked semantic source order is always safe, and automatic enhancement is the default.
+
+| Recipe | Automatic topology |
 | --- | --- |
-| `.ly-stack`, `.ly-cluster`, `.ly-center`, `.ly-cover` | Flow, grouping, centering, and full-height composition. |
-| `.ly-switcher`, `.ly-sidebar`, `.ly-grid`, `.ly-split` | Adaptive multi-item layouts. |
-| `.ly-panes`, `.ly-media` | Workspaces and media-object arrangements. |
-| `.ly-reel`, `.ly-frame`, `.ly-scroll` | Horizontal flow, stable ratios, and bounded scrolling. |
+| `data-ly-recipe="split-hero"` | Two tracks at `42rem` |
+| `data-ly-recipe="list-detail"` | Two tracks at `44rem` |
+| `data-ly-recipe="docs"` | Documentation rail at `48rem` |
+| `data-ly-recipe="app-shell"` | Medium at `52rem`, wide at `72rem` |
+| `data-ly-recipe="dashboard"` | Medium at `52rem`, wide at `72rem` |
+| `data-ly-recipe="gallery"` | Intrinsic tracks; no topology breakpoint |
+| `data-ly-recipe="card-grid"` | Intrinsic tracks; no topology breakpoint |
 
-All primitives are structural. Pair them with a paint library or application CSS for visuals.
+Canonical regions use `data-ly-area`, including `header`, `sidebar`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, and `secondary`.
 
-## Layout Personalities
-
-Set one canonical `data-ly-layout` value on `.ly-root`:
+Recipe class aliases such as `.ly-dashboard` no longer exist. Use:
 
 ```html
-<body class="ly-root" data-ly-layout="synthwave">
-  <!-- recipes and primitives -->
-</body>
+<section data-ly-recipe="dashboard">
+  <header data-ly-area="header">Dashboard</header>
+  <nav data-ly-area="nav" aria-label="Dashboard">Navigation</nav>
+  <main data-ly-area="main">Primary workspace</main>
+  <aside data-ly-area="aside">Supporting details</aside>
+  <footer data-ly-area="footer">Status</footer>
+</section>
 ```
 
-| Family | Personalities |
+## Custom Responsive Topology
+
+Add `data-ly-responsive="manual"` to retain the safe stack and disable built-in topology enhancement. Application CSS can then use the same named container:
+
+```css
+@container ly-scope (min-width: 56rem) {
+  [data-ly-recipe="docs"][data-ly-responsive="manual"] {
+    /* Application-owned topology. */
+  }
+}
+```
+
+This opt-out changes topology ownership, not the semantic DOM, shrink safety, gaps, or named regions.
+
+## Vertical Responsiveness
+
+The system responds to available block size without orientation queries:
+
+- At viewport heights of `44rem` or less, gaps, section padding, header height, and bounded-scroll maxima tighten.
+- At viewport heights of `30rem` or less, recipe-owned sticky behavior becomes normal flow, and cover/shell minimums stop forcing full-height regions.
+- Safe-area block insets remain available, and required regions are never hidden solely because the viewport is short.
+
+Use the public height, gap, measure, ratio, rail, media, card, and grid-minimum custom properties for advanced tuning. Defaults use `100vh` fallbacks followed by `100dvh`.
+
+## Personalities
+
+Set one of sixteen canonical `data-ly-layout` values on `.ly-root`:
+
+`minimal-saas`, `bauhaus`, `tactile`, `cyberpunk`, `f-pattern`, `brutalism`, `neumorphism`, `y2k`, `retro-glass`, `z-pattern`, `retrofuturism`, `mondrian`, `synthwave`, `bento`, `maximalist`, or `split-screen`.
+
+Each personality is a token/topology profile consumed by the shared recipe engine. A profile changes at least two spatial characteristics—such as measure, gap, rail, media size, card minimum, or ratio—but does not declare its own container or viewport breakpoint system.
+
+## Public Exports
+
+| Import | Contents |
 | --- | --- |
-| Left-rail applications | Minimal SaaS, Bauhaus, Tactile, Cyberpunk, F-Pattern |
-| Right-rail workspaces | Brutalism, Neumorphism, Y2K, Retro Glass, Z-Pattern |
-| Three-zone layouts | Retrofuturism, Mondrian, Synthwave |
-| Full-width mosaics | Bento, Maximalist |
-| Equal split | Split Screen |
+| `layout-style-css` | Full v3 bundle |
+| `layout-style-css/min.css` | Minified full v3 bundle |
+| `layout-style-css/core.css` | Foundation, wrappers, primitives, recipes, and utilities |
+| `layout-style-css/foundation.css` | Reset, shared tokens, containment, and vertical responsiveness |
+| `layout-style-css/wrappers.css` | Semantic wrappers and breakout lanes |
+| `layout-style-css/primitives.css` | Intrinsic composition primitives |
+| `layout-style-css/recipes.css` | Seven attribute-only recipes |
+| `layout-style-css/utilities.css` | Small structural utility set |
+| `layout-style-css/personalities.css` | All sixteen profiles |
+| `layout-style-css/personalities/minimal-saas.css` | One profile; substitute any public personality name |
+| `layout-style-css/package.json` | Package metadata |
 
-Each personality changes at least two spatial characteristics while leaving UI paint and DOM order unchanged.
+The cascade order is `ly.reset`, `ly.tokens`, `ly.wrappers`, `ly.primitives`, `ly.recipes`, `ly.utilities`, and `ly.personalities`.
 
-## Ordering Utilities And Accessibility
+## Ecosystem Imports
 
-The base, `ly-md-*`, and `ly-lg-*` families expose `order-first`, `order-normal`, `order-last`, and numeric order `1` through `6`. For example: `.ly-order-first`, `.ly-md-order-3`, and `.ly-lg-order-last`.
-
-These are escape hatches. Visual reordering can diverge from screen-reader reading order and keyboard focus order. Prefer correct source order plus recipe named areas; verify assistive-technology and keyboard behavior whenever an order utility is used. Built-in recipes never use order utilities.
-
-## UI Style Kit Naming Compatibility
-
-`layout-style-css/integrations/ui-style-kit.css` remains available for legacy code that still uses UI-prefixed structural aliases such as `.saas-container`, `.bento-grid`, and `.cyber-split`. It is frozen and deprecated; new ecosystem imports should use UI Style Kit visual builds plus Layout core instead of the structural bridge.
-
-Deprecated bridge import:
+Companion libraries are optional and explicit. Layout does not import them.
 
 ```js
-import "layout-style-css/integrations/ui-style-kit.css";
+import "ui-style-kit-css/visual.css";
+import "ui-style-kit-css/interactive-surface-theme.css";
+import "interactive-surface-css/state-core.css";
+import "layout-style-css";
 ```
 
-Supported UI prefixes are `saas`, `bento`, `max`, `bau`, `tactile`, `neo`, `retro`, `brutal`, `cyber`, `y2k`, and `rg`.
-
-## Legacy Compatibility
-
-Applications that cannot migrate all selectors at once may temporarily use:
-
-```js
-import "layout-style-css/legacy.css";
-```
-
-This one import includes the full v2 bundle and aliases for v1 containers, size names, root personality hooks, columns, carousel, button group, sidebar, pane, card, scroll recipes, `.ly-content` shrink safety, and structural `.ly-divider` spacing. It is supported for the v2 line only, with removal in v3. New code should use canonical v2 exports and hooks.
-
-The v1 `.ly-surface--raised` selector is intentionally removed, including from `legacy.css`: raised radius, border, background, and shadow treatment belongs to UI Style Kit or application theme styling. See [Migrating To 2.0](docs/wiki/Migrating-To-2.0.md) for the complete selector mapping.
+This order lets UI Style Kit establish paint and theme roles, Interactive Surface add interaction states, and Layout apply structure.
 
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.1/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.0/dist/layout-style-css.min.css">
 ```
 
-Companion CDN styles must appear in the same order as the package imports: UI Style Kit visual CSS, UI Style Kit `interactive-surface-theme.css`, Interactive Surface `state-core.css`, then Layout core. Load `layout-style-css/integrations/ui-style-kit.css` only for deprecated structural aliases.
+## Clean-Break Migration
 
-## Development And Verification
+v3 has no compatibility bundle. It removes `legacy.css`, the deprecated UI Style Kit structural bridge, v1/v2 aliases, responsive `ly-md-*` and `ly-lg-*` utilities, and all visual-order utilities. See [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md) for exact mappings.
+
+## Demo And Verification
+
+The demo provides independent width and height controls plus phone, tablet, and desktop portrait/landscape presets. It displays rendered dimensions and active topology, compares automatic with manual responsiveness, and generates canonical copy-ready markup.
 
 ```bash
 npm ci
 npm run build
 npm run lint
 npm run check:demo-js
-npm run test:demo:quick
 npm test
+npm run test:full
+npm run release:verify
 ```
 
-`npm test` is the local Chromium gate. `npm run test:demo:all` runs Chromium, Firefox, and WebKit. `npm run release:verify` runs the full build, lint, static, Pages, cross-browser, tarball, `npm audit --audit-level=moderate`, and publish-dry-run checks. It does not publish.
+`npm test` runs the quick Chromium gate. `npm run test:full` exercises the rendered matrix in Chromium, Firefox, and WebKit. `npm run release:verify` includes the full build and test gate, tarball verification, `npm audit --audit-level=moderate`, and publish dry-run; it does not publish.
 
-## Documentation And Wiki
+## Documentation
 
-| Resource | Purpose |
-| --- | --- |
-| [Wiki home](docs/wiki/Home.md) | Versioned documentation navigation. |
-| [Getting Started](docs/wiki/Getting-Started.md) | First v2 wrapper and recipe. |
-| [Installation And CDN](docs/wiki/Installation-And-CDN.md) | Exact exports and import order. |
-| [Layout Primitives](docs/wiki/Layout-Primitives.md) | Wrapper and composition contracts. |
-| [Layout Recipes](docs/wiki/Layout-Recipes.md) | Recipe and area markup. |
-| [Layout Styles](docs/wiki/Layout-Styles.md) | Sixteen personality families. |
-| [UI Style Kit Compatibility](docs/wiki/UI-Style-Kit-Compatibility.md) | Ownership and bridge rules. |
-| [Migrating To 2.0](docs/wiki/Migrating-To-2.0.md) | Complete 1.x-to-2.0 mapping. |
-| [Demo And GitHub Pages](docs/wiki/Demo-And-GitHub-Pages.md) | Rendered QA and Pages artifact. |
-| [Release And Publishing](docs/wiki/Release-And-Publishing.md) | Local verification and separately approved release steps. |
-| [Security And Support](docs/wiki/Security-And-Support.md) | Supported versions and reporting. |
-| [Contributing](docs/wiki/Contributing.md) | Source, generated output, and review rules. |
-| [Wiki sidebar source](docs/wiki/_Sidebar.md) | Navigation source for a GitHub Wiki mirror. |
-| [Changelog](CHANGELOG.md) | Release history. |
-| [Repository contributing guide](CONTRIBUTING.md) | Contribution workflow. |
-| [Security policy](SECURITY.md) | Security policy. |
+- [Getting Started](docs/wiki/Getting-Started.md)
+- [Installation And CDN](docs/wiki/Installation-And-CDN.md)
+- [Layout Primitives](docs/wiki/Layout-Primitives.md)
+- [Layout Recipes](docs/wiki/Layout-Recipes.md)
+- [Layout Styles](docs/wiki/Layout-Styles.md)
+- [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md)
+- [Demo And GitHub Pages](docs/wiki/Demo-And-GitHub-Pages.md)
+- [Release And Publishing](docs/wiki/Release-And-Publishing.md)
+- [Security And Support](docs/wiki/Security-And-Support.md)
+- [Changelog](CHANGELOG.md)
 
-## Ownership Boundary
-
-- `layout-style-css` owns wrappers, flow, grids, areas, measures, spans, containment, and structural responsiveness.
-- `ui-style-kit-css` owns theme and component paint.
-- `interactive-surface-css` owns interaction-state styling.
-
-Authored CSS lives in `styles/`; `dist/` is generated. Keep public layout classes prefixed with `ly-`, add tests before changing contracts, and never edit generated CSS directly.
+Authored CSS lives in `styles/`; `dist/` is generated. Keep application markup in correct DOM, reading, keyboard, and focus order.
 
 ## License
 

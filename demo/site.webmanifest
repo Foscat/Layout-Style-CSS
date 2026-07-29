@@ -1,7 +1,7 @@
 {
   "name": "layout-style-css",
   "short_name": "Layout CSS",
-  "description": "Container-first layout-style-css 2.1 lab for wrappers, recipes, personalities, and optional ecosystem integrations.",
+  "description": "Layout Style CSS v3 intrinsic responsive lab for width, height, wrappers, recipes, and personalities.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111827",

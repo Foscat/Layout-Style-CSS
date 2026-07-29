@@ -1,48 +1,62 @@
 # Layout Primitives
 
-V2 primitives are structural, mobile-first, and safe to use without a visual design system.
+## Foundation And Containment
 
-## Semantic Wrappers
+`.ly-root` supplies shared structural tokens, shrink safety, the named `ly-scope` inline-size container, and height-aware defaults. Reset and public tokens live in `layout-style-css/foundation.css`.
 
-`.ly-wrapper` defaults to the `72rem` content measure and establishes an inline-size container. Fluid logical gutters include safe-area insets.
+Every primitive applies `min-inline-size: 0` and `min-block-size: 0` where tracks or children need to shrink.
 
-Layout personalities can provide a distinct measure for the plain `.ly-wrapper`. Explicit semantic wrapper variants always keep the measures below, so changing the demo wrapper control produces a real structural change under every personality.
+## Wrappers
 
-| Selector | Measure or behavior |
-| --- | --- |
-| `.ly-wrapper--compact` | `40rem` |
-| `.ly-wrapper--prose` | `68ch` |
-| `.ly-wrapper--content` | `72rem`, also the default |
-| `.ly-wrapper--wide` | `112rem` |
-| `.ly-wrapper--full` | Full available inline size |
-| `.ly-wrapper--breakout` | Content, feature, and full lanes |
+Wrappers are optional local responsive scopes:
 
-Breakout children use `.ly-lane--content`, `.ly-lane--feature`, `.ly-lane--full`, or equivalent `data-ly-lane` attributes.
+- `.ly-wrapper--compact`
+- `.ly-wrapper--prose`
+- `.ly-wrapper--content`
+- `.ly-wrapper--wide`
+- `.ly-wrapper--full`
+- `.ly-wrapper--breakout`
 
-## Composition
+Breakout children select clamped lanes with `data-ly-lane="content"`, `data-ly-lane="feature"`, or `data-ly-lane="full"`.
 
-| Primitive | Contract |
-| --- | --- |
-| `.ly-stack` | Vertical flow with a shared stack gap. |
-| `.ly-cluster` | Wrapping inline group. |
-| `.ly-center` | Centered element with a bounded measure. |
-| `.ly-cover` | Full-height vertical composition with an optional centered child. |
-| `.ly-switcher` | Wrapping equal items based on available inline size. |
-| `.ly-sidebar` | Side and content regions that wrap safely. |
-| `.ly-grid` | Explicit structural grid; `.ly-grid--auto` uses auto-fit. |
-| `.ly-split` | One column, then two columns from `48rem`. |
-| `.ly-panes` | One column with two- and three-pane variants. |
-| `.ly-media` | Media, content, and action areas. |
-| `.ly-reel` | Bounded horizontal flow with scroll snapping. |
-| `.ly-frame` | Stable aspect-ratio frame. |
-| `.ly-scroll` | Bounded scrolling with overscroll containment. |
+## Flow
 
-Primitives respond to their nearest wrapper or recipe container at the `48rem` and `64rem` core thresholds. They do not set color, typography, borders, shadows, or interaction states.
+- `.ly-stack` creates vertical flow.
+- `.ly-cluster` wraps inline groups.
+- `.ly-center` centers a bounded composition.
+- `.ly-cover` fills available block size while preserving reachable normal flow.
 
-For v1 migrations, `legacy.css` keeps `.ly-content` as `min-inline-size: 0` and preserves only the minimum block size and spacing of `.ly-divider`. A visible divider is paint and must come from UI Style Kit or the application theme; `.ly-surface--raised` is removed for the same ownership reason.
+## Adaptive Tracks
 
-## Structural Utilities
+- `.ly-switcher` wraps when its intrinsic threshold is no longer feasible.
+- `.ly-sidebar` keeps a preferred rail while the content can meet its minimum.
+- `.ly-grid` uses auto-fit tracks and `--ly-grid-min`.
+- `.ly-split` creates balanced intrinsic regions.
+- `.ly-panes` creates a preferred workspace rail and flexible pane.
+- `.ly-media` wraps media and content without a viewport breakpoint.
 
-The utility module includes grid column variables, spans, gaps, padding, sizing, overflow, alignment, frame ratios, visibility, and explicit order escape hatches.
+## Frame And Overflow
 
-Ordering families are available at base, medium container (`ly-md-*`), and large container (`ly-lg-*`) sizes. They include first, normal, last, and numeric values 1 through 6. Visual reordering can conflict with reading and focus order; see [Migrating To 2.0](Migrating-To-2.0.md) before using them.
+- `.ly-frame` keeps a configurable aspect ratio.
+- `.ly-reel` is the deliberate horizontal-flow primitive.
+- `.ly-scroll` is the deliberate bounded vertical-scroll primitive.
+
+In normal use, only `.ly-reel` introduces intentional horizontal scrolling, and only `.ly-scroll` introduces intentional vertical scrolling. Other wrappers, primitives, and recipes clamp to their available inline size.
+
+## Height Behavior
+
+Page, cover, and bounded scroll behaviors use `vh` fallbacks followed by dynamic viewport units such as `100dvh`.
+
+At `44rem` viewport height or less, gaps and scroll maxima tighten. At `30rem` or less, forced cover/shell minimums and recipe-owned sticky positioning are removed. Required regions remain in normal document flow.
+
+## Public Tuning
+
+Advanced consumers can override stable custom properties for:
+
+- gaps and spacing
+- wrapper measures and gutters
+- sidebar, pane, media, reel, and grid minimums
+- frame ratios
+- shell, cover, and bounded-scroll sizing
+
+These tokens tune behavior without creating a second breakpoint system.

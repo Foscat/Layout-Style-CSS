@@ -1,33 +1,44 @@
 # Layout Styles
 
-V2 calls spatial styles “personalities” and selects them with the canonical `data-ly-layout` hook on `.ly-root`.
+The sixteen `data-ly-layout` values are focused token and topology profiles:
+
+`minimal-saas`, `bauhaus`, `tactile`, `cyberpunk`, `f-pattern`, `brutalism`, `neumorphism`, `y2k`, `retro-glass`, `z-pattern`, `retrofuturism`, `mondrian`, `synthwave`, `bento`, `maximalist`, and `split-screen`.
 
 ```html
-<body class="ly-root" data-ly-layout="synthwave">...</body>
+<body class="ly-root" data-ly-layout="bento">
+  <main data-ly-recipe="dashboard">...</main>
+</body>
 ```
 
-## Sixteen Personalities
+## Shared Engine
 
-| Family | Personality | Spatial character |
-| --- | --- | --- |
-| Left rail | `minimal-saas` | Restrained application rail and measured workspace. |
-| Left rail | `bauhaus` | Modular columns and assertive structural rhythm. |
-| Left rail | `tactile` | Heavier instrument rail and chunky spacing. |
-| Left rail | `cyberpunk` | Narrow command rail and dense track rhythm. |
-| Left rail | `f-pattern` | Top-and-left scan emphasis. |
-| Right rail | `brutalism` | Raw workspace with a strong right support rail. |
-| Right rail | `neumorphism` | Roomy central workspace and detached right rail. |
-| Right rail | `y2k` | Centered hub with a dock-like support region. |
-| Right rail | `retro-glass` | Broad stage with a floating right utility zone. |
-| Right rail | `z-pattern` | Diagonal reading path into a right support rail. |
-| Three zone | `retrofuturism` | Panoramic bridge with symmetric support zones. |
-| Three zone | `mondrian` | Asymmetric block composition. |
-| Three zone | `synthwave` | Cinematic center stage with flanking zones. |
-| Mosaic | `bento` | Full-width modular tile rhythm. |
-| Mosaic | `maximalist` | Staggered editorial spans and broad measure. |
-| Equal split | `split-screen` | Two equally weighted primary regions. |
+Every profile feeds the same wrapper, primitive, and recipe engine. Profiles tune values such as:
 
-Every personality changes at least two structural characteristics, such as area placement, shell direction, grid/span rhythm, wrapper measure, or responsive threshold. Enhancements query the nearest inline-size container: grid rhythms retain their authored thresholds, safe two-track application shells retain their authored thresholds, and three- or four-track application shells wait until the local allocation reaches `64rem`. Personalities never set UI paint or change DOM order.
+- wrapper measure
+- base and grid gaps
+- rail, pane, and media preferences
+- gallery and card minimums
+- frame ratio
+- shared recipe area and track templates
 
-The v1 `data-layout`, `layout-style`, `.ly-layout-*`, and `.ly-style-*` hooks are available only through `layout-style-css/legacy.css`. New code must use `data-ly-layout`.
+A profile must remain visibly distinct through at least two spatial characteristics. Personality files may not declare their own `@container`, viewport, or orientation breakpoint systems.
 
+## Ownership
+
+Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interaction styling.
+
+The personality name does not promise colors, typography, borders, shadows, or interaction states. Pair the same name across libraries when desired, but import each library explicitly and let it own its layer.
+
+## Customization
+
+Override public tokens at `.ly-root` or a narrower scope:
+
+```css
+.product-shell {
+  --ly-profile-gap: 1.25rem;
+  --ly-recipe-rail: 17rem;
+  --ly-card-grid-min: 18rem;
+}
+```
+
+Use `data-ly-responsive="manual"` plus an application-owned `@container ly-scope` query when token tuning is not enough.

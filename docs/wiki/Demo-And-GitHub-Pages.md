@@ -1,53 +1,44 @@
 # Demo And GitHub Pages
 
-The interactive layout lab lives in `demo/index.html`, `demo/demo.css`, and `demo/demo.js`. GitHub Pages serves a generated artifact from `output/github-pages/`.
+The v3 demo is an intrinsic responsive workbench, not a fixed-device screenshot gallery.
 
-## Local Gates
+## Controls
 
-The quick gate uses Chromium and a representative rendered matrix:
+- Independent preview width and height
+- Automatic and manual recipe responsiveness
+- Wrapper, recipe, and all sixteen personality profiles
+- Layout-only, Layout plus UI, and all-three ecosystem modes
+- Live rendered dimensions and active topology
+- Copy-ready canonical attribute markup
+
+Device presets cover the release allocations:
+
+- Phone portrait: `360 × 800`
+- Phone landscape: `800 × 360`
+- Tablet portrait: `768 × 1024`
+- Tablet landscape: `1024 × 768`
+- Desktop landscape: `1440 × 900`
+- Desktop portrait: `900 × 1440`
+
+Threshold controls also cover one rem below and above `42rem`, `44rem`, `48rem`, `52rem`, and `72rem`, plus the `30rem` and `44rem` height tiers.
+
+## Local Verification
 
 ```bash
+npm run build
 npm run test:demo:quick
-```
-
-Run one complete engine matrix:
-
-```bash
-npm run test:demo:chromium
-npm run test:demo:firefox
-npm run test:demo:webkit
-```
-
-Run all supported engines:
-
-```bash
 npm run test:demo:all
 ```
 
-The full matrix exercises current evergreen Chromium, Firefox, and WebKit at 375px, 768px, 1280px, and 1440px, plus nested containers around the `48rem` and `64rem` core thresholds and the personality-specific signatures.
+The full matrix runs in Chromium, Firefox, and WebKit. It checks meaningful DOM, unchanged source/focus order, automatic and manual topologies, nearest-container behavior, short-height escape hatches, zero-width tracks, overlap, and unintended overflow.
 
-## Rendered Contracts
-
-The smoke suite verifies:
-
-- all wrappers, recipes, and personalities
-- stable DOM and keyboard focus order
-- named-area transitions at both container thresholds
-- no meaningful horizontal overflow
-- bounded scrolling
-- accessible mobile controls
-- layout-only, Layout plus UI, and all-three ecosystem modes
-- pinned `ui-style-kit-css@2.1.0` visual, token bridge, and manifest behavior plus released `interactive-surface-css@1.5.0`
-
-The demo query parser uses explicit allowlists and writes generated imports and markup with `textContent`.
-
-## Pages Artifact
+## GitHub Pages
 
 ```bash
 npm run pages:build
-node test/pages-artifact.test.mjs
+npm run test:pages
 ```
 
-The generated root contains the demo, metadata assets, `.nojekyll`, and `dist/`. The build rewrites only known parent-relative Layout Style paths, preserving external companion URLs and canonical metadata.
+The Pages artifact is written to `output/github-pages`, carries a root `index.html`, includes the generated v3 distribution, and rewrites the demo's parent-relative Layout import to the artifact-local `./dist` path.
 
-The Pages workflow installs Chromium, runs the quick package gate, builds and tests the artifact, then uploads it. Repository Pages must be enabled with GitHub Actions as the source before deployment.
+`pages.yml` verifies repository Pages configuration before package work, runs the package check, installs Chromium for the rendered gate, validates the artifact, and deploys the saved artifact. Deployment is separate from local implementation.

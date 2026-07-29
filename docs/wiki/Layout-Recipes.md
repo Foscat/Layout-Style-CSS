@@ -1,49 +1,58 @@
 # Layout Recipes
 
-Recipes are inline-size containers with an authoritative single-column mobile fallback. At the `48rem` and `64rem` core thresholds, named grid areas rearrange without changing DOM, reading, or focus order. Layout personalities can layer personality-specific thresholds over those core recipes.
+Recipes are attribute-only semantic layouts. The mobile DOM order is authoritative, and automatic container enhancement is the zero-configuration default.
 
-## Public Hooks
+## Automatic Thresholds
 
-Use `data-ly-recipe` with one of:
+| Recipe | Nearest `ly-scope` threshold |
+| --- | --- |
+| `data-ly-recipe="split-hero"` | `42rem` |
+| `data-ly-recipe="list-detail"` | `44rem` |
+| `data-ly-recipe="docs"` | `48rem` |
+| `data-ly-recipe="app-shell"` | medium `52rem`, wide `72rem` |
+| `data-ly-recipe="dashboard"` | medium `52rem`, wide `72rem` |
+| `data-ly-recipe="gallery"` | intrinsic; no topology query |
+| `data-ly-recipe="card-grid"` | intrinsic; no topology query |
 
-- `app-shell`
-- `dashboard`
-- `docs`
-- `list-detail`
-- `split-hero`
-- `gallery`
-- `card-grid`
+Recipe roots also establish `ly-scope`, so child compositions can respond without extra setup.
 
-The attribute is the complete recipe API, not metadata for a class. A root with only `data-ly-recipe="docs"` receives the same mobile fallback, containment, named areas, and responsive geometry as `.ly-docs`; the class form remains available as an equivalent option.
+## Areas
 
-Use `data-ly-area` with `header`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, or `secondary`.
+Canonical `data-ly-area` values are:
 
-## Application Recipe
-
-```html
-<div class="ly-wrapper ly-wrapper--wide">
-  <section class="ly-app-shell" data-ly-recipe="app-shell">
-    <header data-ly-area="header">Toolbar</header>
-    <nav data-ly-area="nav" aria-label="Application">Navigation</nav>
-    <main data-ly-area="main">Workspace</main>
-    <aside data-ly-area="aside">Inspector</aside>
-    <footer data-ly-area="footer">Status</footer>
-  </section>
-</div>
-```
-
-Place regions in the order that makes sense on a narrow screen. The recipe uses named areas for wide-container placement and never uses CSS `order`.
-
-## Content And Media Recipes
-
-`docs` creates a documentation shell. At `64rem`, its navigation spans the left column while `header`, `main`, `aside`, and `footer` remain in source order and stack in the right column; Dashboard retains its three-column wide shell. `list-detail` arranges primary, secondary, and action regions. `split-hero` arranges content, media, and actions. `gallery` and `card-grid` create responsive repeated-item grids.
+- App shell: `header`, `sidebar`, `main`, `aside`, `footer`
+- Dashboard and Docs: `header`, `nav`, `main`, `aside`, `footer`
+- List detail: `primary`, `secondary`, `actions`
+- Split hero: `content`, `media`, `actions`
 
 ```html
-<section class="ly-split-hero" data-ly-recipe="split-hero">
-  <div data-ly-area="content">Primary message</div>
-  <figure data-ly-area="media">Media</figure>
-  <div data-ly-area="actions">Actions</div>
+<section data-ly-recipe="docs">
+  <header data-ly-area="header">Docs</header>
+  <nav data-ly-area="nav" aria-label="Documentation">Navigation</nav>
+  <main data-ly-area="main">Article</main>
+  <aside data-ly-area="aside">On this page</aside>
+  <footer data-ly-area="footer">Next</footer>
 </section>
 ```
 
-Built-in recipes never use an order utility. If application-specific visual order is unavoidable, review the warning in [Layout Primitives](Layout-Primitives.md) and test keyboard and assistive-technology behavior.
+## Manual Responsiveness
+
+`data-ly-responsive="manual"` disables automatic topology rules while retaining the stacked fallback.
+
+```css
+@container ly-scope (min-width: 56rem) {
+  [data-ly-recipe="docs"][data-ly-responsive="manual"] {
+    /* Application-owned topology. */
+  }
+}
+```
+
+Use the nearest wrapper as the query boundary when a component needs a constrained local allocation. Use a recipe directly in `.ly-root` when no measure wrapper is needed.
+
+## Accessibility
+
+Write the source in mobile reading order and keep actions beside the content they control. Named grid areas can change visual placement, but they do not alter DOM, reading, keyboard, or focus order. Visual-order utilities are not part of v3.
+
+## Vertical Responsiveness
+
+Recipe gaps and scroll bounds tighten at `44rem` viewport height. At `30rem`, recipe-owned sticky positioning and forced shell height stop so navigation, main content, and actions remain reachable.

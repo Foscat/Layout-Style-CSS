@@ -1,77 +1,48 @@
 # Release And Publishing
 
-This checklist prepares `layout-style-css@2.1.1`. Publishing, tagging, pushing, and creating a GitHub release require separate explicit approval.
+This guide describes the release gate for `layout-style-css@3.0.0`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
 
-## Version Contract
-
-- `package.json` and `package-lock.json` identify `2.1.1`.
-- Node.js 20 and 22 pass standalone CI.
-- `CHANGELOG.md` contains the dated 2.1.1 release entry.
-- README, migration guide, wiki, demo, exports, and tarball describe the same v2 API.
-- No peer or runtime dependencies are present.
-
-## Local Verification
-
-Install all Playwright engines once:
+## Local Candidate Gate
 
 ```bash
-npx playwright install chromium firefox webkit
-```
-
-Then run:
-
-```bash
+npm ci
 npm run build
 npm run lint
-npm run check:demo-js
-npm run test:static
-npm run test:demo:quick
-npm run test:demo:all
-npm run test:pages
-npm run pack:dry-run
+npm run test:full
 npm run release:verify
 git diff --check
 ```
 
-`release:verify` runs build, lint, JavaScript syntax, static contracts, the Pages artifact, Chromium, Firefox, WebKit, the intentional tarball listing, `npm audit --audit-level=moderate`, and an npm publish dry run. It does not publish.
+`npm run release:verify` includes `npm audit --audit-level=moderate`, the cross-engine browser matrix, Pages verification, tarball dry-run, and publish dry-run. It does not publish.
 
-`prepublishOnly` runs `npm run release:verify`, so a direct `npm publish` still has the full release verification gate.
+The package's `prepublishOnly` script runs `npm run release:verify`, so a direct npm publish uses the same full gate.
 
-## Tag And Version Validation
+## Candidate Inspection
 
-The publish workflow checks out the selected tag and fails unless it equals `v${package.version}`. For this release the only valid tag is `v2.1.1`.
+Confirm:
 
-After separate approval, an operator may check registry availability:
+- package version is `3.0.0`
+- intended tag would be `v3.0.0`
+- runtime and peer dependencies are empty
+- exact exports and tarball files match the v3 contract
+- generated CSS matches authored sources
+- Chromium, Firefox, and WebKit are green
+- `desktop.ini` and other local-only files are absent from the tarball
 
-```bash
-npm view layout-style-css@2.1.1 version --json
-```
+## Separately Approved Publication
 
-The eventual release sequence is:
+Only after explicit approval:
 
-```bash
-git tag v2.1.1
-git push origin v2.1.1
-```
+1. Commit the verified candidate.
+2. Push the intended branch.
+3. Merge through the repository's normal review policy.
+4. Create the exact `v3.0.0` tag from the protected release commit.
+5. Publish the GitHub Release.
+6. Let the protected npm workflow verify the tag and publish with provenance.
+7. Confirm the GitHub Release, tag, and npm registry state independently.
 
-Publishing the `v2.1.1` GitHub release triggers the npm workflow. A separately approved recovery run may use `release_tag` set to `v2.1.1`.
+The npm job uses the protected `npm` environment, required reviewers, least-privilege permissions, strict tag validation, exact tag checkout, main-ancestry verification, and an immutable commit sha. Prefer npm trusted publishing when the registry setup supports it.
 
-## Workflow Safety
+## Recovery
 
-Create a GitHub Environment named `npm` and configure required reviewers before enabling the publish job. Environment approval is the final human authorization boundary for npm releases.
-
-Before `npm ci` can execute package lifecycle code, the workflow:
-
-1. rejects release inputs that are not strict `v`-prefixed semantic-version tags;
-2. checks out the exact `refs/tags/<release_tag>` namespace without persisted credentials;
-3. verifies `HEAD` equals the tag's peeled commit;
-4. fetches `origin/main` and requires the tag commit to be reachable from protected main; and
-5. requires the package version to equal the tag.
-
-The workflow installs Chromium, Firefox, and WebKit, runs full release verification, and publishes with npm provenance. `NODE_AUTH_TOKEN` exists only on the final publish step. Migrating to npm trusted publishing should remove that long-lived secret in a follow-up.
-
-The workflow actions remain major-version references. Pinning every third-party action to an immutable commit SHA is a documented security follow-up and should be performed with an automated update process. Do not bypass a failed trust, version, browser, audit, tarball, or documentation contract.
-
-## Wiki Mirror
-
-The versioned `docs/wiki/` source is authoritative. If GitHub Wiki is enabled, mirror these Markdown files only after the release documentation has passed the local contract suite.
+If verification fails, fix the candidate and rerun the complete gate. Do not move or overwrite an existing release tag. Use a new semantic version when a published artifact must be corrected.
