@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const outputDir = join(root, "output", "github-pages");
@@ -64,13 +65,23 @@ assert.equal(
 );
 
 assert(
-  index.includes('href="./dist/layout-style-css.css?v=3.0.0"'),
-  "Pages root demo should load the default v3 bundle from ./dist"
-);
-assert(
   !index.includes("../dist/layout-style-css.css"),
   "Pages root demo should not reference parent dist paths"
 );
+
+for (const { attribute, path } of [
+  { attribute: "href", path: "demo.css" },
+  { attribute: "src", path: "demo.js" },
+  { attribute: "href", path: "dist/layout-style-css.css" }
+]) {
+  const contents = readFileSync(join(outputDir, ...path.split("/")));
+  const fingerprint = createHash("sha256").update(contents).digest("hex").slice(0, 12);
+  assert(
+    index.includes(`${attribute}="./${path}?v=3.0.0-${fingerprint}"`),
+    `Pages should fingerprint ${path} from its deployed contents.`
+  );
+}
+
 assert(!index.includes("integrations/ui-style-kit.css"), "Pages must not reference the removed bridge");
 assert(
   !pagesBuild.includes("integrations/ui-style-kit.css"),

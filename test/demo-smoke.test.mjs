@@ -273,6 +273,57 @@ const assertTopologyReadout = async (page, expected) => {
   );
 };
 
+const parseRgbColor = (value) => {
+  const channels = value.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+  assert.equal(channels?.length, 3, `Expected an RGB color, got "${value}".`);
+  return channels;
+};
+
+const relativeLuminance = (channels) =>
+  channels
+    .map((channel) => channel / 255)
+    .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4))
+    .reduce(
+      (luminance, channel, index) => luminance + channel * [0.2126, 0.7152, 0.0722][index],
+      0
+    );
+
+const contrastRatio = (foreground, background) => {
+  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
+  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const verifyCodeBlockContrast = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${baseUrl}?ecosystem=all-three&mode=light`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  for (const mode of ["light", "dark", "contrast"]) {
+    await setControl(page, "modeSelect", mode);
+    const blocks = await page.locator(".demo-code-card pre").evaluateAll((preElements) =>
+      preElements.map((preElement) => {
+        const codeElement = preElement.querySelector("code");
+        return {
+          background: getComputedStyle(preElement).backgroundColor,
+          color: getComputedStyle(codeElement).color
+        };
+      })
+    );
+
+    assert.equal(blocks.length, 2, `${mode}: expected both copy-ready code blocks.`);
+    for (const [index, block] of blocks.entries()) {
+      const ratio = contrastRatio(parseRgbColor(block.color), parseRgbColor(block.background));
+      assert(
+        ratio >= 4.5,
+        `${mode} code block ${index + 1} has ${ratio.toFixed(2)}:1 contrast; expected at least 4.5:1.`
+      );
+    }
+  }
+};
+
 const layoutSnapshot = async (page) =>
   page.evaluate(() => {
     const documentElement = document.documentElement;
@@ -953,6 +1004,7 @@ try {
   await verifyBreakoutGeometry(page, server.baseUrl);
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
+  await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);
 
   assert.deepEqual(pageErrors, [], `Page errors:\n${pageErrors.join("\n")}`);

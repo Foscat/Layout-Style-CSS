@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,23 @@ function assertInsideRoot(path) {
   }
 }
 
+function fingerprintVersionedAsset(index, assetPath, contents) {
+  const assetUrl = `./${assetPath}`;
+  const escapedAssetUrl = assetUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const versionedAssetPattern = new RegExp(`${escapedAssetUrl}\\?v=([^"'\\s&]+)`, "g");
+  const fingerprint = createHash("sha256").update(contents).digest("hex").slice(0, 12);
+  const fingerprintedIndex = index.replace(
+    versionedAssetPattern,
+    `${assetUrl}?v=$1-${fingerprint}`
+  );
+
+  if (fingerprintedIndex === index) {
+    throw new Error(`Expected a versioned Pages asset URL for ${assetPath}.`);
+  }
+
+  return fingerprintedIndex;
+}
+
 assertInsideRoot(demoDir);
 assertInsideRoot(distDir);
 assertInsideRoot(pagesDir);
@@ -28,10 +46,19 @@ await cp(distDir, join(pagesDir, "dist"), { recursive: true });
 
 const indexPath = join(pagesDir, "index.html");
 const index = await readFile(indexPath, "utf8");
-const pagesIndex = index.replaceAll(
+let pagesIndex = index.replaceAll(
   "../dist/layout-style-css.css",
   "./dist/layout-style-css.css"
 );
+
+/*
+ * Pages receives immutable asset URLs derived from deployed content, so a demo
+ * hotfix cannot be hidden by a browser cache that still holds the same version.
+ */
+for (const assetPath of ["demo.css", "demo.js", "dist/layout-style-css.css"]) {
+  const assetContents = await readFile(join(pagesDir, ...assetPath.split("/")));
+  pagesIndex = fingerprintVersionedAsset(pagesIndex, assetPath, assetContents);
+}
 
 await writeFile(indexPath, pagesIndex);
 await writeFile(join(pagesDir, ".nojekyll"), "");
