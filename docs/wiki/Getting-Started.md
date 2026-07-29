@@ -1,51 +1,63 @@
 # Getting Started
 
-Layout Style CSS 2.0 provides structural layout without prescribing theme or component paint.
-
-## Install
-
-Node.js 20 or newer is required for development scripts.
+Install `layout-style-css@3.0.0` and import the root bundle:
 
 ```bash
-npm install layout-style-css@2.1.1
+npm install layout-style-css@3.0.0
 ```
-
-## Import
 
 ```js
 import "layout-style-css";
 ```
 
-The package is dependency-free. Optional UI and interaction layers are installed and imported explicitly; see [Installation And CDN](Installation-And-CDN.md).
+## First Automatic Layout
 
-## First Recipe
-
-Place the recipe inside a `.ly-wrapper`. The wrapper supplies inline-size containment, fluid logical gutters, and safe-area compensation.
+The zero-configuration path needs only `.ly-root`, a recipe attribute, and semantic areas:
 
 ```html
 <body class="ly-root" data-ly-layout="minimal-saas">
-  <div class="ly-wrapper ly-wrapper--wide">
-    <section class="ly-dashboard" data-ly-recipe="dashboard">
-      <header data-ly-area="header">Dashboard</header>
-      <nav data-ly-area="nav" aria-label="Dashboard">Navigation</nav>
-      <main data-ly-area="main">Workspace</main>
-      <aside data-ly-area="aside">Details</aside>
-      <footer data-ly-area="footer">Status</footer>
-    </section>
+  <div data-ly-recipe="split-hero">
+    <main data-ly-area="content">Primary message</main>
+    <figure data-ly-area="media">Media</figure>
+    <div data-ly-area="actions">Actions</div>
   </div>
 </body>
 ```
 
-The single-column DOM order is authoritative for mobile reading and keyboard focus. Core named grid areas rearrange at `48rem` and `64rem` container widths without changing source order; a selected personality may apply its own personality-specific enhancement threshold.
+The recipe stays stacked below `42rem` and enhances automatically when its nearest `ly-scope` container has enough room.
 
-## Switch Personality
+## Optional Wrapper
 
-```js
-document.querySelector(".ly-root").dataset.lyLayout = "synthwave";
+Use wrappers when a composition needs a named measure or local responsive scope:
+
+```html
+<section class="ly-wrapper ly-wrapper--wide">
+  <div data-ly-recipe="card-grid">
+    <article>One</article>
+    <article>Two</article>
+  </div>
+</section>
 ```
 
-`data-ly-layout` accepts one of the sixteen values listed in [Layout Styles](Layout-Styles.md). UI attributes such as `data-ui`, `data-theme`, and `data-mode` remain independent.
+Available measures are `.ly-wrapper--compact`, `.ly-wrapper--prose`, `.ly-wrapper--content`, `.ly-wrapper--wide`, `.ly-wrapper--full`, and `.ly-wrapper--breakout`.
 
-## Migrate Existing Markup
+## Manual Topology
 
-Do not copy v1 root hooks or size-based wrappers into new code. Follow [Migrating To 2.0](Migrating-To-2.0.md), or use `layout-style-css/legacy.css` temporarily while converting an application.
+Use `data-ly-responsive="manual"` only when application CSS must choose the topology:
+
+```css
+@container ly-scope (min-width: 56rem) {
+  [data-ly-recipe="docs"][data-ly-responsive="manual"] {
+    /* Application-owned topology. */
+  }
+}
+```
+
+Keep mobile DOM order authoritative. The package never changes reading or focus order.
+
+## Next
+
+- [Layout Primitives](Layout-Primitives.md)
+- [Layout Recipes](Layout-Recipes.md)
+- [Layout Styles](Layout-Styles.md)
+- [Migrating To 3.0](Migrating-To-3.0.md)

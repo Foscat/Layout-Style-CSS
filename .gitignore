@@ -7,3 +7,4 @@ output/
 playwright-report/
 test-results/
 npm-debug.log*
+desktop.ini

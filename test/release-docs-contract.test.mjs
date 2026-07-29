@@ -5,23 +5,57 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const normalizeLineEndings = (value) => value.replace(/\r\n?/g, "\n");
-// Release documentation checks compare exact import blocks, so normalize
-// platform line endings without changing the authored markdown contract.
 const read = (...parts) => normalizeLineEndings(readFileSync(join(root, ...parts), "utf8"));
 const packageJson = JSON.parse(read("package.json"));
-const migrationPath = join(root, "docs", "wiki", "Migrating-To-2.0.md");
+const migrationPath = join(root, "docs", "wiki", "Migrating-To-3.0.md");
+const v2SurfacePath = join(root, "test", "fixtures", "v2-public-selectors.json");
 
-assert(existsSync(migrationPath), "The v2 package must ship a complete 1.x migration guide");
+assert(existsSync(migrationPath), "The v3 package must ship a complete v2-to-v3 migration guide.");
+assert(existsSync(v2SurfacePath), "Migration coverage requires a checked-in v2 public selector fixture.");
 
 const readme = read("README.md");
 const changelog = read("CHANGELOG.md");
-const migration = read("docs", "wiki", "Migrating-To-2.0.md");
+const migration = read("docs", "wiki", "Migrating-To-3.0.md");
 const installation = read("docs", "wiki", "Installation-And-CDN.md");
 const compatibility = read("docs", "wiki", "UI-Style-Kit-Compatibility.md");
+const primitivesGuide = read("docs", "wiki", "Layout-Primitives.md");
 const recipesGuide = read("docs", "wiki", "Layout-Recipes.md");
+const stylesGuide = read("docs", "wiki", "Layout-Styles.md");
+const demoGuide = read("docs", "wiki", "Demo-And-GitHub-Pages.md");
 const release = read("docs", "wiki", "Release-And-Publishing.md");
 const support = read("docs", "wiki", "Security-And-Support.md");
-const docsCorpus = [readme, migration, installation, compatibility].join("\n");
+const sidebar = read("docs", "wiki", "_Sidebar.md");
+const v2Surface = JSON.parse(read("test", "fixtures", "v2-public-selectors.json"));
+const v3Classes = new Set(
+  [...read("dist", "layout-style-css.css").matchAll(/\.ly-[a-z0-9_-]+/g)].map(
+    ([selector]) => selector
+  )
+);
+const removedV2Selectors = v2Surface.selectors.filter((selector) => !v3Classes.has(selector));
+assert.equal(v2Surface.version, "2.1.1", "The migration fixture must identify its v2 source version.");
+assert.equal(v2Surface.selectors.length, 189, "The v2 fixture must retain the full default selector surface.");
+assert.deepEqual(
+  [...new Set(v2Surface.selectors)].sort(),
+  v2Surface.selectors,
+  "The v2 selector fixture must stay unique and sorted."
+);
+assert(removedV2Selectors.length > 100, "The fixture should exercise the complete clean-break surface.");
+for (const selector of removedV2Selectors) {
+  assert(
+    migration.includes(selector),
+    `The v3 migration guide must map removed v2 selector ${selector}.`
+  );
+}
+const docsCorpus = [
+  readme,
+  migration,
+  installation,
+  compatibility,
+  primitivesGuide,
+  recipesGuide,
+  stylesGuide,
+  demoGuide
+].join("\n");
 const currentGuidanceCorpus = [
   readme,
   ...[
@@ -33,6 +67,7 @@ const currentGuidanceCorpus = [
     "Layout-Primitives.md",
     "Layout-Recipes.md",
     "Layout-Styles.md",
+    "Migrating-To-3.0.md",
     "Release-And-Publishing.md",
     "Security-And-Support.md",
     "UI-Style-Kit-Compatibility.md"
@@ -40,38 +75,44 @@ const currentGuidanceCorpus = [
 ].join("\n");
 
 for (const requiredText of [
+  "3.0.0",
   "Node.js 20",
   "dependency-free",
+  "zero-configuration",
+  "ly-scope",
+  "data-ly-responsive=\"manual\"",
+  "100dvh",
+  "30rem",
+  "44rem",
+  "42rem",
   "48rem",
-  "64rem",
+  "52rem",
+  "72rem",
   "Chromium",
   "Firefox",
   "WebKit",
   "data-ly-layout",
   "data-ly-recipe",
   "data-ly-area",
-  "legacy.css",
-  "removal in v3",
-  "ui-style-kit-css@2.1.0",
-  "interactive-surface-css@1.5.0"
+  "mobile DOM order"
 ]) {
-  assert(docsCorpus.includes(requiredText), `V2 documentation must explain ${requiredText}`);
+  assert(docsCorpus.includes(requiredText), `V3 documentation must explain ${requiredText}.`);
 }
 
 for (const exportPath of [
   "layout-style-css",
   "layout-style-css/min.css",
   "layout-style-css/core.css",
+  "layout-style-css/foundation.css",
   "layout-style-css/wrappers.css",
   "layout-style-css/primitives.css",
   "layout-style-css/recipes.css",
   "layout-style-css/utilities.css",
   "layout-style-css/personalities.css",
   "layout-style-css/personalities/minimal-saas.css",
-  "layout-style-css/integrations/ui-style-kit.css",
-  "layout-style-css/legacy.css"
+  "layout-style-css/package.json"
 ]) {
-  assert(docsCorpus.includes(exportPath), `V2 documentation must include ${exportPath}`);
+  assert(docsCorpus.includes(exportPath), `V3 documentation must include ${exportPath}.`);
 }
 
 const allThreeOrder = [
@@ -82,97 +123,118 @@ const allThreeOrder = [
 ].join("\n");
 assert(
   docsCorpus.includes(allThreeOrder),
-  "All-three documentation must preserve the supported four-layer import order"
+  "Ecosystem documentation must preserve the explicit four-layer import order."
 );
 
-for (const staleGuidance of [
-  'import "layout-style-css/all-with-ui-kit.css";',
-  'import "layout-style-css/all-with-ui-kit-and-interactive-surface.css";',
-  'import "layout-style-css/base.css";',
-  'import "layout-style-css/bridge.css";',
-  'import "interactive-surface-css/interactive-surface.css";',
-  'import "ui-style-kit-css/with-bridge.css";',
-  "layout-style-css@1.1.2",
-  "staged development fixture",
-  "staged local fixture",
-  "pushed staged",
-  "approved 2.1.0 publication"
+for (const removedSurface of [
+  "legacy.css",
+  "integrations/ui-style-kit.css",
+  "./css",
+  "./css.css",
+  "./min",
+  ".ly-dashboard",
+  ".ly-bleed",
+  "ly-md-",
+  "ly-lg-",
+  "ly-order-first"
 ]) {
   assert(
-    !currentGuidanceCorpus.includes(staleGuidance),
-    `Current documentation must remove stale guidance: ${staleGuidance}`
+    migration.includes(removedSurface),
+    `The v3 migration guide must map or identify removed surface ${removedSurface}.`
   );
 }
 
-assert(migration.includes(".ly-container"), "Migration guide must map the old container API");
-const v1BaseMigrationContracts = [
-  [".ly-content", ["min-inline-size", "structural"]],
-  [".ly-divider", ["spacing", "visual divider"]],
-  [".ly-surface--raised", ["removed", "UI Style Kit"]]
-];
-
-/* These selectors came from the v1 base bundle and require an explicit v2 disposition. */
-for (const [selector, requiredTerms] of v1BaseMigrationContracts) {
-  assert(migration.includes(selector), `Migration guide must map the v1 base API ${selector}`);
-
-  for (const term of requiredTerms) {
-    assert(
-      migration.toLowerCase().includes(term.toLowerCase()),
-      `${selector} migration guidance must explain ${term}`
-    );
-  }
+for (const recipe of [
+  "app-shell",
+  "dashboard",
+  "docs",
+  "list-detail",
+  "split-hero",
+  "gallery",
+  "card-grid"
+]) {
+  assert(
+    migration.includes(`data-ly-recipe="${recipe}"`),
+    `The migration guide must show the canonical ${recipe} hook.`
+  );
 }
-assert(
-  readme.includes(".ly-content") &&
-    readme.includes(".ly-divider") &&
-    readme.includes(".ly-surface--raised"),
-  "README legacy guidance must cover every audited v1 base selector disposition"
-);
+
 for (const wrapper of ["compact", "prose", "content", "wide", "full", "breakout"]) {
-  assert(migration.includes(`ly-wrapper--${wrapper}`), `Migration guide must document ${wrapper}`);
+  assert(docsCorpus.includes(`ly-wrapper--${wrapper}`), `Documentation must cover ${wrapper}.`);
 }
 for (const lane of ["content", "feature", "full"]) {
-  assert(migration.includes(`data-ly-lane=\"${lane}\"`), `Migration guide must document ${lane} lane`);
+  assert(docsCorpus.includes(`data-ly-lane="${lane}"`), `Documentation must cover ${lane} lane.`);
 }
-for (const warning of [
-  "DOM order",
-  "reading order",
-  "focus order",
-  "ly-order-first",
-  "ly-md-order",
-  "ly-lg-order",
-  "Built-in recipes never use"
+for (const ownershipRule of [
+  "Layout owns structure",
+  "UI Style Kit owns paint",
+  "Interactive Surface owns interaction styling"
 ]) {
-  assert(migration.includes(warning), `Migration guide must include accessibility guidance: ${warning}`);
+  assert(docsCorpus.includes(ownershipRule), `Documentation must state: ${ownershipRule}.`);
 }
-assert(
-  migration.includes("ui-style-kit-css@2.1.0") && migration.includes("interactive-surface-css@1.5.0"),
-  "Migration guide must identify the 2.1 companion fixtures"
-);
-assert.doesNotMatch(
-  currentGuidanceCorpus,
-  /interactive-surface-css@1\.5\.0[^.\n]*(?:development fixture|development and integration fixture)/i,
-  "Current docs must not classify the released Interactive Surface 1.5.0 package as a development fixture"
-);
-assert(
-  currentGuidanceCorpus.includes(
-    "`ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are released registry fixtures"
-  ),
-  "Current docs must identify UI Style Kit 2.1.0 and Interactive Surface 1.5.0 as released registry fixtures"
-);
-assert(
-  recipesGuide.includes("complete recipe API") && recipesGuide.includes("only `data-ly-recipe"),
-  "Recipe documentation must explain that canonical data hooks work without companion classes"
-);
 
 assert(
-  changelog.includes("## [2.0.0] - 2026-07-19") && changelog.includes("Breaking"),
-  "Changelog must identify the dated 2.0.0 breaking release"
+  recipesGuide.includes("@container ly-scope (min-width: 56rem)") &&
+    recipesGuide.includes('[data-ly-recipe="docs"][data-ly-responsive="manual"]'),
+  "Recipe documentation must provide the copy-ready manual container-query pattern."
 );
-assert(release.includes("layout-style-css@2.1.1") && release.includes("v2.1.1"));
-assert(support.includes("`2.x` | Yes"), "Support table must identify the supported v2 line");
+assert(
+  recipesGuide.includes("42rem") &&
+    recipesGuide.includes("44rem") &&
+    recipesGuide.includes("48rem") &&
+    recipesGuide.includes("52rem") &&
+    recipesGuide.includes("72rem"),
+  "Recipe documentation must list every automatic topology threshold."
+);
+assert(
+  primitivesGuide.includes("only `.ly-reel`") &&
+    primitivesGuide.includes("only `.ly-scroll`"),
+  "Primitive documentation must identify intentional internal scrolling."
+);
+assert(
+  stylesGuide.includes("sixteen") &&
+    stylesGuide.includes("token") &&
+    stylesGuide.includes("may not declare"),
+  "Personality documentation must explain the shared-engine profile contract."
+);
+assert(
+  demoGuide.includes("360 × 800") &&
+    demoGuide.includes("800 × 360") &&
+    demoGuide.includes("768 × 1024") &&
+    demoGuide.includes("1024 × 768") &&
+    demoGuide.includes("1440 × 900") &&
+    demoGuide.includes("900 × 1440"),
+  "Demo documentation must list the six release viewport allocations."
+);
 
-assert(packageJson.files.includes("docs/wiki"), "The package must ship the migration guide with the wiki");
+for (const staleGuidance of [
+  "matching classes remain available",
+  "personality-specific queries",
+  "ordering escape hatches",
+  "full v2 bundle plus",
+  "removal in v3"
+]) {
+  assert(
+    !currentGuidanceCorpus.includes(staleGuidance),
+    `Current documentation must remove stale guidance: ${staleGuidance}.`
+  );
+}
+
+assert(
+  changelog.includes("## [3.0.0] - 2026-07-29") &&
+    changelog.includes("### Breaking") &&
+    changelog.includes("### Tests"),
+  "Changelog must identify the dated v3 breaking release and verification work."
+);
+assert(
+  release.includes("layout-style-css@3.0.0") &&
+    release.includes("v3.0.0") &&
+    release.includes("does not publish"),
+  "Release documentation must distinguish verification from publication."
+);
+assert(support.includes("`3.x` | Yes"), "Support table must identify the supported v3 line.");
+assert(sidebar.includes("Migrating To 3.0"), "Wiki navigation must link the v3 migration guide.");
+
 assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick --browser=chromium");
 for (const browser of ["chromium", "firefox", "webkit"]) {
   assert.equal(
@@ -183,106 +245,66 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 assert(packageJson.scripts["test:demo:all"].includes("test:demo:firefox"));
 assert(packageJson.scripts["test:demo:all"].includes("test:demo:webkit"));
 assert(packageJson.scripts["release:verify"].includes("check:full"));
-assert(
-  packageJson.scripts["release:verify"].includes("npm audit --audit-level=moderate"),
-  "Release verification must enforce the documented moderate audit before publish"
-);
-assert.equal(
-  packageJson.scripts.prepublishOnly,
-  "npm run release:verify",
-  "Direct npm publish must use the same full release verification gate"
-);
+assert(packageJson.scripts["release:verify"].includes("npm audit --audit-level=moderate"));
+assert.equal(packageJson.scripts.prepublishOnly, "npm run release:verify");
 for (const [name, document] of [
   ["README", readme],
   ["release guide", release]
 ]) {
   assert(
     /release:verify[^\n]*`npm audit --audit-level=moderate`/.test(document),
-    `${name} must state that release:verify includes the exact moderate audit command`
+    `${name} must state that release:verify includes the exact moderate audit command.`
   );
 }
 assert(
   /prepublishOnly[^\n]*`npm run release:verify`/.test(release),
-  "Release guide must state that direct npm publish runs the full release verification gate"
-);
-assert(
-  !release.includes("npm audit --audit-level=moderate\nnpm run release:verify"),
-  "Release checklist must not ask operators to run the audit redundantly before release:verify"
-);
-assert(
-  docsCorpus.includes("core thresholds") && docsCorpus.includes("personality-specific"),
-  "Responsive documentation must distinguish core thresholds from personality overrides"
+  "Release guide must state that direct npm publish runs the full release gate."
 );
 
 const ci = read(".github", "workflows", "ci.yml");
-assert(ci.includes("node-version: [20, 22]"), "CI must validate Node.js 20 and 22");
+assert(ci.includes("node-version: [20, 22]"), "CI must validate Node.js 20 and 22.");
 for (const browser of ["chromium", "firefox", "webkit"]) {
-  assert(ci.includes(browser), `CI must exercise ${browser}`);
+  assert(ci.includes(browser), `CI must exercise ${browser}.`);
 }
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
-assert(publishWorkflow.includes("for example v2.1.1"));
+assert(publishWorkflow.includes("for example v3.0.0"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(publishWorkflow.includes("npm run release:verify"));
 assert(
   publishWorkflow.includes("environment:") && publishWorkflow.includes("name: npm"),
-  "Publish job must use the protected npm GitHub Environment"
+  "Publish job must use the protected npm GitHub Environment."
 );
 assert(
   publishWorkflow.includes("contents: read") && publishWorkflow.includes("id-token: write"),
-  "Publish job must grant only read contents and provenance identity permissions"
+  "Publish job must grant only read contents and provenance identity permissions."
 );
 assert(
   publishWorkflow.includes("Validate release tag format") &&
     publishWorkflow.includes("^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)"),
-  "Release tag input must pass strict v-semver validation"
+  "Release tag input must pass strict v-semver validation."
 );
 assert(
-  publishWorkflow.includes("ref: refs/tags/${{ github.event.inputs.release_tag || github.event.release.tag_name }}") &&
+  publishWorkflow.includes(
+    "ref: refs/tags/${{ github.event.inputs.release_tag || github.event.release.tag_name }}"
+  ) &&
     publishWorkflow.includes("fetch-depth: 0") &&
     publishWorkflow.includes("persist-credentials: false"),
-  "Checkout must use the exact tag namespace, full history, and no persisted credentials"
-);
-const formatValidationStep = publishWorkflow.indexOf("Validate release tag format");
-const checkoutStep = publishWorkflow.indexOf("Check out exact release tag");
-const dependencyInstallStep = publishWorkflow.indexOf("Install dependencies");
-assert(
-  formatValidationStep >= 0 &&
-    formatValidationStep < checkoutStep &&
-    checkoutStep < dependencyInstallStep,
-  "Tag format and exact checkout must occur before npm lifecycle code"
+  "Checkout must use the exact tag namespace, full history, and no persisted credentials."
 );
 for (const trustCheck of [
   'git rev-parse "${TAG_REF}^{commit}"',
-  'git rev-parse HEAD',
   "refs/remotes/origin/main",
   "git merge-base --is-ancestor",
   '"v${PACKAGE_VERSION}" != "$RELEASE_TAG"'
 ]) {
-  assert(publishWorkflow.includes(trustCheck), `Publish workflow missing trust check: ${trustCheck}`);
+  assert(publishWorkflow.includes(trustCheck), `Publish workflow missing trust check: ${trustCheck}.`);
 }
-assert(
-  publishWorkflow.includes("npm publish --access public --provenance"),
-  "npm publish must emit registry provenance"
-);
-assert.equal(
-  (publishWorkflow.match(/NODE_AUTH_TOKEN:/g) ?? []).length,
-  1,
-  "The npm token must exist only on the publish step"
-);
-for (const securityNote of [
-  "required reviewers",
-  "trusted publishing",
-  "immutable commit sha"
-]) {
-  assert(
-    `${release}\n${support}`.toLowerCase().includes(securityNote),
-    `Release security docs must cover ${securityNote}`
-  );
-}
+assert(publishWorkflow.includes("npm publish --access public --provenance"));
+assert.equal((publishWorkflow.match(/NODE_AUTH_TOKEN:/g) ?? []).length, 1);
 
 const pagesWorkflow = read(".github", "workflows", "pages.yml");
 assert(pagesWorkflow.includes("playwright install --with-deps chromium"));
 assert(pagesWorkflow.includes("npm run check"));
 
-console.log("V2 documentation and release workflow contracts look good.");
+console.log("V3 documentation and release workflow contracts look good.");

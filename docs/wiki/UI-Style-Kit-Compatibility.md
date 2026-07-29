@@ -1,25 +1,16 @@
-# UI Style Kit Compatibility
+# Companion Library Compatibility
 
-Layout Style CSS is dependency-free. `ui-style-kit-css@2.1.0` is the released visual fixture for 2.1 ecosystem verification and is not a runtime or peer dependency.
+Layout Style CSS v3 has no bridge, peer dependency, or companion import.
 
-## Ownership Boundary
+## Ownership
 
-| Package | Owns |
-| --- | --- |
-| `layout-style-css` | Wrappers, containment, flow, areas, grids, spans, recipes, and spatial personalities. |
-| `ui-style-kit-css` | Color, typography, borders, shadows, native controls, component paint, themes, and modes. |
-| `interactive-surface-css` | Interaction-state styling. |
+Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interaction styling.
+
+- Layout: wrappers, containment, measures, flow, tracks, grid areas, ratios, overflow bounds, and responsive topology
+- UI Style Kit: color, typography, borders, radii, shadows, component paint, and theme roles
+- Interactive Surface: hover, focus, pressed, selected, disabled, loading, and other interaction-state styling
 
 ## Explicit Imports
-
-Layout plus UI:
-
-```js
-import "ui-style-kit-css/visual.css";
-import "layout-style-css";
-```
-
-All three libraries:
 
 ```js
 import "ui-style-kit-css/visual.css";
@@ -28,22 +19,22 @@ import "interactive-surface-css/state-core.css";
 import "layout-style-css";
 ```
 
-The Layout integration bridge contains structural mappings but no package imports. It remains available as deprecated compatibility for legacy UI-prefixed structural aliases. The removed `all-with-ui-kit*` aggregates have no v2 replacement because dependency ownership stays with the application.
+Applications may use Layout alone, Layout plus UI Style Kit, or all three. The default Layout bundle never imports or assumes either companion.
 
-## Structural Aliases
+## Markup
 
-The bridge supports the `saas`, `bento`, `max`, `bau`, `tactile`, `neo`, `retro`, `brutal`, `cyber`, `y2k`, and `rg` prefixes for container, section, stack, cluster, grid, split, button-group, card-grid, card-size, gallery, and carousel structure.
+Put canonical structural hooks in markup:
 
-Visual component names remain owned by UI Style Kit. The bridge does not map color, typography, border, shadow, theme, or interaction tokens.
+```html
+<body class="ly-root" data-ly-layout="minimal-saas" data-ui="minimal-saas">
+  <main class="ly-wrapper" data-ly-recipe="dashboard">
+    <header data-ly-area="header" class="saas-card">Dashboard</header>
+  </main>
+</body>
+```
 
-The removed v1 `.ly-surface--raised` selector is not restored by `legacy.css`; its radius and raised paint belong to UI Style Kit or application theme styling. Likewise, the legacy `.ly-divider` alias supplies structural size and spacing only, leaving the visible separator to the UI layer.
+The `ly-*` hooks control structure. Companion classes and data attributes can paint or animate the same elements without taking over layout.
 
-## Compatibility Baseline
+## v3 Boundary
 
-| Library | Verified fixture | Consumer requirement |
-| --- | --- | --- |
-| Layout Style CSS | `2.1.1` | Required for this API |
-| UI Style Kit CSS | `2.1.0` visual CSS and manifest | Optional released fixture |
-| Interactive Surface CSS | `1.5.0` `state-core.css` | Optional released fixture |
-
-Current evergreen Chromium, Firefox, and WebKit are covered by the release gate.
+The deprecated v2 UI-prefixed structural bridge is not shipped. Migrate bridge aliases to canonical Layout hooks; do not copy the bridge into application CSS. See [Migrating To 3.0](Migrating-To-3.0.md).

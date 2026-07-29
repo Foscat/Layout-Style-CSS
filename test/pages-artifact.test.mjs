@@ -8,6 +8,8 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const outputDir = join(root, "output", "github-pages");
 const sourceDemoPath = join(root, "demo", "index.html");
 const pagesWorkflowPath = join(root, ".github", "workflows", "pages.yml");
+const pagesBuildPath = join(root, "scripts", "build-pages.mjs");
+const expectedPagesBaseUrl = "https://foscat.github.io/Layout-Style-CSS/";
 
 rmSync(outputDir, { recursive: true, force: true });
 
@@ -33,7 +35,14 @@ const requiredArtifactFiles = [
   "assets/social-card.png",
   "dist/layout-style-css.css",
   "dist/layout-style-css.min.css",
-  "dist/integrations/ui-style-kit.css"
+  "dist/core.css",
+  "dist/foundation.css",
+  "dist/wrappers.css",
+  "dist/primitives.css",
+  "dist/recipes.css",
+  "dist/utilities.css",
+  "dist/personalities.css",
+  "dist/personalities/minimal-saas.css"
 ];
 
 for (const file of requiredArtifactFiles) {
@@ -44,39 +53,63 @@ const index = readFileSync(join(outputDir, "index.html"), "utf8");
 const manifest = JSON.parse(readFileSync(join(outputDir, "site.webmanifest"), "utf8"));
 const sitemap = readFileSync(join(outputDir, "sitemap.xml"), "utf8");
 const sourceDemo = readFileSync(sourceDemoPath, "utf8");
+const pagesBuild = readFileSync(pagesBuildPath, "utf8");
 const canonicalHrefMatch = sourceDemo.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
 
 assert(canonicalHrefMatch, "Source demo should declare a canonical URL");
+assert.equal(
+  canonicalHrefMatch[1],
+  expectedPagesBaseUrl,
+  "The canonical URL must use the repository's case-sensitive GitHub Pages slug."
+);
 
 assert(
-  index.includes('href="./dist/layout-style-css.css"'),
-  "Pages root demo should load the default v2 bundle from ./dist"
-);
-assert(
-  index.includes('href="./dist/integrations/ui-style-kit.css"'),
-  "Pages root demo should load the focused UI Style Kit integration from ./dist"
+  index.includes('href="./dist/layout-style-css.css?v=3.0.0"'),
+  "Pages root demo should load the default v3 bundle from ./dist"
 );
 assert(
   !index.includes("../dist/layout-style-css.css"),
   "Pages root demo should not reference parent dist paths"
 );
+assert(!index.includes("integrations/ui-style-kit.css"), "Pages must not reference the removed bridge");
 assert(
-  !index.includes("../dist/integrations/ui-style-kit.css"),
-  "Pages root demo should not reference the parent integration path"
+  !pagesBuild.includes("integrations/ui-style-kit.css"),
+  "Pages build must not retain removed integration rewrites"
+);
+assert(!existsSync(join(outputDir, "dist", "legacy.css")), "Pages must not contain legacy.css");
+assert(
+  !existsSync(join(outputDir, "dist", "integrations", "ui-style-kit.css")),
+  "Pages must not contain the removed integration"
 );
 assert(
   index.includes(`href="${canonicalHrefMatch[1]}"`) || index.includes(`href='${canonicalHrefMatch[1]}'`),
   "Pages demo should preserve the source demo canonical URL"
 );
 assert(
-  index.includes('"version": "2.1.1"') && index.includes("layout-style-css 2.1 Interactive Layout Lab"),
-  "Pages metadata should identify the v2.1 interactive layout lab"
+  index.includes('"version": "3.0.0"') && index.includes("Layout Style CSS v3"),
+  "Pages metadata should identify the v3 intrinsic responsive lab"
 );
 assert(
-  manifest.description.includes("Container-first layout-style-css 2.1"),
-  "Pages manifest should describe the v2.1 container-first demo"
+  manifest.description.includes("Layout Style CSS v3"),
+  "Pages manifest should describe the v3 intrinsic responsive demo"
 );
-assert(sitemap.includes("<lastmod>2026-07-27</lastmod>"), "Pages sitemap should carry current v2 metadata");
+for (const expectedUrl of [
+  expectedPagesBaseUrl,
+  `${expectedPagesBaseUrl}assets/social-card.png`
+]) {
+  assert(index.includes(expectedUrl), `Pages metadata must include reachable URL ${expectedUrl}`);
+}
+assert(
+  readFileSync(join(outputDir, "robots.txt"), "utf8").includes(
+    `${expectedPagesBaseUrl}sitemap.xml`
+  ),
+  "robots.txt must point to the case-sensitive Pages sitemap URL."
+);
+assert(
+  sitemap.includes(`<loc>${expectedPagesBaseUrl}</loc>`),
+  "The sitemap must use the case-sensitive Pages canonical URL."
+);
+assert(sitemap.includes("<lastmod>2026-07-29</lastmod>"), "Pages sitemap should carry v3 metadata");
 
 const pagesWorkflow = readFileSync(pagesWorkflowPath, "utf8");
 const pagesPreflightStep = pagesWorkflow.indexOf("- name: Verify Pages configuration");

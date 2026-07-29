@@ -1,33 +1,27 @@
-# Layout Style CSS Wiki
+# Layout Style CSS v3
 
-Version 2.1.1 is a container-first, dependency-free layout library. It ships semantic wrappers, composition primitives, seven recipes, sixteen layout personalities, focused exports, a v2-only compatibility bundle, and refreshed ecosystem fixtures for UI Style Kit CSS 2.1 and Interactive Surface CSS 1.5.
+`layout-style-css@3.0.0` is a dependency-free, CSS-only structural system for layouts that adapt to available width and height.
 
-## Start Here
+## Contract
 
-| Page | Purpose |
-| --- | --- |
-| [Getting Started](Getting-Started.md) | First wrapper, recipe, and personality. |
-| [Installation And CDN](Installation-And-CDN.md) | Exact package exports and ecosystem import order. |
-| [Layout Primitives](Layout-Primitives.md) | Wrappers and composition primitives. |
-| [Layout Recipes](Layout-Recipes.md) | Named recipes, areas, and mobile ordering. |
-| [Layout Styles](Layout-Styles.md) | Sixteen spatial personalities. |
-| [UI Style Kit Compatibility](UI-Style-Kit-Compatibility.md) | Structural bridge and ownership boundaries. |
-| [Migrating To 2.0](Migrating-To-2.0.md) | Complete 1.x selector and export mapping. |
-| [Demo And GitHub Pages](Demo-And-GitHub-Pages.md) | Interactive lab, browser matrix, and Pages artifact. |
-| [Release And Publishing](Release-And-Publishing.md) | Release verification and separately approved publish steps. |
-| [Security And Support](Security-And-Support.md) | Supported versions and reporting. |
-| [Contributing](Contributing.md) | Source, generated output, testing, and review rules. |
+- `.ly-root` is a usable layout and named `ly-scope` container.
+- Wrappers are optional measure and nesting controls.
+- Seven `data-ly-recipe` values enhance a semantic stacked fallback.
+- `data-ly-responsive="manual"` transfers topology ownership to application CSS.
+- Sixteen `data-ly-layout` profiles tune one shared responsive engine.
+- `100dvh` behavior and the `44rem`/`30rem` height tiers avoid short-screen traps.
+- The mobile DOM order remains the reading, keyboard, and focus order.
 
-## Ownership
+Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interaction styling.
 
-Layout Style CSS owns spatial behavior: containment, wrappers, flow, grids, areas, spans, sizing, and responsive arrangement. UI Style Kit owns visual paint. Interactive Surface owns interaction-state styling.
+## Documentation
 
-The package has no runtime or peer dependencies. `ui-style-kit-css@2.1.0` and `interactive-surface-css@1.5.0` are released registry fixtures used to prove optional integration.
-
-## Supported Baseline
-
-- Node.js 20 or newer for package development
-- Current evergreen Chromium, Firefox, and WebKit
-- Mobile-first DOM order with core thresholds at `48rem` and `64rem`, nearest-container personality overrides, and `64rem` feasibility gates for three- and four-track application shells
-
-The deprecated UI structural bridge remains available for existing UI-prefixed layout aliases, but canonical 2.1 examples use UI Style Kit visual CSS, the UI token bridge, Interactive Surface `state-core.css`, and Layout core.
+- [Getting Started](Getting-Started.md)
+- [Installation And CDN](Installation-And-CDN.md)
+- [Layout Primitives](Layout-Primitives.md)
+- [Layout Recipes](Layout-Recipes.md)
+- [Layout Styles](Layout-Styles.md)
+- [Migrating To 3.0](Migrating-To-3.0.md)
+- [Demo And GitHub Pages](Demo-And-GitHub-Pages.md)
+- [Release And Publishing](Release-And-Publishing.md)
+- [Security And Support](Security-And-Support.md)

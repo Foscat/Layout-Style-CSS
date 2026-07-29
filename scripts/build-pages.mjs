@@ -31,9 +31,6 @@ const index = await readFile(indexPath, "utf8");
 const pagesIndex = index.replaceAll(
   "../dist/layout-style-css.css",
   "./dist/layout-style-css.css"
-).replaceAll(
-  "../dist/integrations/ui-style-kit.css",
-  "./dist/integrations/ui-style-kit.css"
 );
 
 await writeFile(indexPath, pagesIndex);

@@ -1,0 +1,194 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;
+
+/*
+  Foundation owns only shared spatial tokens, containment, and defensive
+  sizing. Theme and interaction libraries remain responsible for paint.
+*/
+
+@layer ly.tokens {
+  :where(.ly-root) {
+    --ly-space-0: 0;
+    --ly-space-1: 0.25rem;
+    --ly-space-2: 0.5rem;
+    --ly-space-3: 0.75rem;
+    --ly-space-4: 1rem;
+    --ly-space-5: 1.5rem;
+    --ly-space-6: 2rem;
+    --ly-space-7: 3rem;
+    --ly-space-8: 4rem;
+    --ly-space-9: 6rem;
+
+    --ly-wrapper-compact: 40rem;
+    --ly-wrapper-prose: 68ch;
+    --ly-wrapper-content: 72rem;
+    --ly-wrapper-wide: 112rem;
+    --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-safe-area-inline: max(
+      env(safe-area-inset-left, 0px),
+      env(safe-area-inset-right, 0px)
+    );
+    --ly-safe-area-block-start: env(safe-area-inset-top, 0px);
+    --ly-safe-area-block-end: env(safe-area-inset-bottom, 0px);
+    --ly-wrapper-gutter: max(var(--ly-page-padding-inline), var(--ly-safe-area-inline));
+
+    --ly-profile-gap: var(--ly-space-5);
+    --ly-gap: var(--ly-profile-gap);
+    --ly-grid-gap: var(--ly-gap);
+    --ly-stack-gap: var(--ly-space-4);
+    --ly-cluster-gap: var(--ly-space-3);
+    --ly-section-padding-block: clamp(3rem, 7vh, 6rem);
+    --ly-header-height: 4.5rem;
+    --ly-sticky-position: sticky;
+    --ly-cover-min: 100vh;
+    --ly-shell-min: 100vh;
+    --ly-scroll-max: min(70vh, 50rem);
+
+    --ly-switcher-threshold: 42rem;
+    --ly-sidebar-size: 18rem;
+    --ly-sidebar-content-min: 50%;
+    --ly-grid-columns: 12;
+    --ly-grid-min: 16rem;
+    --ly-split-min: 20rem;
+    --ly-pane-min: 18rem;
+    --ly-pane-size: 22rem;
+    --ly-media-min: 18rem;
+    --ly-media-size: 14rem;
+    --ly-reel-item-min: 16rem;
+    --ly-reel-item-max: 28rem;
+    --ly-frame-ratio: 16 / 9;
+    --ly-split-primary: 1fr;
+    --ly-split-secondary: 1fr;
+
+    --ly-recipe-rail: 18rem;
+    --ly-recipe-aside: 22rem;
+    --ly-gallery-min: 12rem;
+    --ly-card-grid-min: 16rem;
+
+    --ly-app-shell-medium-areas:
+      "header header"
+      "sidebar main"
+      "aside main"
+      "footer footer";
+    --ly-app-shell-medium-columns:
+      minmax(min(100%, var(--ly-recipe-rail)), auto)
+      minmax(0, 1fr);
+    --ly-app-shell-wide-areas:
+      "sidebar header header"
+      "sidebar main aside"
+      "sidebar footer footer";
+    --ly-app-shell-wide-columns:
+      minmax(min(100%, var(--ly-recipe-rail)), auto)
+      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+
+    --ly-dashboard-medium-areas:
+      "header header"
+      "nav nav"
+      "main aside"
+      "footer footer";
+    --ly-dashboard-medium-columns:
+      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+    --ly-dashboard-wide-areas:
+      "nav header header"
+      "nav main aside"
+      "nav footer footer";
+    --ly-dashboard-wide-columns:
+      minmax(min(100%, var(--ly-recipe-rail)), auto)
+      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+
+    --ly-docs-wide-areas:
+      "header header"
+      "nav main"
+      "nav aside"
+      "footer footer";
+    --ly-docs-wide-columns:
+      minmax(min(100%, var(--ly-recipe-rail)), auto)
+      minmax(0, 1fr);
+    --ly-list-detail-wide-areas:
+      "primary secondary"
+      "actions actions";
+    --ly-list-detail-wide-columns:
+      minmax(min(100%, var(--ly-pane-size)), 0.7fr)
+      minmax(0, 1fr);
+    --ly-split-hero-wide-areas:
+      "content media"
+      "actions media";
+    --ly-split-hero-wide-columns:
+      minmax(0, var(--ly-split-primary, 1fr))
+      minmax(0, var(--ly-split-secondary, 1fr));
+
+    container-name: ly-scope;
+    container-type: inline-size;
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
+  /* Enhance viewport-bound tokens only when dynamic viewport units parse. */
+  @supports (height: 100dvh) {
+    :where(.ly-root) {
+      --ly-cover-min: 100dvh;
+      --ly-shell-min: 100dvh;
+      --ly-scroll-max: min(70dvh, 50rem);
+    }
+  }
+}
+
+@layer ly.reset {
+  :where(.ly-root),
+  :where(.ly-root *) {
+    box-sizing: border-box;
+  }
+
+  :where(.ly-root) {
+    margin: 0;
+  }
+
+  :where(.ly-root img),
+  :where(.ly-root svg),
+  :where(.ly-root video),
+  :where(.ly-root canvas),
+  :where(.ly-root iframe) {
+    max-inline-size: 100%;
+  }
+}
+
+@layer ly.tokens {
+  @media (max-height: 44rem) {
+    :where(.ly-root) {
+      --ly-gap: min(var(--ly-profile-gap), var(--ly-space-4));
+      --ly-grid-gap: var(--ly-gap);
+      --ly-stack-gap: min(var(--ly-space-4), 3vh);
+      --ly-cluster-gap: min(var(--ly-space-3), 2vh);
+      --ly-section-padding-block: clamp(1.5rem, 6vh, 3rem);
+      --ly-header-height: 3.5rem;
+      --ly-scroll-max: min(62vh, 34rem);
+    }
+
+    @supports (height: 100dvh) {
+      :where(.ly-root) {
+        --ly-stack-gap: min(var(--ly-space-4), 3dvh);
+        --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
+        --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+        --ly-scroll-max: min(62dvh, 34rem);
+      }
+    }
+  }
+
+  @media (max-height: 30rem) {
+    :where(.ly-root) {
+      --ly-cover-min: auto;
+      --ly-shell-min: auto;
+      --ly-sticky-position: static;
+      --ly-section-padding-block: var(--ly-space-5);
+      --ly-scroll-max: max(12rem, calc(100vh - 8rem));
+    }
+
+    @supports (height: 100dvh) {
+      :where(.ly-root) {
+        --ly-scroll-max: max(12rem, calc(100dvh - 8rem));
+      }
+    }
+  }
+}

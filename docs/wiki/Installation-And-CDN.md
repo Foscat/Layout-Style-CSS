@@ -1,47 +1,51 @@
 # Installation And CDN
 
-Layout Style CSS 2.0 is dependency-free and has no peer dependency contract. Node.js 20 or newer is required only for package development and verification.
+## Requirements
 
-## npm
+- Node.js 20 or newer for development
+- Evergreen Chromium, Firefox, or WebKit
+- No runtime or peer dependencies
+
+## Package
 
 ```bash
-npm install layout-style-css@2.1.1
+npm install layout-style-css@3.0.0
 ```
-
-## Focused Exports
-
-| Import | Purpose |
-| --- | --- |
-| `layout-style-css` | Full v2 core and all personalities. |
-| `layout-style-css/min.css` | Minified full bundle. |
-| `layout-style-css/core.css` | Wrappers, primitives, recipes, and utilities. |
-| `layout-style-css/wrappers.css` | Wrapper tokens and containment. |
-| `layout-style-css/primitives.css` | Composition primitives. |
-| `layout-style-css/recipes.css` | Seven recipe roots and named areas. |
-| `layout-style-css/utilities.css` | Structural utility layer. |
-| `layout-style-css/personalities.css` | All personalities. |
-| `layout-style-css/personalities/minimal-saas.css` | One personality; replace the name as needed. |
-| `layout-style-css/integrations/ui-style-kit.css` | Import-free structural UI bridge. |
-| `layout-style-css/legacy.css` | Full v2 bundle with v1 aliases. |
-
-The old `all-with-ui-kit*`, `all.css`, `base.css`, `bridge.css`, and root personality exports do not exist in v2.
-
-## Import Modes
-
-Standalone:
 
 ```js
 import "layout-style-css";
 ```
 
-Layout plus UI Style Kit:
+The root import is the zero-configuration full bundle. Focused exports are:
 
-```js
-import "ui-style-kit-css/visual.css";
-import "layout-style-css";
+- `layout-style-css/min.css`
+- `layout-style-css/core.css`
+- `layout-style-css/foundation.css`
+- `layout-style-css/wrappers.css`
+- `layout-style-css/primitives.css`
+- `layout-style-css/recipes.css`
+- `layout-style-css/utilities.css`
+- `layout-style-css/personalities.css`
+- `layout-style-css/personalities/minimal-saas.css` and the other fifteen profile names
+- `layout-style-css/package.json`
+
+`core.css` contains Foundation, Wrappers, Primitives, Recipes, and Utilities. The default bundle adds all personality profiles.
+
+## CDN
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.0/dist/layout-style-css.min.css">
 ```
 
-All three libraries, in required order:
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.0/dist/layout-style-css.min.css">
+```
+
+The CDN paths include `/dist/` because CDN clients address files in the published tarball, while package import maps use the public exports.
+
+## Ecosystem Order
+
+Layout has no companion imports. When all three libraries are installed, keep ownership explicit:
 
 ```js
 import "ui-style-kit-css/visual.css";
@@ -50,23 +54,22 @@ import "interactive-surface-css/state-core.css";
 import "layout-style-css";
 ```
 
-The first import block is deprecated compatibility for legacy UI-prefixed structural aliases. Canonical 2.1 imports use the released `ui-style-kit-css@2.1.0` visual CSS, `ui-style-kit-css/interactive-surface-theme.css`, released `interactive-surface-css@1.5.0` state core, and Layout core.
+Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interaction styling.
 
-## CDN
+## Cascade Layers
 
-Layout only:
+The module order is:
 
-```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@2.1.1/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@2.1.1/dist/layout-style-css.min.css">
-```
+1. `ly.reset`
+2. `ly.tokens`
+3. `ly.wrappers`
+4. `ly.primitives`
+5. `ly.recipes`
+6. `ly.utilities`
+7. `ly.personalities`
 
-For optional companions, preserve the same order as the package imports: UI Style Kit visual CSS, UI Style Kit `interactive-surface-theme.css`, Interactive Surface 1.5.0 `state-core.css`, then Layout core. Load `layout-style-css/integrations/ui-style-kit.css` only for deprecated structural aliases.
+Application styles can override public custom properties without reordering the package modules.
 
-## Browser Baseline
+## Clean-Break Note
 
-Current evergreen Chromium, Firefox, and WebKit are supported. Core container-driven enhancements activate at `48rem` and `64rem`; personalities may use personality-specific thresholds. Unsupported container-query environments retain the mobile source-order fallback.
-
-## Source Ownership
-
-`styles/` contains authored CSS. `dist/` is generated. Consumers should use package exports or CDN dist files, never internal source paths.
+v3 does not export a compatibility bundle, legacy aliases, the deprecated structural bridge, extensionless aliases, or responsive/order utility families. See [Migrating To 3.0](Migrating-To-3.0.md).

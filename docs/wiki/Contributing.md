@@ -27,7 +27,9 @@ Use `npm run test:demo:all` for rendered layout changes and `npm run release:ver
 - Prefix public classes with `ly-`.
 - Keep the mobile DOM, reading, and focus order authoritative.
 - Use named areas in built-in recipes; never use `order` there.
-- Test nested containers below and above `48rem` and `64rem`.
+- Test nested containers one rem below and above each recipe threshold: `42rem`, `44rem`, `48rem`, `52rem`, and `72rem`.
+- Test viewport heights one rem below and above `30rem` and `44rem`.
+- Keep personality files free of `@container`, viewport, and orientation queries.
 - Use `minmax(0, 1fr)` or guarded floors for tracks that receive application content.
 - Do not add colors, typography, borders, shadows, component paint, focus styles, or native control styles.
 
