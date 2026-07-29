@@ -127,8 +127,6 @@ const ALLOWLISTS = Object.freeze({
     "49rem",
     "51rem",
     "53rem",
-    "63rem",
-    "65rem",
     "71rem",
     "73rem",
     "80rem"
@@ -169,8 +167,6 @@ const CONTAINER_WIDTHS = Object.freeze({
   "49rem": "49rem",
   "51rem": "51rem",
   "53rem": "53rem",
-  "63rem": "63rem",
-  "65rem": "65rem",
   "71rem": "71rem",
   "73rem": "73rem",
   "80rem": "80rem"

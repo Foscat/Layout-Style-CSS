@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -83,6 +84,14 @@ const expectedPublishedFiles = [
   "dist/personalities.css",
   "dist/personalities/*.css"
 ];
+const flattenedSourceFiles = [
+  "foundation.css",
+  "wrappers.css",
+  "primitives.css",
+  "recipes.css",
+  "utilities.css",
+  ...personalityNames.map((name) => `personalities/${name}.css`)
+];
 
 function read(path) {
   return readFileSync(path, "utf8").replace(/\r\n/g, "\n");
@@ -96,6 +105,15 @@ function declarationProperties(css) {
   return [...css.matchAll(/(?:^|[;{])\s*([a-z-]+)\s*:/gim)].map((match) => match[1]);
 }
 
+function minifyCss(css) {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s*([{}:;,>])\s*/g, "$1")
+    .replace(/;}/g, "}")
+    .trim();
+}
+
 assert.equal(packageJson.version, "3.0.0", "The v3 branch must expose version 3.0.0");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
@@ -106,6 +124,39 @@ assert.deepEqual(
 );
 assert.equal(packageJson.dependencies, undefined, "Runtime dependencies are not allowed");
 assert.equal(packageJson.peerDependencies, undefined, "Peer dependencies are not allowed");
+
+const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
+const packResult = spawnSync(
+  npmExecutable,
+  ["pack", "--dry-run", "--json", "--ignore-scripts"],
+  {
+    cwd: root,
+    encoding: "utf8",
+    shell: process.platform === "win32"
+  }
+);
+assert.equal(packResult.status, 0, packResult.stderr || packResult.stdout);
+const [packReport] = JSON.parse(packResult.stdout);
+const expectedTarballFiles = [
+  "LICENSE",
+  "README.md",
+  "package.json",
+  "dist/layout-style-css.css",
+  "dist/layout-style-css.min.css",
+  "dist/core.css",
+  "dist/foundation.css",
+  "dist/wrappers.css",
+  "dist/primitives.css",
+  "dist/recipes.css",
+  "dist/utilities.css",
+  "dist/personalities.css",
+  ...personalityNames.map((name) => `dist/personalities/${name}.css`)
+].sort();
+assert.deepEqual(
+  packReport.files.map(({ path }) => path).sort(),
+  expectedTarballFiles,
+  "The actual npm tarball must contain exactly the documented v3 package surface."
+);
 
 for (const file of focusedFiles) {
   const sourcePath = join(styles, file);
@@ -196,9 +247,11 @@ assert(
   "Every wrapper must establish the shared responsive scope"
 );
 assert(
-  wrappers.includes("clamp(1rem, 3vw, 3rem)") &&
-    wrappers.includes("clamp(1rem, 3cqi, 3rem)"),
-  "Wrapper gutters must provide a viewport fallback before container-relative enhancement"
+  /--ly-wrapper-fluid-gutter:\s*clamp\(1rem,\s*3vw,\s*3rem\)/.test(wrappers) &&
+    /@supports\s*\(width:\s*1cqi\)[\s\S]*--ly-wrapper-fluid-gutter:\s*clamp\(1rem,\s*3cqi,\s*3rem\)/.test(
+      wrappers
+    ),
+  "Wrapper gutters must enhance the viewport fallback only when cqi is supported"
 );
 assert(
   /\.ly-wrapper--breakout\s*\{[^}]*--ly-wrapper-max:\s*100%/s.test(wrappers),
@@ -227,6 +280,20 @@ for (const primitive of [
 }
 assert(primitives.includes("100dvh"), "Viewport-bound primitives must use dynamic viewport units");
 assert(!primitives.includes("@container"), "Intrinsic primitives must not depend on fixed width tiers");
+assert(
+  /--ly-cover-min:\s*100vh/.test(foundation) &&
+    /--ly-shell-min:\s*100vh/.test(foundation) &&
+    /--ly-scroll-max:\s*min\(70vh,\s*50rem\)/.test(foundation) &&
+    /@supports\s*\(height:\s*100dvh\)[\s\S]*--ly-cover-min:\s*100dvh[\s\S]*--ly-shell-min:\s*100dvh/.test(
+      foundation
+    ),
+  "Dynamic viewport tokens must enhance valid vh defaults through feature detection"
+);
+assert(
+  /--ly-split-primary:\s*1fr/.test(foundation) &&
+    /--ly-split-secondary:\s*1fr/.test(foundation),
+  "Every nested layout root must reset optional personality split ratios"
+);
 
 for (const recipe of recipeNames) {
   assert(
@@ -245,6 +312,12 @@ assert(
   recipes.includes(':not([data-ly-responsive="manual"])'),
   "Automatic topology rules must exclude manual recipes"
 );
+assert(
+  /\[data-ly-recipe="gallery"\][\s\S]*\[data-ly-recipe="card-grid"\][\s\S]*\[data-ly-responsive="manual"\][\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(
+    recipes
+  ),
+  "Manual gallery and card-grid recipes must retain the single-column fallback"
+);
 for (const threshold of ["42rem", "44rem", "48rem", "52rem", "72rem"]) {
   assert(recipes.includes(`@container ly-scope (min-width: ${threshold})`), `Missing ${threshold} recipe tier`);
 }
@@ -257,6 +330,12 @@ assert(!/\bly-(?:md|lg)-/.test(utilities), "Fixed responsive utility families mu
 assert(!/\bly-order-/.test(utilities), "Visual order utilities must be removed");
 assert(!utilities.includes(".ly-bleed"), "The scrollbar-unsafe viewport bleed utility must be removed");
 assert(!utilities.includes("100vw"), "Utilities must not use scrollbar-unsafe viewport widths");
+for (const gap of ["0", "2", "4", "6", "8"]) {
+  const rule = utilities.match(new RegExp(`\\.ly-gap-${gap}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+  for (const token of ["--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap"]) {
+    assert(rule.includes(`${token}:`), `.ly-gap-${gap} must set ${token}.`);
+  }
+}
 assert(!/(?:^|[;{}\n\r])\s*order\s*:/.test(authoredCss), "Layout source must never set visual order");
 
 const forbiddenPaintProperties = new Set([
@@ -304,6 +383,25 @@ for (const name of personalityNames) {
 
 const fullBundle = read(join(dist, "layout-style-css.css"));
 const minBundle = read(join(dist, "layout-style-css.min.css"));
+const expectedFlattenedBundle = `${[
+  layerPrelude,
+  "/* layout-style-css v3 bundle. Generated from focused styles/ modules. */",
+  ...flattenedSourceFiles.map((file) => {
+    const css = readStyle(file);
+    assert(css.startsWith(layerPrelude), `${file} must begin with the v3 layer prelude`);
+    return `/* ${file} */\n${css.slice(layerPrelude.length).trim()}`;
+  })
+].join("\n\n")}\n`;
+assert.equal(
+  fullBundle,
+  expectedFlattenedBundle,
+  "The flattened distribution bundle must be reconstructed exactly from authored modules."
+);
+assert.equal(
+  minBundle,
+  `${minifyCss(expectedFlattenedBundle)}\n`,
+  "The minified distribution bundle must match the current flattened source exactly."
+);
 assert(fullBundle.startsWith(layerPrelude), "Default bundle must begin with the v3 layer prelude");
 assert(!fullBundle.includes("ly.legacy") && !fullBundle.includes("ly.integrations"), "Removed layers leaked");
 for (const recipe of recipeNames) {

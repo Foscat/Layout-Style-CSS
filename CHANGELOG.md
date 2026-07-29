@@ -22,11 +22,15 @@ All notable changes to `layout-style-css` are documented here. This project foll
 - Replaced breakpoint-heavy primitives with intrinsic Grid and Flexbox behavior and standardized shrink safety.
 - Moved Split Hero, List Detail, Docs, App Shell, and Dashboard topology to the shared `42rem`, `44rem`, `48rem`, `52rem`, and `72rem` query tiers.
 - Converted all sixteen personalities into breakpoint-free token/topology profiles with at least two distinguishing spatial characteristics.
+- Made dynamic viewport and container-relative tokens feature-detected enhancements over valid `vh` and `vw` fallbacks.
+- Made manual Gallery and Card Grid recipes single-column, isolated nested personality split ratios, and aligned gap utilities across Grid, Stack, and Cluster.
 - Restricted deliberate horizontal scrolling to Reel and deliberate bounded vertical scrolling to Scroll.
+- Corrected case-sensitive GitHub Pages metadata and versioned local demo assets to prevent stale v2/v3 asset combinations.
 
 ### Tests
 
 - Added package/export/tarball, canonical-selector, removed-surface, generated-parity, ownership, and personality-engine contracts.
+- Added exact flattened/minified parity, actual tarball contents, complete v2 selector migration, nested-profile isolation, and fallback-enhancement contracts.
 - Added threshold-edge, six-device, short-height, root-direct, nearest-wrapper, manual-query, DOM/focus-order, overflow, wrapper, recipe, and all-personality rendered matrices.
 - Made Chromium, Firefox, and WebKit the complete release gate and retained the connected-browser interaction spot check.
 

@@ -42,9 +42,9 @@
     --ly-section-padding-block: clamp(3rem, 7vh, 6rem);
     --ly-header-height: 4.5rem;
     --ly-sticky-position: sticky;
-    --ly-cover-min: 100dvh;
-    --ly-shell-min: 100dvh;
-    --ly-scroll-max: min(70dvh, 50rem);
+    --ly-cover-min: 100vh;
+    --ly-shell-min: 100vh;
+    --ly-scroll-max: min(70vh, 50rem);
 
     --ly-switcher-threshold: 42rem;
     --ly-sidebar-size: 18rem;
@@ -59,6 +59,8 @@
     --ly-reel-item-min: 16rem;
     --ly-reel-item-max: 28rem;
     --ly-frame-ratio: 16 / 9;
+    --ly-split-primary: 1fr;
+    --ly-split-secondary: 1fr;
 
     --ly-recipe-rail: 18rem;
     --ly-recipe-aside: 22rem;
@@ -125,6 +127,15 @@
     min-inline-size: 0;
     min-block-size: 0;
   }
+
+  /* Enhance viewport-bound tokens only when dynamic viewport units parse. */
+  @supports (height: 100dvh) {
+    :where(.ly-root) {
+      --ly-cover-min: 100dvh;
+      --ly-shell-min: 100dvh;
+      --ly-scroll-max: min(70dvh, 50rem);
+    }
+  }
 }
 
 @layer ly.reset {
@@ -151,11 +162,20 @@
     :where(.ly-root) {
       --ly-gap: min(var(--ly-profile-gap), var(--ly-space-4));
       --ly-grid-gap: var(--ly-gap);
-      --ly-stack-gap: min(var(--ly-space-4), 3dvh);
-      --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
-      --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+      --ly-stack-gap: min(var(--ly-space-4), 3vh);
+      --ly-cluster-gap: min(var(--ly-space-3), 2vh);
+      --ly-section-padding-block: clamp(1.5rem, 6vh, 3rem);
       --ly-header-height: 3.5rem;
-      --ly-scroll-max: min(62dvh, 34rem);
+      --ly-scroll-max: min(62vh, 34rem);
+    }
+
+    @supports (height: 100dvh) {
+      :where(.ly-root) {
+        --ly-stack-gap: min(var(--ly-space-4), 3dvh);
+        --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
+        --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+        --ly-scroll-max: min(62dvh, 34rem);
+      }
     }
   }
 
@@ -165,7 +185,13 @@
       --ly-shell-min: auto;
       --ly-sticky-position: static;
       --ly-section-padding-block: var(--ly-space-5);
-      --ly-scroll-max: max(12rem, calc(100dvh - 8rem));
+      --ly-scroll-max: max(12rem, calc(100vh - 8rem));
+    }
+
+    @supports (height: 100dvh) {
+      :where(.ly-root) {
+        --ly-scroll-max: max(12rem, calc(100dvh - 8rem));
+      }
     }
   }
 }
@@ -177,7 +203,6 @@
   .ly-wrapper {
     --ly-wrapper-max: var(--ly-personality-wrapper-max, var(--ly-wrapper-content));
     --ly-wrapper-fluid-gutter: clamp(1rem, 3vw, 3rem);
-    --ly-wrapper-fluid-gutter: clamp(1rem, 3cqi, 3rem);
     --ly-wrapper-local-gutter: max(
       var(--ly-wrapper-fluid-gutter),
       var(--ly-safe-area-inline)
@@ -189,6 +214,13 @@
     max-inline-size: 100%;
     margin-inline: auto;
     padding-inline: var(--ly-wrapper-local-gutter);
+  }
+
+  /* Container-relative gutters enhance the universally valid viewport fallback. */
+  @supports (width: 1cqi) {
+    .ly-wrapper {
+      --ly-wrapper-fluid-gutter: clamp(1rem, 3cqi, 3rem);
+    }
   }
 
   .ly-wrapper--compact {
@@ -526,6 +558,13 @@
   }
 
   :where(
+    [data-ly-recipe="gallery"],
+    [data-ly-recipe="card-grid"]
+  )[data-ly-responsive="manual"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where(
     [data-ly-recipe="app-shell"],
     [data-ly-recipe="dashboard"],
     [data-ly-recipe="docs"],
@@ -645,11 +684,40 @@
   .ly-span-4 { grid-column: span 4; }
   .ly-span-full { grid-column: 1 / -1; }
 
-  .ly-gap-0 { --ly-gap: var(--ly-space-0); --ly-grid-gap: var(--ly-space-0); }
-  .ly-gap-2 { --ly-gap: var(--ly-space-2); --ly-grid-gap: var(--ly-space-2); }
-  .ly-gap-4 { --ly-gap: var(--ly-space-4); --ly-grid-gap: var(--ly-space-4); }
-  .ly-gap-6 { --ly-gap: var(--ly-space-6); --ly-grid-gap: var(--ly-space-6); }
-  .ly-gap-8 { --ly-gap: var(--ly-space-8); --ly-grid-gap: var(--ly-space-8); }
+  .ly-gap-0 {
+    --ly-gap: var(--ly-space-0);
+    --ly-grid-gap: var(--ly-space-0);
+    --ly-stack-gap: var(--ly-space-0);
+    --ly-cluster-gap: var(--ly-space-0);
+  }
+
+  .ly-gap-2 {
+    --ly-gap: var(--ly-space-2);
+    --ly-grid-gap: var(--ly-space-2);
+    --ly-stack-gap: var(--ly-space-2);
+    --ly-cluster-gap: var(--ly-space-2);
+  }
+
+  .ly-gap-4 {
+    --ly-gap: var(--ly-space-4);
+    --ly-grid-gap: var(--ly-space-4);
+    --ly-stack-gap: var(--ly-space-4);
+    --ly-cluster-gap: var(--ly-space-4);
+  }
+
+  .ly-gap-6 {
+    --ly-gap: var(--ly-space-6);
+    --ly-grid-gap: var(--ly-space-6);
+    --ly-stack-gap: var(--ly-space-6);
+    --ly-cluster-gap: var(--ly-space-6);
+  }
+
+  .ly-gap-8 {
+    --ly-gap: var(--ly-space-8);
+    --ly-grid-gap: var(--ly-space-8);
+    --ly-stack-gap: var(--ly-space-8);
+    --ly-cluster-gap: var(--ly-space-8);
+  }
 
   .ly-pad-0 { padding: var(--ly-space-0); }
   .ly-pad-2 { padding: var(--ly-space-2); }

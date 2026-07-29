@@ -85,6 +85,13 @@
   }
 
   :where(
+    [data-ly-recipe="gallery"],
+    [data-ly-recipe="card-grid"]
+  )[data-ly-responsive="manual"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where(
     [data-ly-recipe="app-shell"],
     [data-ly-recipe="dashboard"],
     [data-ly-recipe="docs"],

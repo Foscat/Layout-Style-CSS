@@ -150,6 +150,21 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="heightSelect"/);
   assert.match(demoHtml, /id="responsiveSelect"/);
   assert.match(demoHtml, /id="topologyReadout"/);
+  assert.match(
+    demoHtml,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.0"/,
+    "The demo should cache-bust its v3 layout bundle."
+  );
+  assert.match(
+    demoHtml,
+    /href="\.\/demo\.css\?v=3\.0\.0"/,
+    "The demo should cache-bust its v3 presentation styles."
+  );
+  assert.match(
+    demoHtml,
+    /src="\.\/demo\.js\?v=3\.0\.0"/,
+    "The demo should cache-bust its v3 controller."
+  );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
   assert.doesNotMatch(demoHtml, /class="ly-(?:app-shell|dashboard|docs|list-detail|split-hero|gallery|card-grid)/);
 
@@ -351,6 +366,12 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
     assert.equal(await page.locator(`#${id}`).count(), 1, `Missing #${id}.`);
   }
 
+  assert.deepEqual(
+    await page.locator("#containerSelect option").evaluateAll((options) => options.map(({ value }) => value)),
+    ["auto", "20rem", "32rem", "40rem", "41rem", "43rem", "45rem", "47rem", "49rem", "51rem", "53rem", "71rem", "73rem", "80rem"],
+    "Preview widths should cover the v3 topology edges without retired v2 breakpoints."
+  );
+
   await page.goto(
     `${baseUrl}?device=custom&container=49rem&height=31rem&responsive=manual&wrapper=wide&recipe=docs&personality=bauhaus&ecosystem=layout-only`,
     { waitUntil: "domcontentloaded" }
@@ -408,7 +429,17 @@ const verifyManualAndNearestContainer = async (page, baseUrl) => {
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-  assert.equal((await layoutSnapshot(page)).trackCount, 1, "Manual mode did not retain the stack.");
+  for (const recipe of recipes) {
+    await setControl(page, "recipeSelect", recipe);
+    assert.equal(
+      (await layoutSnapshot(page)).trackCount,
+      1,
+      `${recipe} manual mode did not retain the stack.`
+    );
+    await assertTopologyReadout(page, "Stacked fallback (manual)");
+  }
+
+  await setControl(page, "recipeSelect", "docs");
   await page.addStyleTag({
     content: `
       @container ly-scope (min-width: 56rem) {
@@ -431,7 +462,7 @@ const verifyManualAndNearestContainer = async (page, baseUrl) => {
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
   await setControl(page, "responsiveSelect", "auto");
-  await setControl(page, "recipeSelect", "split-hero");
+  await setControl(page, "wrapperSelect", "full");
   await setCustomAllocation(page, "73rem");
   await page.evaluate(() => {
     const root = document.querySelector(".demo-preview-root");
@@ -440,23 +471,33 @@ const verifyManualAndNearestContainer = async (page, baseUrl) => {
     root.append(recipe);
     wrapper.remove();
   });
-  assert.match(
-    (await layoutSnapshot(page)).areas,
-    /"content media"/,
-    "A recipe used directly in .ly-root did not enhance."
-  );
+  const directTrackCounts = {};
+  for (const recipe of recipes) {
+    await setControl(page, "recipeSelect", recipe);
+    const snapshot = await layoutSnapshot(page);
+    directTrackCounts[recipe] = snapshot.trackCount;
+    assert(snapshot.trackCount > 1, `${recipe} did not respond directly inside .ly-root.`);
+    assertNoHorizontalFailures(snapshot, `${recipe} directly inside .ly-root`);
+  }
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
   await setControl(page, "responsiveSelect", "auto");
-  await setControl(page, "recipeSelect", "split-hero");
   await setControl(page, "wrapperSelect", "compact");
   await setCustomAllocation(page, "73rem");
-  assert.equal(
-    (await layoutSnapshot(page)).trackCount,
-    1,
-    "A nested recipe ignored the nearest compact wrapper."
-  );
+  for (const recipe of recipes) {
+    await setControl(page, "recipeSelect", recipe);
+    const snapshot = await layoutSnapshot(page);
+    if (["gallery", "card-grid"].includes(recipe)) {
+      assert(
+        snapshot.trackCount < directTrackCounts[recipe],
+        `${recipe} intrinsic tracks ignored the nearest compact wrapper.`
+      );
+    } else {
+      assert.equal(snapshot.trackCount, 1, `${recipe} ignored the nearest compact wrapper.`);
+    }
+    assertNoHorizontalFailures(snapshot, `${recipe} inside the nearest compact wrapper`);
+  }
 };
 
 const verifyHeightBehavior = async (page, baseUrl) => {
@@ -492,6 +533,37 @@ const verifyHeightBehavior = async (page, baseUrl) => {
     assert.equal(result.shell, sample.shell, `Unexpected shell behavior at ${sample.height}px.`);
     assert.equal(result.position, sample.position, `Unexpected sticky behavior at ${sample.height}px.`);
     assert.equal(result.tier, sample.tier, `Unexpected demo height tier at ${sample.height}px.`);
+  }
+
+  await page.setViewportSize({ width: 800, height: 464 });
+  for (const recipe of recipes) {
+    await setControl(page, "recipeSelect", recipe);
+    const reachability = await page.evaluate(() => {
+      const regions = [...document.querySelectorAll("[data-ly-area]")];
+      return {
+        stickyPositions: regions
+          .map((region) => getComputedStyle(region).position)
+          .filter((position) => ["fixed", "sticky"].includes(position)),
+        furthestRegionEnd: Math.max(
+          0,
+          ...regions.map(
+            (region) => region.getBoundingClientRect().bottom + window.scrollY
+          )
+        ),
+        documentHeight: document.documentElement.scrollHeight,
+        shell: getComputedStyle(document.body).getPropertyValue("--ly-shell-min").trim()
+      };
+    });
+    assert.deepEqual(
+      reachability.stickyPositions,
+      [],
+      `${recipe} retained a sticky or fixed region in a shallow viewport.`
+    );
+    assert(
+      reachability.furthestRegionEnd <= reachability.documentHeight + 2,
+      `${recipe} placed required content outside normal document flow.`
+    );
+    assert.equal(reachability.shell, "auto", `${recipe} retained a forced shell height.`);
   }
 };
 
@@ -534,6 +606,7 @@ const verifyPersonalityMatrix = async (page, baseUrl) => {
         { width: "32rem", height: "auto" },
         { width: "53rem", height: "auto" },
         { width: "73rem", height: "auto" },
+        { width: "80rem", height: "auto" },
         { width: "73rem", height: "31rem" }
       ];
 
@@ -604,6 +677,59 @@ const verifyBreakoutGeometry = async (page, baseUrl) => {
     widths.feature + 2 < widths.full,
     `Full lane ${widths.full}px did not exceed feature lane ${widths.feature}px.`
   );
+};
+
+const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full&personality=minimal-saas`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const result = await page.evaluate(() => {
+    const innerRoot = document.createElement("section");
+    innerRoot.className = "ly-root";
+    innerRoot.dataset.lyLayout = "bauhaus";
+    innerRoot.style.inlineSize = "50rem";
+    innerRoot.style.maxInlineSize = "100%";
+
+    const splitHero = document.createElement("section");
+    splitHero.dataset.lyRecipe = "split-hero";
+    for (const area of ["content", "media", "actions"]) {
+      const region = document.createElement("div");
+      region.dataset.lyArea = area;
+      region.textContent = area;
+      splitHero.append(region);
+    }
+
+    const stack = document.createElement("div");
+    stack.className = "ly-stack ly-gap-0";
+    stack.append(document.createElement("span"), document.createElement("span"));
+
+    const cluster = document.createElement("div");
+    cluster.className = "ly-cluster ly-gap-8";
+    cluster.append(document.createElement("span"), document.createElement("span"));
+
+    innerRoot.append(splitHero, stack, cluster);
+    document.querySelector("#layoutLab").append(innerRoot);
+
+    const splitStyle = getComputedStyle(splitHero);
+    const contentWidth = splitHero.children[0].getBoundingClientRect().width;
+    const mediaWidth = splitHero.children[1].getBoundingClientRect().width;
+    return {
+      primary: splitStyle.getPropertyValue("--ly-split-primary").trim(),
+      secondary: splitStyle.getPropertyValue("--ly-split-secondary").trim(),
+      splitDifference: Math.abs(contentWidth - mediaWidth),
+      stackGap: getComputedStyle(stack).rowGap,
+      clusterGap: getComputedStyle(cluster).columnGap
+    };
+  });
+
+  assert.equal(result.primary, "1fr", "The outer personality leaked its primary split ratio.");
+  assert.equal(result.secondary, "1fr", "The outer personality leaked its secondary split ratio.");
+  assert(result.splitDifference <= 2, "A nested neutral split did not render equal tracks.");
+  assert.equal(result.stackGap, "0px", "The zero-gap utility did not affect a stack.");
+  assert.equal(result.clusterGap, "64px", "The gap utility did not affect a cluster.");
 };
 
 const verifyPrimitiveOverflow = async (page, baseUrl) => {
@@ -740,6 +866,7 @@ try {
   await verifyPersonalityMatrix(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);
+  await verifyProfileAndUtilityIsolation(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);
 

@@ -39,9 +39,9 @@
     --ly-section-padding-block: clamp(3rem, 7vh, 6rem);
     --ly-header-height: 4.5rem;
     --ly-sticky-position: sticky;
-    --ly-cover-min: 100dvh;
-    --ly-shell-min: 100dvh;
-    --ly-scroll-max: min(70dvh, 50rem);
+    --ly-cover-min: 100vh;
+    --ly-shell-min: 100vh;
+    --ly-scroll-max: min(70vh, 50rem);
 
     --ly-switcher-threshold: 42rem;
     --ly-sidebar-size: 18rem;
@@ -56,6 +56,8 @@
     --ly-reel-item-min: 16rem;
     --ly-reel-item-max: 28rem;
     --ly-frame-ratio: 16 / 9;
+    --ly-split-primary: 1fr;
+    --ly-split-secondary: 1fr;
 
     --ly-recipe-rail: 18rem;
     --ly-recipe-aside: 22rem;
@@ -122,6 +124,15 @@
     min-inline-size: 0;
     min-block-size: 0;
   }
+
+  /* Enhance viewport-bound tokens only when dynamic viewport units parse. */
+  @supports (height: 100dvh) {
+    :where(.ly-root) {
+      --ly-cover-min: 100dvh;
+      --ly-shell-min: 100dvh;
+      --ly-scroll-max: min(70dvh, 50rem);
+    }
+  }
 }
 
 @layer ly.reset {
@@ -148,11 +159,20 @@
     :where(.ly-root) {
       --ly-gap: min(var(--ly-profile-gap), var(--ly-space-4));
       --ly-grid-gap: var(--ly-gap);
-      --ly-stack-gap: min(var(--ly-space-4), 3dvh);
-      --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
-      --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+      --ly-stack-gap: min(var(--ly-space-4), 3vh);
+      --ly-cluster-gap: min(var(--ly-space-3), 2vh);
+      --ly-section-padding-block: clamp(1.5rem, 6vh, 3rem);
       --ly-header-height: 3.5rem;
-      --ly-scroll-max: min(62dvh, 34rem);
+      --ly-scroll-max: min(62vh, 34rem);
+    }
+
+    @supports (height: 100dvh) {
+      :where(.ly-root) {
+        --ly-stack-gap: min(var(--ly-space-4), 3dvh);
+        --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
+        --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+        --ly-scroll-max: min(62dvh, 34rem);
+      }
     }
   }
 
@@ -162,7 +182,13 @@
       --ly-shell-min: auto;
       --ly-sticky-position: static;
       --ly-section-padding-block: var(--ly-space-5);
-      --ly-scroll-max: max(12rem, calc(100dvh - 8rem));
+      --ly-scroll-max: max(12rem, calc(100vh - 8rem));
+    }
+
+    @supports (height: 100dvh) {
+      :where(.ly-root) {
+        --ly-scroll-max: max(12rem, calc(100dvh - 8rem));
+      }
     }
   }
 }

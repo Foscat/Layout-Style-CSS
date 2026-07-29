@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://foscat.github.io/layout-style-css/sitemap.xml
+Sitemap: https://foscat.github.io/Layout-Style-CSS/sitemap.xml

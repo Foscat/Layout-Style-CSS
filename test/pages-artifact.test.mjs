@@ -9,6 +9,7 @@ const outputDir = join(root, "output", "github-pages");
 const sourceDemoPath = join(root, "demo", "index.html");
 const pagesWorkflowPath = join(root, ".github", "workflows", "pages.yml");
 const pagesBuildPath = join(root, "scripts", "build-pages.mjs");
+const expectedPagesBaseUrl = "https://foscat.github.io/Layout-Style-CSS/";
 
 rmSync(outputDir, { recursive: true, force: true });
 
@@ -56,9 +57,14 @@ const pagesBuild = readFileSync(pagesBuildPath, "utf8");
 const canonicalHrefMatch = sourceDemo.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
 
 assert(canonicalHrefMatch, "Source demo should declare a canonical URL");
+assert.equal(
+  canonicalHrefMatch[1],
+  expectedPagesBaseUrl,
+  "The canonical URL must use the repository's case-sensitive GitHub Pages slug."
+);
 
 assert(
-  index.includes('href="./dist/layout-style-css.css"'),
+  index.includes('href="./dist/layout-style-css.css?v=3.0.0"'),
   "Pages root demo should load the default v3 bundle from ./dist"
 );
 assert(
@@ -86,6 +92,22 @@ assert(
 assert(
   manifest.description.includes("Layout Style CSS v3"),
   "Pages manifest should describe the v3 intrinsic responsive demo"
+);
+for (const expectedUrl of [
+  expectedPagesBaseUrl,
+  `${expectedPagesBaseUrl}assets/social-card.png`
+]) {
+  assert(index.includes(expectedUrl), `Pages metadata must include reachable URL ${expectedUrl}`);
+}
+assert(
+  readFileSync(join(outputDir, "robots.txt"), "utf8").includes(
+    `${expectedPagesBaseUrl}sitemap.xml`
+  ),
+  "robots.txt must point to the case-sensitive Pages sitemap URL."
+);
+assert(
+  sitemap.includes(`<loc>${expectedPagesBaseUrl}</loc>`),
+  "The sitemap must use the case-sensitive Pages canonical URL."
 );
 assert(sitemap.includes("<lastmod>2026-07-29</lastmod>"), "Pages sitemap should carry v3 metadata");
 

@@ -8,8 +8,10 @@ const normalizeLineEndings = (value) => value.replace(/\r\n?/g, "\n");
 const read = (...parts) => normalizeLineEndings(readFileSync(join(root, ...parts), "utf8"));
 const packageJson = JSON.parse(read("package.json"));
 const migrationPath = join(root, "docs", "wiki", "Migrating-To-3.0.md");
+const v2SurfacePath = join(root, "test", "fixtures", "v2-public-selectors.json");
 
 assert(existsSync(migrationPath), "The v3 package must ship a complete v2-to-v3 migration guide.");
+assert(existsSync(v2SurfacePath), "Migration coverage requires a checked-in v2 public selector fixture.");
 
 const readme = read("README.md");
 const changelog = read("CHANGELOG.md");
@@ -23,6 +25,27 @@ const demoGuide = read("docs", "wiki", "Demo-And-GitHub-Pages.md");
 const release = read("docs", "wiki", "Release-And-Publishing.md");
 const support = read("docs", "wiki", "Security-And-Support.md");
 const sidebar = read("docs", "wiki", "_Sidebar.md");
+const v2Surface = JSON.parse(read("test", "fixtures", "v2-public-selectors.json"));
+const v3Classes = new Set(
+  [...read("dist", "layout-style-css.css").matchAll(/\.ly-[a-z0-9_-]+/g)].map(
+    ([selector]) => selector
+  )
+);
+const removedV2Selectors = v2Surface.selectors.filter((selector) => !v3Classes.has(selector));
+assert.equal(v2Surface.version, "2.1.1", "The migration fixture must identify its v2 source version.");
+assert.equal(v2Surface.selectors.length, 189, "The v2 fixture must retain the full default selector surface.");
+assert.deepEqual(
+  [...new Set(v2Surface.selectors)].sort(),
+  v2Surface.selectors,
+  "The v2 selector fixture must stay unique and sorted."
+);
+assert(removedV2Selectors.length > 100, "The fixture should exercise the complete clean-break surface.");
+for (const selector of removedV2Selectors) {
+  assert(
+    migration.includes(selector),
+    `The v3 migration guide must map removed v2 selector ${selector}.`
+  );
+}
 const docsCorpus = [
   readme,
   migration,

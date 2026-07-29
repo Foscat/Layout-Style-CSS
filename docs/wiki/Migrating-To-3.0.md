@@ -90,6 +90,78 @@ The v3 utility module keeps only stable structural sizing, gap, padding, ratio, 
 
 Remove `.ly-bleed`. Its `100vw` technique could overflow documents with classic scrollbars. Use the clamped `data-ly-lane="feature"` or `data-ly-lane="full"` breakout lanes, or an application-owned technique that accounts for its actual containing block.
 
+## Complete V2 Selector Index
+
+This index compares the `2.1.1` default bundle with v3. Selectors not named below remain available with their canonical v3 meaning.
+
+### Structural Aliases
+
+Replace application-shell region classes with canonical areas:
+
+| Removed classes | v3 replacement |
+| --- | --- |
+| `.ly-app-header`, `.ly-app-sidebar`, `.ly-app-main`, `.ly-app-aside`, `.ly-app-footer` | `data-ly-area="header"`, `data-ly-area="sidebar"`, `data-ly-area="main"`, `data-ly-area="aside"`, `data-ly-area="footer"` |
+
+Replace every removed area class with its same-named attribute:
+
+- `.ly-area--header` → `data-ly-area="header"`
+- `.ly-area--nav` → `data-ly-area="nav"`
+- `.ly-area--main` → `data-ly-area="main"`
+- `.ly-area--aside` → `data-ly-area="aside"`
+- `.ly-area--footer` → `data-ly-area="footer"`
+- `.ly-area--content` → `data-ly-area="content"`
+- `.ly-area--media` → `data-ly-area="media"`
+- `.ly-area--actions` → `data-ly-area="actions"`
+- `.ly-area--primary` → `data-ly-area="primary"`
+- `.ly-area--secondary` → `data-ly-area="secondary"`
+
+`.ly-grid--auto` becomes `.ly-grid`; intrinsic `auto-fit` tracks are now the default. Replace `.ly-panes--2` and `.ly-panes--3` with `.ly-panes`, then tune `--ly-pane-min`, `--ly-pane-size`, or application CSS if an exact fixed topology is required.
+
+The removed `.ly-media__asset` and `.ly-media__content` aliases become correctly ordered children of `.ly-media`. Keep `.ly-media__actions` when its existing action sizing is useful; use application-owned hooks if asset and content children need additional semantics.
+
+### Columns And Spans
+
+The stable column utilities retained by v3 are `.ly-cols-1`, `.ly-cols-2`, `.ly-cols-3`, `.ly-cols-4`, `.ly-cols-6`, and `.ly-cols-12`. Replace the removed `.ly-cols-5`, `.ly-cols-7`, `.ly-cols-8`, `.ly-cols-9`, `.ly-cols-10`, `.ly-cols-11`, and `.ly-cols-16` with a local `--ly-grid-columns` override:
+
+```css
+.application-grid {
+  --ly-grid-columns: 8;
+}
+```
+
+All responsive column aliases are removed:
+
+- `.ly-md-cols-1`, `.ly-md-cols-2`, `.ly-md-cols-3`, `.ly-md-cols-4`, `.ly-md-cols-6`, `.ly-md-cols-8`, `.ly-md-cols-12`, `.ly-md-cols-16`
+- `.ly-lg-cols-1`, `.ly-lg-cols-2`, `.ly-lg-cols-3`, `.ly-lg-cols-4`, `.ly-lg-cols-6`, `.ly-lg-cols-8`, `.ly-lg-cols-12`, `.ly-lg-cols-16`
+
+Put a retained base utility or `--ly-grid-columns` override inside an application-owned `@container ly-scope` query when a fixed responsive column count is genuinely required.
+
+V3 retains `.ly-span-1` through `.ly-span-4` and `.ly-span-full`. Replace `.ly-span-5`, `.ly-span-6`, `.ly-span-7`, `.ly-span-8`, `.ly-span-9`, `.ly-span-10`, `.ly-span-11`, `.ly-span-12`, `.ly-span-13`, `.ly-span-14`, `.ly-span-15`, and `.ly-span-16` with application CSS such as `grid-column: span 8`.
+
+### Spacing And Ratio Utilities
+
+V3 keeps the even spacing steps. Replace `.ly-gap-1`, `.ly-gap-3`, `.ly-gap-5`, `.ly-gap-7`, and `.ly-gap-9` with the closest retained utility or set `--ly-gap`, `--ly-grid-gap`, `--ly-stack-gap`, and `--ly-cluster-gap` together in application CSS.
+
+Replace `.ly-pad-1`, `.ly-pad-3`, `.ly-pad-5`, `.ly-pad-7`, and `.ly-pad-9` with a retained even padding step or application padding. The directional `.ly-px-4`, `.ly-px-6`, `.ly-px-8`, `.ly-py-4`, `.ly-py-6`, and `.ly-py-8` aliases have no v3 utility; use logical `padding-inline` or `padding-block`.
+
+Replace `.ly-frame-2x1` with an application token override:
+
+```css
+.application-frame {
+  --ly-frame-ratio: 2 / 1;
+}
+```
+
+### Responsive Visibility And Visual Order
+
+`.ly-show-md-up` and `.ly-show-lg-up` are removed. Prefer content that remains available at every allocation; if conditional rendering is a product requirement, own it in application CSS and preserve an accessible reading experience.
+
+All visual-order selectors are removed with no v3 replacement:
+
+- `.ly-order-first`, `.ly-order-normal`, `.ly-order-last`, `.ly-order-1`, `.ly-order-2`, `.ly-order-3`, `.ly-order-4`, `.ly-order-5`, `.ly-order-6`
+- `.ly-md-order-first`, `.ly-md-order-normal`, `.ly-md-order-last`, `.ly-md-order-1`, `.ly-md-order-2`, `.ly-md-order-3`, `.ly-md-order-4`, `.ly-md-order-5`, `.ly-md-order-6`
+- `.ly-lg-order-first`, `.ly-lg-order-normal`, `.ly-lg-order-last`, `.ly-lg-order-1`, `.ly-lg-order-2`, `.ly-lg-order-3`, `.ly-lg-order-4`, `.ly-lg-order-5`, `.ly-lg-order-6`
+
 ## Vertical Responsiveness
 
 v3 adds height-aware defaults:
