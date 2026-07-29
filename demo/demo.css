@@ -460,6 +460,11 @@ body[data-ecosystem="all-three"] .demo-status {
   white-space: pre;
 }
 
+/* Copy-ready snippets inherit the dedicated code surface instead of inline-code paint. */
+.demo-code-card pre code {
+  color: inherit;
+}
+
 .demo-copy-status[data-copy-state="error"] {
   color: var(--demo-danger);
 }
