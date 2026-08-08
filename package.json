@@ -32,7 +32,7 @@
     "pages:build": "node scripts/build-pages.mjs",
     "lint": "stylelint \"styles/**/*.css\" \"demo/**/*.css\"",
     "check:demo-js": "node --check demo/demo.js",
-    "test:static": "node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
+    "test:static": "node --test test/manifest-contract.test.mjs && node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
     "test:demo:quick": "node test/demo-smoke.test.mjs --quick --browser=chromium",
     "test:demo:chromium": "node test/demo-smoke.test.mjs --browser=chromium",
     "test:demo:firefox": "node test/demo-smoke.test.mjs --browser=firefox",
@@ -69,6 +69,7 @@
     "./utilities.css": "./dist/utilities.css",
     "./personalities.css": "./dist/personalities.css",
     "./personalities/*.css": "./dist/personalities/*.css",
+    "./manifest.json": "./manifest.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -81,6 +82,7 @@
     "dist/recipes.css",
     "dist/utilities.css",
     "dist/personalities.css",
-    "dist/personalities/*.css"
+    "dist/personalities/*.css",
+    "manifest.json"
   ]
 }

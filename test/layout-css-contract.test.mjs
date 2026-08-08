@@ -70,6 +70,7 @@ const expectedExports = {
   "./utilities.css": "./dist/utilities.css",
   "./personalities.css": "./dist/personalities.css",
   "./personalities/*.css": "./dist/personalities/*.css",
+  "./manifest.json": "./manifest.json",
   "./package.json": "./package.json"
 };
 const expectedPublishedFiles = [
@@ -82,7 +83,8 @@ const expectedPublishedFiles = [
   "dist/recipes.css",
   "dist/utilities.css",
   "dist/personalities.css",
-  "dist/personalities/*.css"
+  "dist/personalities/*.css",
+  "manifest.json"
 ];
 const flattenedSourceFiles = [
   "foundation.css",
@@ -140,6 +142,7 @@ const [packReport] = JSON.parse(packResult.stdout);
 const expectedTarballFiles = [
   "LICENSE",
   "README.md",
+  "manifest.json",
   "package.json",
   "dist/layout-style-css.css",
   "dist/layout-style-css.min.css",

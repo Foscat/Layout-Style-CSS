@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "schemaPolicy": {
+    "compatibility": "additive-within-major",
+    "breakingChange": "increment-schemaVersion-before-removing-or-renaming-fields"
+  },
+  "name": "layout-style-css",
+  "version": "3.0.0",
+  "entrypoints": {
+    "default": "./dist/layout-style-css.css",
+    "minified": "./dist/layout-style-css.min.css",
+    "foundation": "./dist/foundation.css",
+    "wrappers": "./dist/wrappers.css",
+    "primitives": "./dist/primitives.css",
+    "recipes": "./dist/recipes.css",
+    "utilities": "./dist/utilities.css",
+    "personalities": "./dist/personalities.css"
+  },
+  "selectors": {
+    "stable": [".ly-root", ".ly-wrapper"],
+    "deprecated": []
+  },
+  "wrappers": ["compact", "prose", "content", "wide", "full", "breakout"],
+  "primitives": ["page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster", "center", "cover", "switcher", "sidebar", "grid", "split", "panes", "media", "reel", "frame", "scroll"],
+  "recipes": ["app-shell", "dashboard", "docs", "list-detail", "split-hero", "gallery", "card-grid"],
+  "areas": ["header", "nav", "sidebar", "main", "aside", "footer", "content", "media", "actions", "primary", "secondary"],
+  "personalities": ["minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism", "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass", "f-pattern", "z-pattern", "split-screen", "mondrian", "synthwave"],
+  "containers": {
+    "names": ["ly-scope"],
+    "type": "inline-size"
+  },
+  "thresholds": {
+    "containerMinWidths": ["42rem", "44rem", "48rem", "52rem", "72rem"],
+    "viewportMaxHeights": ["44rem", "30rem"]
+  },
+  "tokens": {
+    "geometry": ["--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-wide", "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap", "--ly-switcher-threshold", "--ly-sidebar-size", "--ly-sidebar-content-min", "--ly-grid-min", "--ly-split-min", "--ly-pane-min", "--ly-pane-size", "--ly-media-min", "--ly-media-size", "--ly-reel-item-min", "--ly-reel-item-max", "--ly-frame-ratio", "--ly-recipe-rail", "--ly-recipe-aside", "--ly-gallery-min", "--ly-card-grid-min"]
+  },
+  "companions": {
+    "ui-style-kit-css": ">=2.1.0 <3.0.0",
+    "interactive-surface-css": ">=1.5.0 <2.0.0"
+  }
+}
