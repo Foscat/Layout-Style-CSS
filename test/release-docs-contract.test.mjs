@@ -244,6 +244,11 @@ assert(
 assert(support.includes("`3.x` | Yes"), "Support table must identify the supported v3 line.");
 assert(sidebar.includes("Migrating To 3.0"), "Wiki navigation must link the v3 migration guide.");
 
+// The manifest contract rebuilds dist, so built-artifact ownership tests must not overlap it.
+assert(
+  packageJson.scripts["test:static"].includes("--test-concurrency=1"),
+  "Static contract files must run sequentially to keep generated dist reads deterministic."
+);
 assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick --browser=chromium");
 for (const browser of ["chromium", "firefox", "webkit"]) {
   assert.equal(
