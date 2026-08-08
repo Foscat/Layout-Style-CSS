@@ -74,6 +74,11 @@ const currentGuidanceCorpus = [
   ].map((file) => read("docs", "wiki", file))
 ].join("\n");
 
+assert(
+  !currentGuidanceCorpus.includes("layout-style-css/bridge.css"),
+  "Current v3 setup documentation must not require the removed bridge.css export."
+);
+
 for (const requiredText of [
   "3.0.0",
   "Node.js 20",
