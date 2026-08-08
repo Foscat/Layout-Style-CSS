@@ -67,7 +67,6 @@ const currentGuidanceCorpus = [
     "Layout-Primitives.md",
     "Layout-Recipes.md",
     "Layout-Styles.md",
-    "Migrating-To-3.0.md",
     "Release-And-Publishing.md",
     "Security-And-Support.md",
     "UI-Style-Kit-Compatibility.md"
@@ -77,6 +76,11 @@ const currentGuidanceCorpus = [
 assert(
   !currentGuidanceCorpus.includes("layout-style-css/bridge.css"),
   "Current v3 setup documentation must not require the removed bridge.css export."
+);
+assert(
+  migration.includes("layout-style-css/bridge.css") &&
+    /bridge\.css[^\n]*(?:removed|not shipped)/i.test(migration),
+  "Migration documentation must identify layout-style-css/bridge.css as removed from v3."
 );
 
 for (const requiredText of [
