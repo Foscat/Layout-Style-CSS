@@ -91,6 +91,7 @@
         "publisher": { "@type": "Organization", "name": "Foscat" }
       }
     </script>
+    <script src="./personality-metadata.js?v=3.0.0"></script>
     <script type="module" src="./demo.js?v=3.0.0" data-personalities-url="../personalities.json?v=3.0.0"></script>
   </head>
   <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-density="comfortable" data-ecosystem="all-three">
@@ -165,6 +166,7 @@
               <option value="" disabled selected>Loading layout personalities</option>
             </select>
           </label>
+          <p id="personalityMetadataStatus" class="demo-copy-status" role="status" aria-live="polite"></p>
 
           <label for="containerSelect">Preview width
             <select id="containerSelect" data-query-key="container" data-ui-kit="select">

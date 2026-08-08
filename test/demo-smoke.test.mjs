@@ -43,24 +43,7 @@ const recipes = [
   "gallery",
   "card-grid"
 ];
-const personalities = [
-  "minimal-saas",
-  "bauhaus",
-  "tactile",
-  "cyberpunk",
-  "f-pattern",
-  "brutalism",
-  "neumorphism",
-  "y2k",
-  "retro-glass",
-  "z-pattern",
-  "retrofuturism",
-  "mondrian",
-  "synthwave",
-  "bento",
-  "maximalist",
-  "split-screen"
-];
+const personalities = personalityMetadata.personalities.map(({ id }) => id);
 const wrappers = ["default", "compact", "prose", "content", "wide", "full", "breakout"];
 const devices = {
   "phone-portrait": { width: 360, height: 800 },
@@ -513,6 +496,10 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
   const synthwave = personalityMetadata.personalities.find(({ id }) => id === "synthwave");
 
   assert.deepEqual(synthwave?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
+  assert.deepEqual(synthwave?.visualVerification?.computedProperties, {
+    cyberpunk: { boxShadow: "0px 0px 18px" },
+    retrofuturism: { boxShadow: "0px 10px 30px" }
+  });
   for (const ui of synthwave.recommendedVisualPresets) {
     await page.goto(
       `${baseUrl}?ecosystem=layout-ui&personality=synthwave&ui=${ui}&theme=cyber-lime&mode=dark`,
@@ -520,16 +507,59 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
     );
     await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-    const rendered = await page.evaluate(() => ({
-      layout: document.querySelector("#previewRoot")?.dataset.lyLayout,
-      ui: document.body.dataset.ui,
-      nativePrimary: getComputedStyle(document.body).getPropertyValue("--usk-native-primary").trim()
-    }));
+    const rendered = await page.evaluate(() => {
+      /* A dedicated visible article isolates UI paint from the layout demo's own chrome. */
+      const pairingFixture = document.createElement("article");
+      pairingFixture.id = "pairingVisualFixture";
+      pairingFixture.textContent = "Visual pairing verification";
+      pairingFixture.style.position = "fixed";
+      pairingFixture.style.inset = "1rem 1rem auto auto";
+      pairingFixture.style.zIndex = "1000";
+      document.body.append(pairingFixture);
+
+      return {
+        layout: document.querySelector("#previewRoot")?.dataset.lyLayout,
+        ui: document.body.dataset.ui,
+        fixtureVisible: pairingFixture.getClientRects().length > 0,
+        pairingFixtureShadow: getComputedStyle(pairingFixture).boxShadow
+      };
+    });
 
     assert.equal(rendered.layout, "synthwave", `${ui} must not override the independent layout selector.`);
     assert.equal(rendered.ui, ui);
-    assert.notEqual(rendered.nativePrimary, "", `${ui} must provide a rendered native visual token.`);
+    assert.equal(rendered.fixtureVisible, true, "The visual pairing fixture must participate in rendering.");
+    assert.match(
+      rendered.pairingFixtureShadow,
+      new RegExp(synthwave.visualVerification.computedProperties[ui].boxShadow),
+      `${ui} must retain its distinct rendered article shadow treatment.`
+    );
   }
+};
+
+const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
+  const metadataUrl = new URL("../personalities.json?v=3.0.0", baseUrl).toString();
+  const recoveryContext = await page.context().browser().newContext();
+  const recoveryPage = await recoveryContext.newPage();
+
+  await recoveryPage.route(metadataUrl, (route) => route.fulfill({ status: 503, body: "Unavailable" }));
+  await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await recoveryPage.waitForFunction(
+    () => document.body.dataset.demoReady === "true",
+    undefined,
+    { timeout: 1_000 }
+  );
+
+  const recovered = await recoveryPage.evaluate(() => ({
+    fallback: window.LAYOUT_STYLE_PERSONALITY_METADATA?.personalities ?? [],
+    options: [...document.querySelectorAll("#personalitySelect option")].map((option) => option.value),
+    busy: document.querySelector("#personalitySelect")?.getAttribute("aria-busy"),
+    status: document.querySelector("#personalityMetadataStatus")?.textContent
+  }));
+
+  assert.deepEqual(recovered.options, recovered.fallback.map(({ id }) => id));
+  assert.equal(recovered.busy, "false");
+  assert.match(recovered.status ?? "", /using packaged fallback/i);
+  await recoveryContext.close();
 };
 
 const verifyTopologyEdges = async (page, baseUrl) => {
@@ -1066,6 +1096,7 @@ page.on("console", (message) => {
 try {
   await installExternalFixtures(page);
   await verifyPersonalityOptionsUsePairingMetadata(page, server.baseUrl);
+  await verifyPersonalityMetadataFailureRecovery(page, server.baseUrl);
   await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);

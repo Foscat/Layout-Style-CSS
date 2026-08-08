@@ -5,9 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const sourceDir = join(root, "styles");
 const distDir = join(root, "dist");
-const personalityMetadata = JSON.parse(
-  await readFile(join(root, "personalities.json"), "utf8")
-);
+const manifest = JSON.parse(await readFile(join(root, "manifest.json"), "utf8"));
 const cascadeLayerPrelude =
   "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
 
@@ -18,7 +16,33 @@ const coreModuleFiles = [
   "recipes.css",
   "utilities.css"
 ];
-/* Public pairing metadata drives every profile asset built into the package. */
+function buildPersonalityMetadata(sourceManifest) {
+  const personalities = Array.isArray(sourceManifest.personalities)
+    ? sourceManifest.personalities
+    : [];
+  const pairings = Array.isArray(sourceManifest.personalityPairings)
+    ? sourceManifest.personalityPairings
+    : [];
+
+  if (
+    personalities.length === 0 ||
+    pairings.length !== personalities.length ||
+    pairings.some(({ id }) => !personalities.includes(id))
+  ) {
+    throw new Error("manifest.json must provide one pairing record for every layout personality.");
+  }
+
+  return {
+    schemaVersion: 1,
+    generatedFrom: "manifest.json",
+    selector: "data-ly-layout",
+    independentSelectors: ["data-ly-layout", "data-ui", "data-theme", "data-mode"],
+    personalities: pairings
+  };
+}
+
+/* Manifest pairing records drive profile assets and generated demo fallbacks. */
+const personalityMetadata = buildPersonalityMetadata(manifest);
 const personalityNames = personalityMetadata.personalities.map(({ id }) => id);
 const personalityFiles = personalityNames.map((name) => `personalities/${name}.css`);
 const authoredEntryFiles = [
@@ -67,6 +91,15 @@ async function writeDist(file, css) {
 
 assertInsideRoot(sourceDir);
 assertInsideRoot(distDir);
+
+await writeFile(
+  join(root, "personalities.json"),
+  `${JSON.stringify(personalityMetadata, null, 2)}\n`
+);
+await writeFile(
+  join(root, "demo", "personality-metadata.js"),
+  `/* Generated from manifest.json by scripts/build.mjs. */\nwindow.LAYOUT_STYLE_PERSONALITY_METADATA = ${JSON.stringify(personalityMetadata)};\n`
+);
 
 await rm(distDir, { recursive: true, force: true });
 await mkdir(distDir, { recursive: true });

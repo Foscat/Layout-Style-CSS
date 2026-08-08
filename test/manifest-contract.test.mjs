@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -35,11 +36,7 @@ const entrypointExports = {
   personalityModules: "./personalities/*.css",
   personalityMetadata: "./personalities.json"
 };
-const personalities = [
-  "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
-  "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass", "f-pattern",
-  "z-pattern", "split-screen", "mondrian", "synthwave"
-];
+const personalities = manifest.personalities;
 const geometryTokens = [
   "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-wide",
   "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap", "--ly-switcher-threshold",
@@ -75,16 +72,14 @@ test("ecosystem manifest publishes the structural API and package export", () =>
 
 test("public personality pairings inventory every exported layout profile without coupling selectors", () => {
   assert.equal(personalityMetadata.schemaVersion, 1);
+  assert.equal(personalityMetadata.generatedFrom, "manifest.json");
   assert.equal(personalityMetadata.selector, "data-ly-layout");
   assert.deepEqual(
     personalityMetadata.independentSelectors,
     ["data-ly-layout", "data-ui", "data-theme", "data-mode"]
   );
-  assert.deepEqual(
-    personalityMetadata.personalities.map(({ id }) => id),
-    personalities,
-    "Every source personality must publish one explicit pairing record."
-  );
+  assert.deepEqual(personalityMetadata.personalities, manifest.personalityPairings);
+  assert.deepEqual(personalityMetadata.personalities.map(({ id }) => id), personalities);
 
   const pairings = new Map(personalityMetadata.personalities.map((pairing) => [pairing.id, pairing]));
   for (const id of [
@@ -101,6 +96,37 @@ test("public personality pairings inventory every exported layout profile withou
   assert.deepEqual(pairings.get("synthwave")?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
   assert.equal(pairings.get("synthwave")?.visualCompatibility, "recommended");
   assert.equal(pairings.get("synthwave")?.visualVerification?.method, "rendered-computed-style");
+  assert.deepEqual(pairings.get("synthwave")?.visualVerification?.computedProperties, {
+    cyberpunk: { boxShadow: "0px 0px 18px" },
+    retrofuturism: { boxShadow: "0px 10px 30px" }
+  });
+});
+
+test("build regenerates public pairing metadata from manifest records", () => {
+  const metadataPath = join(root, "personalities.json");
+  const originalMetadata = readFileSync(metadataPath, "utf8");
+  let generated = false;
+
+  try {
+    writeFileSync(metadataPath, '{"stale":true}\n', "utf8");
+    execFileSync(process.execPath, ["scripts/build.mjs"], { cwd: root, stdio: "pipe" });
+    generated = true;
+    const rebuiltMetadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+    const fallbackScript = readFileSync(join(root, "demo", "personality-metadata.js"), "utf8");
+    const fallbackMatch = fallbackScript.match(
+      /window\.LAYOUT_STYLE_PERSONALITY_METADATA = (\{[\s\S]+\});\s*$/
+    );
+
+    assert.equal(rebuiltMetadata.generatedFrom, "manifest.json");
+    assert.deepEqual(rebuiltMetadata.personalities, manifest.personalityPairings);
+    assert.match(fallbackScript, /Generated from manifest\.json by scripts\/build\.mjs/);
+    assert.ok(fallbackMatch, "The generated demo fallback must embed public pairing metadata.");
+    assert.deepEqual(JSON.parse(fallbackMatch[1]), rebuiltMetadata);
+  } finally {
+    if (!generated) {
+      writeFileSync(metadataPath, originalMetadata, "utf8");
+    }
+  }
 });
 
 test("ecosystem manifest describes real structural selectors, thresholds, and tokens", () => {

@@ -78,18 +78,7 @@ async function loadUiStyleKitManifest() {
 }
 
 const UI_STYLE_KIT_MANIFEST = await loadUiStyleKitManifest();
-async function loadPersonalityMetadata() {
-  if (!PERSONALITY_METADATA_URL) {
-    throw new Error("The demo requires a local layout personality metadata URL.");
-  }
-
-  const response = await fetch(PERSONALITY_METADATA_URL, { cache: "force-cache" });
-
-  if (!response.ok) {
-    throw new Error(`Layout personality metadata request failed with HTTP ${response.status}.`);
-  }
-
-  const metadata = await response.json();
+function normalizePersonalityMetadata(metadata) {
   const personalities = Array.isArray(metadata?.personalities) ? metadata.personalities : [];
   const validCompatibility = new Set(["native", "any", "recommended"]);
   const normalized = personalities.map((personality) => ({
@@ -117,7 +106,51 @@ async function loadPersonalityMetadata() {
   });
 }
 
-const PERSONALITY_METADATA = await loadPersonalityMetadata();
+function minimalPersonalityFallback() {
+  return Object.freeze({
+    schemaVersion: 1,
+    personalities: Object.freeze([
+      Object.freeze({
+        id: "minimal-saas",
+        label: "Minimal SaaS",
+        visualCompatibility: "any",
+        recommendedVisualPresets: []
+      })
+    ])
+  });
+}
+
+async function loadPersonalityMetadata() {
+  try {
+    if (!PERSONALITY_METADATA_URL) {
+      throw new Error("The demo requires a local layout personality metadata URL.");
+    }
+
+    const response = await fetch(PERSONALITY_METADATA_URL, { cache: "force-cache" });
+
+    if (!response.ok) {
+      throw new Error(`Layout personality metadata request failed with HTTP ${response.status}.`);
+    }
+
+    return { metadata: normalizePersonalityMetadata(await response.json()), status: "" };
+  } catch (error) {
+    try {
+      return {
+        metadata: normalizePersonalityMetadata(window.LAYOUT_STYLE_PERSONALITY_METADATA),
+        status: "Layout pairing metadata is unavailable; using packaged fallback."
+      };
+    } catch {
+      console.error("Layout personality metadata and packaged fallback are unavailable.", error);
+      return {
+        metadata: minimalPersonalityFallback(),
+        status: "Layout pairing metadata is unavailable; Minimal SaaS remains available."
+      };
+    }
+  }
+}
+
+const PERSONALITY_METADATA_LOAD = await loadPersonalityMetadata();
+const PERSONALITY_METADATA = PERSONALITY_METADATA_LOAD.metadata;
 const ALLOWLISTS = Object.freeze({
   device: Object.freeze([
     "custom",
@@ -264,6 +297,7 @@ const recipePreview = document.querySelector("#recipePreview");
 const importsSnippet = document.querySelector("#importsSnippet");
 const markupSnippet = document.querySelector("#markupSnippet");
 const copyStatus = document.querySelector("#copyStatus");
+const personalityMetadataStatus = document.querySelector("#personalityMetadataStatus");
 const ecosystemStatus = document.querySelector("#ecosystemStatus");
 const containerReadout = document.querySelector("#containerReadout");
 const topologyReadout = document.querySelector("#topologyReadout");
@@ -281,6 +315,9 @@ const mobileControlsQuery = window.matchMedia("(max-width: 63.999rem)");
 body.dataset.uiManifestVersion = UI_STYLE_KIT_MANIFEST.version;
 body.dataset.personalityMetadataVersion = String(PERSONALITY_METADATA.schemaVersion);
 syncPersonalityMetadataSelectOptions();
+if (personalityMetadataStatus) {
+  personalityMetadataStatus.textContent = PERSONALITY_METADATA_LOAD.status;
+}
 syncUiManifestSelectOptions();
 
 let state = readStateFromQuery();

@@ -50,7 +50,7 @@ The personality name does not promise colors, typography, borders, shadows, or i
 | Z-pattern | Any visual preset; this is structure only |
 | Split Screen | Any visual preset; this is structure only |
 | Mondrian | Any visual preset; this is structure only |
-| Synthwave | Recommended: `cyberpunk` or `retrofuturism`; the demo verifies each with a rendered native visual token while retaining `data-ly-layout="synthwave"` |
+| Synthwave | Recommended: `cyberpunk` or `retrofuturism`; the browser contract verifies each preset's distinct rendered article shadow while retaining `data-ly-layout="synthwave"` |
 
 ## Customization
 

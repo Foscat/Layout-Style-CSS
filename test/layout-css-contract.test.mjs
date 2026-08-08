@@ -8,6 +8,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const styles = join(root, "styles");
 const dist = join(root, "dist");
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
 
 const layerPrelude =
   "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
@@ -19,24 +20,7 @@ const focusedFiles = [
   "utilities.css",
   "personalities.css"
 ];
-const personalityNames = [
-  "minimal-saas",
-  "bento",
-  "maximalist",
-  "bauhaus",
-  "tactile",
-  "neumorphism",
-  "retrofuturism",
-  "brutalism",
-  "cyberpunk",
-  "y2k",
-  "retro-glass",
-  "f-pattern",
-  "z-pattern",
-  "split-screen",
-  "mondrian",
-  "synthwave"
-];
+const personalityNames = manifest.personalities;
 const recipeNames = [
   "app-shell",
   "dashboard",

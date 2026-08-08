@@ -57,7 +57,7 @@ pagesIndex = pagesIndex.replaceAll("../personalities.json", "./personalities.jso
  * Pages receives immutable asset URLs derived from deployed content, so a demo
  * hotfix cannot be hidden by a browser cache that still holds the same version.
  */
-for (const assetPath of ["demo.css", "demo.js", "dist/layout-style-css.css", "personalities.json"]) {
+for (const assetPath of ["demo.css", "demo.js", "personality-metadata.js", "dist/layout-style-css.css", "personalities.json"]) {
   const assetContents = await readFile(join(pagesDir, ...assetPath.split("/")));
   pagesIndex = fingerprintVersionedAsset(pagesIndex, assetPath, assetContents);
 }

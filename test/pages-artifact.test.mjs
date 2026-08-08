@@ -27,6 +27,7 @@ const requiredArtifactFiles = [
   "index.html",
   "demo.css",
   "demo.js",
+  "personality-metadata.js",
   "browserconfig.xml",
   "robots.txt",
   "sitemap.xml",
@@ -73,6 +74,7 @@ assert(
 for (const { attribute, path } of [
   { attribute: "href", path: "demo.css" },
   { attribute: "src", path: "demo.js" },
+  { attribute: "src", path: "personality-metadata.js" },
   { attribute: "href", path: "dist/layout-style-css.css" },
   { attribute: "data-personalities-url", path: "personalities.json" }
 ]) {
