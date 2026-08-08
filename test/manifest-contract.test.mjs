@@ -9,6 +9,13 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
 const personalityMetadata = JSON.parse(readFileSync(join(root, "personalities.json"), "utf8"));
+const publicDocumentation = [
+  "README.md",
+  "docs/wiki/Layout-Primitives.md",
+  "docs/wiki/Layout-Styles.md",
+  "docs/wiki/Migrating-To-2.0.md",
+  "docs/wiki/Migrating-To-3.0.md"
+].map((file) => readFileSync(join(root, file), "utf8")).join("\n");
 
 const entrypoints = {
   default: "./dist/layout-style-css.css",
@@ -37,13 +44,34 @@ const entrypointExports = {
   personalityMetadata: "./personalities.json"
 };
 const personalities = manifest.personalities;
+// These are stable consumer overrides; wrapper calculation variables remain implementation details below.
 const geometryTokens = [
+  "--ly-space-0", "--ly-space-1", "--ly-space-2", "--ly-space-3", "--ly-space-4",
+  "--ly-space-5", "--ly-space-6", "--ly-space-7", "--ly-space-8", "--ly-space-9",
   "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-wide",
-  "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap", "--ly-switcher-threshold",
-  "--ly-sidebar-size", "--ly-sidebar-content-min", "--ly-grid-min", "--ly-split-min",
+  "--ly-page-padding-inline", "--ly-safe-area-inline", "--ly-safe-area-block-start",
+  "--ly-safe-area-block-end", "--ly-wrapper-gutter", "--ly-wrapper-max", "--ly-profile-gap",
+  "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap",
+  "--ly-section-padding-block", "--ly-header-height", "--ly-sticky-position", "--ly-cover-min",
+  "--ly-shell-min", "--ly-scroll-max", "--ly-switcher-threshold", "--ly-sidebar-size",
+  "--ly-sidebar-content-min", "--ly-grid-columns", "--ly-grid-min", "--ly-split-min",
   "--ly-pane-min", "--ly-pane-size", "--ly-media-min", "--ly-media-size", "--ly-reel-item-min",
-  "--ly-reel-item-max", "--ly-frame-ratio", "--ly-recipe-rail", "--ly-recipe-aside",
-  "--ly-gallery-min", "--ly-card-grid-min"
+  "--ly-reel-item-max", "--ly-frame-ratio", "--ly-split-primary", "--ly-split-secondary",
+  "--ly-recipe-rail", "--ly-recipe-aside", "--ly-gallery-min", "--ly-card-grid-min",
+  "--ly-app-shell-medium-areas", "--ly-app-shell-medium-columns", "--ly-app-shell-wide-areas",
+  "--ly-app-shell-wide-columns", "--ly-dashboard-medium-areas", "--ly-dashboard-medium-columns",
+  "--ly-dashboard-wide-areas", "--ly-dashboard-wide-columns", "--ly-docs-wide-areas",
+  "--ly-docs-wide-columns", "--ly-list-detail-wide-areas", "--ly-list-detail-wide-columns",
+  "--ly-split-hero-wide-areas", "--ly-split-hero-wide-columns", "--ly-center-max",
+  "--ly-cover-padding", "--ly-z-header", "--ly-split-align", "--ly-media-align",
+  "--ly-split-hero-align"
+];
+const internalLayoutTokens = [
+  "--ly-breakout-content-size",
+  "--ly-breakout-feature-size",
+  "--ly-personality-wrapper-max",
+  "--ly-wrapper-fluid-gutter",
+  "--ly-wrapper-local-gutter"
 ];
 
 test("ecosystem manifest publishes the structural API and package export", () => {
@@ -170,5 +198,29 @@ test("ecosystem manifest describes real structural selectors, thresholds, and to
   }
   for (const token of manifest.tokens.geometry) {
     assert(css.includes(token), `${token} must remain a public geometry token`);
+  }
+});
+
+test("geometry manifest inventories documented and implemented public controls bidirectionally", () => {
+  const coreSources = [
+    "styles/foundation.css",
+    "styles/wrappers.css",
+    "styles/primitives.css",
+    "styles/recipes.css",
+    "styles/utilities.css"
+  ].map((file) => readFileSync(join(root, file), "utf8")).join("\n");
+  const documentedTokens = [
+    ...new Set(publicDocumentation.match(/--ly-[a-z0-9-]+/g) ?? [])
+  ];
+
+  assert.deepEqual(manifest.tokens.geometry, geometryTokens);
+  for (const token of documentedTokens) {
+    assert(manifest.tokens.geometry.includes(token), `${token} must remain in the public manifest`);
+  }
+  for (const token of geometryTokens) {
+    assert(coreSources.includes(token), `${token} must remain implemented by the core CSS`);
+  }
+  for (const token of internalLayoutTokens) {
+    assert(!manifest.tokens.geometry.includes(token), `${token} must remain implementation-only`);
   }
 });
