@@ -24,6 +24,9 @@ test("layout rejects visual paint while permitting structural declarations", () 
   const css = `
     .ly-stack { display: flex; color: #ff00aa; }
     .ly-wrapper { font-family: system-ui; box-shadow: 0 2px 8px #0008; }
+    .ly-wrapper { border-top: 1px solid red; }
+    .ly-wrapper { filter: drop-shadow(0 2px 4px red); }
+    .ly-wrapper { text-decoration-color: red; }
   `;
   const result = auditOwnership({ css, allowlist: [], now: reviewedAt });
 
@@ -49,32 +52,154 @@ test("layout rejects visual paint while permitting structural declarations", () 
       line: 3,
       rule: "layout-visual-paint",
     },
+    {
+      target: "layout",
+      selector: ".ly-wrapper",
+      property: "border-top",
+      line: 4,
+      rule: "layout-visual-paint",
+    },
+    {
+      target: "layout",
+      selector: ".ly-wrapper",
+      property: "filter",
+      line: 5,
+      rule: "layout-visual-paint",
+    },
+    {
+      target: "layout",
+      selector: ".ly-wrapper",
+      property: "text-decoration-color",
+      line: 6,
+      rule: "layout-visual-paint",
+    },
   ]);
 });
 
-test("layout rejects interaction transforms but permits static structural transforms", () => {
+test("layout rejects native, data, and hover mechanics but permits static transforms", () => {
   const css = `
     .ly-offset { transform: translateX(1rem); }
-    .ly-offset:hover { transform: translateY(-2px); }
+    input:checked { -WEBKIT-TRANSFORM: translateY(-2px); }
+    [data-state="active"] { animation: pulse 1s; }
+    .ly-offset:hover { animation-name: pulse; }
+    :is(.ly-offset, .custom-state) { transition: opacity 150ms; }
+    :where(button:not(:disabled)) { translate: 0 -1px; }
   `;
-  const result = auditOwnership({ css, allowlist: [], now: reviewedAt });
+  const result = auditOwnership({
+    css,
+    allowlist: [],
+    manifest: { selectors: { stateClasses: [".custom-state"] } },
+    now: reviewedAt,
+  });
 
   assert.deepEqual(result.violations, [
     {
       target: "layout",
-      selector: ".ly-offset:hover",
+      selector: "input:checked",
       property: "transform",
       line: 3,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: "[data-state=\"active\"]",
+      property: "animation",
+      line: 4,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ".ly-offset:hover",
+      property: "animation-name",
+      line: 5,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ":is(.ly-offset,.custom-state)",
+      property: "transition",
+      line: 6,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ":where(button:not(:disabled))",
+      property: "translate",
+      line: 7,
       rule: "layout-interaction-transform",
     },
   ]);
 });
 
-test("allowlist rejects wildcard and unmatched exceptions", () => {
-  assert.throws(
-    () => validateAllowlist({ entries: [exception({ selector: ".ly-*" })], now: reviewedAt }),
-    /must not contain wildcards/,
-  );
+test("allowlist rejects every malformed, stale, broad, duplicate, and unmatched mutation", () => {
+  const missingReason = exception();
+  delete missingReason.reason;
+  const cases = [
+    {
+      name: "stale",
+      entries: [exception({ reviewDate: "2025-01-01" })],
+      message: /stale reviewDate/,
+    },
+    {
+      name: "future",
+      entries: [exception({ reviewDate: "2026-08-09" })],
+      message: /stale reviewDate/,
+    },
+    {
+      name: "invalid date",
+      entries: [exception({ reviewDate: "2026-02-30" })],
+      message: /ISO date/,
+    },
+    {
+      name: "duplicate",
+      entries: [exception(), exception()],
+      message: /duplicate selector and property/,
+    },
+    {
+      name: "selector wildcard",
+      entries: [exception({ selector: ".ly-*" })],
+      message: /must not contain wildcards/,
+    },
+    {
+      name: "property wildcard",
+      entries: [exception({ property: "border-*" })],
+      message: /must not contain wildcards/,
+    },
+    {
+      name: "unexplained",
+      entries: [exception({ reason: "Needed." })],
+      message: /professional reason/,
+    },
+    {
+      name: "wrong owner",
+      entries: [exception({ owner: "ui-style-kit-css" })],
+      message: /owner must be layout-style-css/,
+    },
+    {
+      name: "missing field",
+      entries: [missingReason],
+      message: /contain exactly/,
+    },
+    {
+      name: "extra field",
+      entries: [exception({ ticket: "LY-42" })],
+      message: /contain exactly/,
+    },
+    {
+      name: "non-string field",
+      entries: [exception({ reason: null })],
+      message: /string fields/,
+    },
+  ];
+
+  for (const fixture of cases) {
+    assert.throws(
+      () => validateAllowlist({ entries: fixture.entries, now: reviewedAt }),
+      fixture.message,
+      fixture.name,
+    );
+  }
+
   assert.throws(
     () =>
       auditOwnership({

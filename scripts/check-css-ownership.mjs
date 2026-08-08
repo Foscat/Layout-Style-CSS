@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { generate, parse, walk } from "css-tree";
+import { generate, parse, property as describeProperty, walk } from "css-tree";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const allowlistFields = ["owner", "property", "reason", "reviewDate", "selector"];
@@ -10,23 +10,73 @@ const visualPaintProperties = new Set([
   "background",
   "background-color",
   "background-image",
-  "border",
-  "border-color",
-  "border-bottom-color",
-  "border-left-color",
-  "border-right-color",
-  "border-top-color",
+  "backdrop-filter",
   "box-shadow",
   "color",
   "fill",
+  "filter",
   "font",
   "font-family",
-  "outline-color",
   "stroke",
   "text-shadow",
 ]);
 const transformProperties = new Set(["rotate", "scale", "transform", "translate"]);
-const interactionSelectorPattern = /:(?:active|disabled|focus|focus-visible|hover)|\[aria-(?:busy|current|disabled|pressed|selected)|\.is-(?:active|disabled|loading)/;
+const nativeStatePseudos = new Set([
+  "active",
+  "checked",
+  "disabled",
+  "enabled",
+  "focus",
+  "focus-visible",
+  "focus-within",
+  "hover",
+  "indeterminate",
+  "invalid",
+  "open",
+  "optional",
+  "placeholder-shown",
+  "read-only",
+  "read-write",
+  "required",
+  "target",
+  "user-invalid",
+  "valid",
+]);
+const commonStateClasses = new Set([
+  "is-active",
+  "is-busy",
+  "is-checked",
+  "is-disabled",
+  "is-loading",
+  "is-open",
+  "is-pressed",
+  "is-selected",
+]);
+const stateAttributes = new Set([
+  "aria-busy",
+  "aria-checked",
+  "aria-current",
+  "aria-disabled",
+  "aria-expanded",
+  "aria-invalid",
+  "aria-pressed",
+  "aria-selected",
+  "data-active",
+  "data-checked",
+  "data-disabled",
+  "data-loading",
+  "data-pressed",
+  "data-selected",
+  "data-state",
+]);
+
+function propertyContract(propertyName) {
+  const described = describeProperty(propertyName);
+  return {
+    custom: described.custom,
+    name: described.custom ? propertyName : described.basename,
+  };
+}
 
 function entryKey({ selector, property }) {
   return `${selector}\u0000${property}`;
@@ -54,6 +104,9 @@ export function validateAllowlist({ entries, now = new Date() }) {
       throw new Error(
         `layout allowlist entries must contain exactly ${allowlistFields.join(", ")}.`,
       );
+    }
+    if (allowlistFields.some((field) => typeof entry[field] !== "string")) {
+      throw new Error("layout allowlist entries must use string fields.");
     }
     if (entry.selector.includes("*") || entry.property.includes("*")) {
       throw new Error("layout allowlist entries must not contain wildcards.");
@@ -87,15 +140,63 @@ export function validateAllowlist({ entries, now = new Date() }) {
   }
 }
 
-function violationRule(selector, property) {
-  if (visualPaintProperties.has(property)) return "layout-visual-paint";
-  if (transformProperties.has(property) && interactionSelectorPattern.test(selector)) {
+function isVisualPaintProperty(property) {
+  if (visualPaintProperties.has(property)) return true;
+  if (/^border(?:$|-(?!collapse$|image(?:-|$)|radius(?:-|$)|spacing$))/.test(property)) {
+    return true;
+  }
+  if (/^outline(?:$|-(?!offset$))/.test(property)) return true;
+  return /^text-decoration(?:-|$)/.test(property);
+}
+
+function selectorHasState(rule, manifest) {
+  const manifestClasses = manifest.selectors?.stateClasses ?? [];
+  const stateClasses = new Set([
+    ...commonStateClasses,
+    ...manifestClasses.map((selector) => selector.replace(/^\./, "").toLowerCase()),
+  ]);
+  let stateful = false;
+
+  // Walking the selector AST catches states nested in functional pseudo-classes.
+  walk(rule.prelude, {
+    enter(node) {
+      if (
+        node.type === "PseudoClassSelector" &&
+        nativeStatePseudos.has(node.name.toLowerCase())
+      ) {
+        stateful = true;
+      }
+      if (node.type === "ClassSelector" && stateClasses.has(node.name.toLowerCase())) {
+        stateful = true;
+      }
+      if (
+        node.type === "AttributeSelector" &&
+        stateAttributes.has(node.name.name.toLowerCase())
+      ) {
+        stateful = true;
+      }
+    },
+  });
+
+  return stateful;
+}
+
+function isInteractionMechanics(property) {
+  return (
+    transformProperties.has(property) ||
+    /^(?:animation|transition)(?:-|$)/.test(property)
+  );
+}
+
+function violationRule({ property, rule, manifest }) {
+  if (isVisualPaintProperty(property)) return "layout-visual-paint";
+  if (isInteractionMechanics(property) && selectorHasState(rule, manifest)) {
     return "layout-interaction-transform";
   }
   return null;
 }
 
-export function auditOwnership({ css, allowlist, now = new Date() }) {
+export function auditOwnership({ css, allowlist, manifest = {}, now = new Date() }) {
   validateAllowlist({ entries: allowlist, now });
 
   const ast = parse(css, { filename: "layout", positions: true });
@@ -112,10 +213,17 @@ export function auditOwnership({ css, allowlist, now = new Date() }) {
         if (node.type !== "Declaration") return;
         declarationCount += 1;
 
-        const ruleName = violationRule(selector, node.property);
+        const property = propertyContract(node.property);
+        if (property.custom) return;
+
+        const ruleName = violationRule({
+          property: property.name,
+          rule,
+          manifest,
+        });
         if (!ruleName) return;
 
-        const key = entryKey({ selector, property: node.property });
+        const key = entryKey({ selector, property: property.name });
         if (allowlistByKey.has(key)) {
           matchedKeys.add(key);
           return;
@@ -124,7 +232,7 @@ export function auditOwnership({ css, allowlist, now = new Date() }) {
         violations.push({
           target: "layout",
           selector,
-          property: node.property,
+          property: property.name,
           line: node.loc.start.line,
           rule: ruleName,
         });
@@ -149,12 +257,16 @@ export function auditOwnership({ css, allowlist, now = new Date() }) {
 
 function run() {
   const startedAt = performance.now();
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(packageRoot, "manifest.json"), "utf8"),
+  );
   const allowlist = JSON.parse(
     fs.readFileSync(path.join(packageRoot, "ownership-allowlist.json"), "utf8"),
   );
   const result = auditOwnership({
     css: fs.readFileSync(path.join(packageRoot, "dist", "layout-style-css.css"), "utf8"),
     allowlist: allowlist.layout,
+    manifest,
   });
 
   if (result.violations.length > 0) {
