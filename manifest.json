@@ -9,12 +9,14 @@
   "entrypoints": {
     "default": "./dist/layout-style-css.css",
     "minified": "./dist/layout-style-css.min.css",
+    "core": "./dist/core.css",
     "foundation": "./dist/foundation.css",
     "wrappers": "./dist/wrappers.css",
     "primitives": "./dist/primitives.css",
     "recipes": "./dist/recipes.css",
     "utilities": "./dist/utilities.css",
-    "personalities": "./dist/personalities.css"
+    "personalities": "./dist/personalities.css",
+    "personalityModules": "./dist/personalities/*.css"
   },
   "selectors": {
     "stable": [".ly-root", ".ly-wrapper"],

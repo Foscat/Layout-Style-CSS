@@ -11,22 +11,26 @@ const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
 const entrypoints = {
   default: "./dist/layout-style-css.css",
   minified: "./dist/layout-style-css.min.css",
+  core: "./dist/core.css",
   foundation: "./dist/foundation.css",
   wrappers: "./dist/wrappers.css",
   primitives: "./dist/primitives.css",
   recipes: "./dist/recipes.css",
   utilities: "./dist/utilities.css",
-  personalities: "./dist/personalities.css"
+  personalities: "./dist/personalities.css",
+  personalityModules: "./dist/personalities/*.css"
 };
 const entrypointExports = {
   default: ".",
   minified: "./min.css",
+  core: "./core.css",
   foundation: "./foundation.css",
   wrappers: "./wrappers.css",
   primitives: "./primitives.css",
   recipes: "./recipes.css",
   utilities: "./utilities.css",
-  personalities: "./personalities.css"
+  personalities: "./personalities.css",
+  personalityModules: "./personalities/*.css"
 };
 const personalities = [
   "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
@@ -91,6 +95,10 @@ test("ecosystem manifest describes real structural selectors, thresholds, and to
   });
 
   const css = Object.values(entrypoints)
+    .flatMap((entrypoint) => {
+      if (!entrypoint.includes("*")) return [entrypoint];
+      return personalities.map((personality) => entrypoint.replace("*", personality));
+    })
     .map((entrypoint) => readFileSync(join(root, entrypoint), "utf8"))
     .join("\n");
   for (const selector of manifest.selectors.stable) {
