@@ -91,7 +91,7 @@
         "publisher": { "@type": "Organization", "name": "Foscat" }
       }
     </script>
-    <script type="module" src="./demo.js?v=3.0.0"></script>
+    <script type="module" src="./demo.js?v=3.0.0" data-personalities-url="../personalities.json?v=3.0.0"></script>
   </head>
   <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-density="comfortable" data-ecosystem="all-three">
     <a class="demo-skip-link" href="#layoutLab">Skip to the layout lab</a>
@@ -161,23 +161,8 @@
           </label>
 
           <label for="personalitySelect">Personality
-            <select id="personalitySelect" data-query-key="personality" data-ui-kit="select">
-              <option value="minimal-saas">Minimal SaaS</option>
-              <option value="bauhaus">Bauhaus</option>
-              <option value="tactile">Tactile</option>
-              <option value="cyberpunk">Cyberpunk</option>
-              <option value="f-pattern">F-pattern</option>
-              <option value="brutalism">Brutalism</option>
-              <option value="neumorphism">Neumorphism</option>
-              <option value="y2k">Y2K</option>
-              <option value="retro-glass">Retro Glass</option>
-              <option value="z-pattern">Z-pattern</option>
-              <option value="retrofuturism">Retrofuturism</option>
-              <option value="mondrian">Mondrian</option>
-              <option value="synthwave">Synthwave</option>
-              <option value="bento">Bento</option>
-              <option value="maximalist">Maximalist</option>
-              <option value="split-screen">Split Screen</option>
+            <select id="personalitySelect" data-query-key="personality" data-ui-kit="select" aria-busy="true">
+              <option value="" disabled selected>Loading layout personalities</option>
             </select>
           </label>
 

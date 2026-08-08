@@ -69,6 +69,7 @@
     "./utilities.css": "./dist/utilities.css",
     "./personalities.css": "./dist/personalities.css",
     "./personalities/*.css": "./dist/personalities/*.css",
+    "./personalities.json": "./personalities.json",
     "./manifest.json": "./manifest.json",
     "./package.json": "./package.json"
   },
@@ -83,6 +84,7 @@
     "dist/utilities.css",
     "dist/personalities.css",
     "dist/personalities/*.css",
+    "personalities.json",
     "manifest.json"
   ]
 }

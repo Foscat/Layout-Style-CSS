@@ -12,6 +12,7 @@ const demoJs = readFileSync(join(root, "demo", "demo.js"), "utf8");
 const uiManifest = JSON.parse(
   readFileSync(join(root, "node_modules", "ui-style-kit-css", "manifest.json"), "utf8")
 );
+const personalityMetadata = JSON.parse(readFileSync(join(root, "personalities.json"), "utf8"));
 const companionCssFixtures = Object.freeze({
   "ui-style-kit.visual.min.css": readFileSync(
     join(root, "node_modules", "ui-style-kit-css", "dist", "ui-style-kit.visual.min.css")
@@ -458,6 +459,77 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   assert.equal(await page.locator("#recipeSelect").inputValue(), "docs");
   assert.equal(await page.locator("#personalitySelect").inputValue(), "bauhaus");
   assert.equal(await page.locator("[data-ly-recipe]").getAttribute("data-ly-responsive"), "manual");
+};
+
+const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
+  const metadataUrl = new URL("../personalities.json?v=3.0.0", baseUrl).toString();
+  const pairingFixture = {
+    schemaVersion: 1,
+    personalities: [
+      {
+        id: "minimal-saas",
+        label: "Minimal SaaS",
+        visualCompatibility: "native",
+        recommendedVisualPresets: ["minimal-saas"]
+      },
+      {
+        id: "synthwave",
+        label: "Synthwave",
+        visualCompatibility: "recommended",
+        recommendedVisualPresets: ["cyberpunk", "retrofuturism"]
+      }
+    ]
+  };
+
+  await page.route(metadataUrl, (route) =>
+    route.fulfill({
+      body: JSON.stringify(pairingFixture),
+      contentType: "application/json",
+      status: 200
+    })
+  );
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  assert.deepEqual(
+    await page.locator("#personalitySelect option").evaluateAll((options) =>
+      options.map((option) => ({
+        value: option.value,
+        label: option.textContent,
+        compatibility: option.dataset.visualCompatibility
+      }))
+    ),
+    [
+      { value: "minimal-saas", label: "Minimal SaaS", compatibility: "native" },
+      { value: "synthwave", label: "Synthwave", compatibility: "recommended" }
+    ],
+    "The personality switcher must render the layout pairing metadata it loads."
+  );
+
+  await page.unroute(metadataUrl);
+};
+
+const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
+  const synthwave = personalityMetadata.personalities.find(({ id }) => id === "synthwave");
+
+  assert.deepEqual(synthwave?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
+  for (const ui of synthwave.recommendedVisualPresets) {
+    await page.goto(
+      `${baseUrl}?ecosystem=layout-ui&personality=synthwave&ui=${ui}&theme=cyber-lime&mode=dark`,
+      { waitUntil: "domcontentloaded" }
+    );
+    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+    const rendered = await page.evaluate(() => ({
+      layout: document.querySelector("#previewRoot")?.dataset.lyLayout,
+      ui: document.body.dataset.ui,
+      nativePrimary: getComputedStyle(document.body).getPropertyValue("--usk-native-primary").trim()
+    }));
+
+    assert.equal(rendered.layout, "synthwave", `${ui} must not override the independent layout selector.`);
+    assert.equal(rendered.ui, ui);
+    assert.notEqual(rendered.nativePrimary, "", `${ui} must provide a rendered native visual token.`);
+  }
 };
 
 const verifyTopologyEdges = async (page, baseUrl) => {
@@ -993,6 +1065,8 @@ page.on("console", (message) => {
 
 try {
   await installExternalFixtures(page);
+  await verifyPersonalityOptionsUsePairingMetadata(page, server.baseUrl);
+  await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);

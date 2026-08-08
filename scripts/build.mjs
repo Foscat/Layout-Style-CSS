@@ -5,6 +5,9 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const sourceDir = join(root, "styles");
 const distDir = join(root, "dist");
+const personalityMetadata = JSON.parse(
+  await readFile(join(root, "personalities.json"), "utf8")
+);
 const cascadeLayerPrelude =
   "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
 
@@ -15,24 +18,8 @@ const coreModuleFiles = [
   "recipes.css",
   "utilities.css"
 ];
-const personalityNames = [
-  "minimal-saas",
-  "bento",
-  "maximalist",
-  "bauhaus",
-  "tactile",
-  "neumorphism",
-  "retrofuturism",
-  "brutalism",
-  "cyberpunk",
-  "y2k",
-  "retro-glass",
-  "f-pattern",
-  "z-pattern",
-  "split-screen",
-  "mondrian",
-  "synthwave"
-];
+/* Public pairing metadata drives every profile asset built into the package. */
+const personalityNames = personalityMetadata.personalities.map(({ id }) => id);
 const personalityFiles = personalityNames.map((name) => `personalities/${name}.css`);
 const authoredEntryFiles = [
   "core.css",

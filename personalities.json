@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "selector": "data-ly-layout",
+  "independentSelectors": ["data-ly-layout", "data-ui", "data-theme", "data-mode"],
+  "personalities": [
+    { "id": "minimal-saas", "label": "Minimal SaaS", "visualCompatibility": "native", "recommendedVisualPresets": ["minimal-saas"] },
+    { "id": "bento", "label": "Bento", "visualCompatibility": "native", "recommendedVisualPresets": ["bento"] },
+    { "id": "maximalist", "label": "Maximalist", "visualCompatibility": "native", "recommendedVisualPresets": ["maximalist"] },
+    { "id": "bauhaus", "label": "Bauhaus", "visualCompatibility": "native", "recommendedVisualPresets": ["bauhaus"] },
+    { "id": "tactile", "label": "Tactile", "visualCompatibility": "native", "recommendedVisualPresets": ["tactile"] },
+    { "id": "neumorphism", "label": "Neumorphism", "visualCompatibility": "native", "recommendedVisualPresets": ["neumorphism"] },
+    { "id": "retrofuturism", "label": "Retrofuturism", "visualCompatibility": "native", "recommendedVisualPresets": ["retrofuturism"] },
+    { "id": "brutalism", "label": "Brutalism", "visualCompatibility": "native", "recommendedVisualPresets": ["brutalism"] },
+    { "id": "cyberpunk", "label": "Cyberpunk", "visualCompatibility": "native", "recommendedVisualPresets": ["cyberpunk"] },
+    { "id": "y2k", "label": "Y2K", "visualCompatibility": "native", "recommendedVisualPresets": ["y2k"] },
+    { "id": "retro-glass", "label": "Retro Glass", "visualCompatibility": "native", "recommendedVisualPresets": ["retro-glass"] },
+    { "id": "f-pattern", "label": "F-pattern", "visualCompatibility": "any", "recommendedVisualPresets": [] },
+    { "id": "z-pattern", "label": "Z-pattern", "visualCompatibility": "any", "recommendedVisualPresets": [] },
+    { "id": "split-screen", "label": "Split Screen", "visualCompatibility": "any", "recommendedVisualPresets": [] },
+    { "id": "mondrian", "label": "Mondrian", "visualCompatibility": "any", "recommendedVisualPresets": [] },
+    {
+      "id": "synthwave",
+      "label": "Synthwave",
+      "visualCompatibility": "recommended",
+      "recommendedVisualPresets": ["cyberpunk", "retrofuturism"],
+      "visualVerification": {
+        "method": "rendered-computed-style",
+        "test": "test/demo-smoke.test.mjs",
+        "assertion": "The independent data-ui selector applies non-empty native visual tokens while data-ly-layout remains synthwave."
+      }
+    }
+  ]
+}

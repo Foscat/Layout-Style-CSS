@@ -16,7 +16,8 @@
     "recipes": "./dist/recipes.css",
     "utilities": "./dist/utilities.css",
     "personalities": "./dist/personalities.css",
-    "personalityModules": "./dist/personalities/*.css"
+    "personalityModules": "./dist/personalities/*.css",
+    "personalityMetadata": "./personalities.json"
   },
   "selectors": {
     "stable": [".ly-root", ".ly-wrapper"],

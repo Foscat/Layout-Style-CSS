@@ -7,6 +7,7 @@ import test from "node:test";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
+const personalityMetadata = JSON.parse(readFileSync(join(root, "personalities.json"), "utf8"));
 
 const entrypoints = {
   default: "./dist/layout-style-css.css",
@@ -18,7 +19,8 @@ const entrypoints = {
   recipes: "./dist/recipes.css",
   utilities: "./dist/utilities.css",
   personalities: "./dist/personalities.css",
-  personalityModules: "./dist/personalities/*.css"
+  personalityModules: "./dist/personalities/*.css",
+  personalityMetadata: "./personalities.json"
 };
 const entrypointExports = {
   default: ".",
@@ -30,7 +32,8 @@ const entrypointExports = {
   recipes: "./recipes.css",
   utilities: "./utilities.css",
   personalities: "./personalities.css",
-  personalityModules: "./personalities/*.css"
+  personalityModules: "./personalities/*.css",
+  personalityMetadata: "./personalities.json"
 };
 const personalities = [
   "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
@@ -66,6 +69,38 @@ test("ecosystem manifest publishes the structural API and package export", () =>
   }
   assert.equal(packageJson.exports["./manifest.json"], "./manifest.json");
   assert(packageJson.files.includes("manifest.json"));
+  assert.equal(packageJson.exports["./personalities.json"], "./personalities.json");
+  assert(packageJson.files.includes("personalities.json"));
+});
+
+test("public personality pairings inventory every exported layout profile without coupling selectors", () => {
+  assert.equal(personalityMetadata.schemaVersion, 1);
+  assert.equal(personalityMetadata.selector, "data-ly-layout");
+  assert.deepEqual(
+    personalityMetadata.independentSelectors,
+    ["data-ly-layout", "data-ui", "data-theme", "data-mode"]
+  );
+  assert.deepEqual(
+    personalityMetadata.personalities.map(({ id }) => id),
+    personalities,
+    "Every source personality must publish one explicit pairing record."
+  );
+
+  const pairings = new Map(personalityMetadata.personalities.map((pairing) => [pairing.id, pairing]));
+  for (const id of [
+    "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
+    "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass"
+  ]) {
+    assert.equal(pairings.get(id)?.visualCompatibility, "native", `${id} needs its verified native visual match.`);
+    assert.deepEqual(pairings.get(id)?.recommendedVisualPresets, [id]);
+  }
+  for (const id of ["f-pattern", "z-pattern", "split-screen", "mondrian"]) {
+    assert.equal(pairings.get(id)?.visualCompatibility, "any", `${id} must remain visual-preset agnostic.`);
+    assert.deepEqual(pairings.get(id)?.recommendedVisualPresets, []);
+  }
+  assert.deepEqual(pairings.get("synthwave")?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
+  assert.equal(pairings.get("synthwave")?.visualCompatibility, "recommended");
+  assert.equal(pairings.get("synthwave")?.visualVerification?.method, "rendered-computed-style");
 });
 
 test("ecosystem manifest describes real structural selectors, thresholds, and tokens", () => {

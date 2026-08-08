@@ -151,6 +151,7 @@ Each personality is a token/topology profile consumed by the shared recipe engin
 | `layout-style-css/utilities.css` | Small structural utility set |
 | `layout-style-css/personalities.css` | All sixteen profiles |
 | `layout-style-css/personalities/minimal-saas.css` | One profile; substitute any public personality name |
+| `layout-style-css/personalities.json` | Public layout-to-visual pairing recommendations |
 | `layout-style-css/package.json` | Package metadata |
 
 The cascade order is `ly.reset`, `ly.tokens`, `ly.wrappers`, `ly.primitives`, `ly.recipes`, `ly.utilities`, and `ly.personalities`.
@@ -167,6 +168,8 @@ import "layout-style-css";
 ```
 
 This order lets UI Style Kit establish paint and theme roles, Interactive Surface add interaction states, and Layout apply structure.
+
+`data-ly-layout`, `data-ui`, `data-theme`, and `data-mode` are independently selectable. See [Layout Styles](docs/wiki/Layout-Styles.md#visual-pairing-guidance) for the full recommendation matrix; pairings are never dependencies.
 
 ## CDN
 

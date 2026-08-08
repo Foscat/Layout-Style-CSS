@@ -31,6 +31,7 @@ const requiredArtifactFiles = [
   "robots.txt",
   "sitemap.xml",
   "site.webmanifest",
+  "personalities.json",
   "assets/favicon.svg",
   "assets/apple-touch-icon.svg",
   "assets/social-card.png",
@@ -72,7 +73,8 @@ assert(
 for (const { attribute, path } of [
   { attribute: "href", path: "demo.css" },
   { attribute: "src", path: "demo.js" },
-  { attribute: "href", path: "dist/layout-style-css.css" }
+  { attribute: "href", path: "dist/layout-style-css.css" },
+  { attribute: "data-personalities-url", path: "personalities.json" }
 ]) {
   const contents = readFileSync(join(outputDir, ...path.split("/")));
   const fingerprint = createHash("sha256").update(contents).digest("hex").slice(0, 12);
