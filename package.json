@@ -32,7 +32,8 @@
     "pages:build": "node scripts/build-pages.mjs",
     "lint": "stylelint \"styles/**/*.css\" \"demo/**/*.css\"",
     "check:demo-js": "node --check demo/demo.js",
-    "test:static": "node --test test/manifest-contract.test.mjs && node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
+    "check:ownership": "node scripts/check-css-ownership.mjs",
+    "test:static": "node --test test/manifest-contract.test.mjs test/ownership-boundaries.test.mjs && node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
     "test:demo:quick": "node test/demo-smoke.test.mjs --quick --browser=chromium",
     "test:demo:chromium": "node test/demo-smoke.test.mjs --browser=chromium",
     "test:demo:firefox": "node test/demo-smoke.test.mjs --browser=firefox",
@@ -41,8 +42,8 @@
     "test:pages": "node test/pages-artifact.test.mjs",
     "test": "npm run test:static && npm run test:demo:quick && npm run test:pages",
     "test:full": "npm run test:static && npm run test:demo:all && npm run test:pages",
-    "check": "npm run build && npm run lint && npm run check:demo-js && npm test && npm run pack:dry-run",
-    "check:full": "npm run build && npm run lint && npm run check:demo-js && npm run test:full && npm run pack:dry-run",
+    "check": "npm run build && npm run check:ownership && npm run lint && npm run check:demo-js && npm test && npm run pack:dry-run",
+    "check:full": "npm run build && npm run check:ownership && npm run lint && npm run check:demo-js && npm run test:full && npm run pack:dry-run",
     "pack:dry-run": "npm pack --dry-run --ignore-scripts",
     "publish:dry-run": "npm publish --dry-run --access public --ignore-scripts",
     "release:verify": "npm run check:full && npm audit --audit-level=moderate && npm run publish:dry-run",
@@ -54,6 +55,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
+    "css-tree": "3.2.1",
     "interactive-surface-css": "1.5.0",
     "stylelint": "17.14.0",
     "ui-style-kit-css": "2.1.0"
