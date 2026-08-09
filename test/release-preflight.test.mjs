@@ -10,6 +10,8 @@ const rootDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
+const reviewedUiFixtureRevision =
+  "bdbb6a7e432f30b92de206cac6a00fe85394190c";
 let releaseContract;
 try {
   releaseContract = await import("../scripts/release-fixture-contract.mjs");
@@ -26,7 +28,7 @@ test("pins an immutable reviewed UI release fixture and writes exact checkout ou
   const descriptor = releaseContract.readFixtureDescriptor(rootDir);
   assert.deepEqual(descriptor, {
     repository: "Foscat/ui-style-kit-css",
-    revision: "0080528295e485a340959c602f35b47ff5b8fea3",
+    revision: reviewedUiFixtureRevision,
   });
 
   const tempRoot = fs.mkdtempSync(
@@ -37,7 +39,7 @@ test("pins an immutable reviewed UI release fixture and writes exact checkout ou
     releaseContract.writeGithubOutputs(descriptor, outputPath);
     assert.equal(
       fs.readFileSync(outputPath, "utf8"),
-      "ui_repository=Foscat/ui-style-kit-css\nui_revision=0080528295e485a340959c602f35b47ff5b8fea3\n",
+      `ui_repository=Foscat/ui-style-kit-css\nui_revision=${reviewedUiFixtureRevision}\n`,
     );
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -53,6 +55,23 @@ test("pull requests execute read-only preflight and npm publish stays downstream
   assert.doesNotThrow(() =>
     releaseContract.validateRepositoryWorkflows(rootDir),
   );
+
+  for (const workflowName of ["ci.yml", "npm-publish.yml"]) {
+    const workflow = fs.readFileSync(
+      path.join(rootDir, ".github", "workflows", workflowName),
+      "utf8",
+    );
+    assert.match(
+      workflow,
+      /node scripts\/release-fixture-contract\.mjs --write-github-outputs/,
+      `${workflowName} must resolve the reviewed UI descriptor.`,
+    );
+    assert.match(
+      workflow,
+      /ref: \$\{\{ steps\.ui_fixture\.outputs\.ui_revision \}\}/,
+      `${workflowName} must check out the exact descriptor revision.`,
+    );
+  }
 });
 
 test("workflow policy rejects every release or deployment mutation from pull requests", () => {
@@ -150,6 +169,8 @@ test("publishing guide records the immutable bootstrap and merge sequence", () =
 
   // The operator guide must follow the same immutable revision used by release automation.
   assert.match(guide, new RegExp(uiFixture.revision, "i"));
+  assert.equal(uiFixture.revision, reviewedUiFixtureRevision);
+  assert.match(guide, new RegExp(reviewedUiFixtureRevision, "i"));
 
   for (const phrase of [
     "Push a stable UI bootstrap ref",

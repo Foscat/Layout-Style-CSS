@@ -23,6 +23,7 @@ const recipesGuide = read("docs", "wiki", "Layout-Recipes.md");
 const stylesGuide = read("docs", "wiki", "Layout-Styles.md");
 const demoGuide = read("docs", "wiki", "Demo-And-GitHub-Pages.md");
 const release = read("docs", "wiki", "Release-And-Publishing.md");
+const releaseFixture = JSON.parse(read("ecosystem-release-fixture.json"));
 const support = read("docs", "wiki", "Security-And-Support.md");
 const sidebar = read("docs", "wiki", "_Sidebar.md");
 const v2Surface = JSON.parse(read("test", "fixtures", "v2-public-selectors.json"));
@@ -265,6 +266,18 @@ assert(
     release.includes("v3.0.1") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
+);
+assert.deepEqual(
+  releaseFixture,
+  {
+    repository: "Foscat/ui-style-kit-css",
+    revision: "bdbb6a7e432f30b92de206cac6a00fe85394190c"
+  },
+  "Release automation must pin the reviewed UI Layout 3.0.1 bootstrap commit."
+);
+assert(
+  release.includes(releaseFixture.revision),
+  "Release documentation must name the exact reviewed UI fixture revision."
 );
 assert(support.includes("`3.x` | Yes"), "Support table must identify the supported v3 line.");
 assert(sidebar.includes("Migrating To 3.0"), "Wiki navigation must link the v3 migration guide.");
