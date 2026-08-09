@@ -79,8 +79,19 @@ jobs:
       - name: Install Playwright browsers
         run: npx --no-install playwright install --with-deps chromium firefox webkit
 
-      - name: Verify release package
-        run: npm run release:verify
+      # These checks are deliberately local-only. release:verify includes the
+      # ecosystem preflight, which cannot run until immutable fixtures are staged.
+      - name: Run non-ecosystem release checks
+        run: npm run check:full
+
+      - name: Audit release dependencies
+        run: npm audit --audit-level=moderate
+
+      - name: Inspect package tarball
+        run: npm run pack:dry-run
+
+      - name: Exercise publish packaging without lifecycle scripts
+        run: npm run publish:dry-run
 
       - name: Resolve immutable UI release fixture
         id: ui_fixture
@@ -122,6 +133,6 @@ jobs:
         run: npm run release:preflight -- --fixture-root $GITHUB_WORKSPACE/_ecosystem/ui-style-kit-css --interactive-repo $GITHUB_WORKSPACE/_ecosystem/Interactive-Surface-CSS --interactive-docs-repo $GITHUB_WORKSPACE/_ecosystem/Interactive-Surface-CSS --layout-docs-repo $GITHUB_WORKSPACE
 
       - name: Publish package to npm
-        run: npm publish --access public --provenance
+        run: npm publish --access public --provenance --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

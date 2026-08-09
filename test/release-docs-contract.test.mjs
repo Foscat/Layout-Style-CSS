@@ -284,7 +284,13 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
 assert(publishWorkflow.includes("for example v3.0.0"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
-assert(publishWorkflow.includes("npm run release:verify"));
+assert(
+  !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&
+    publishWorkflow.includes("npm run check:full") &&
+    publishWorkflow.includes("npm audit --audit-level=moderate") &&
+    publishWorkflow.includes("npm run pack:dry-run"),
+  "Publish workflow must run non-ecosystem checks before staging immutable fixtures."
+);
 assert(
   publishWorkflow.includes("environment:") && publishWorkflow.includes("name: npm"),
   "Publish job must use the protected npm GitHub Environment."
