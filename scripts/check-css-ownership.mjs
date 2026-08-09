@@ -35,12 +35,14 @@ const nativeStatePseudos = new Set([
   "open",
   "optional",
   "placeholder-shown",
+  "popover-open",
   "read-only",
   "read-write",
   "required",
   "target",
   "user-invalid",
   "valid",
+  "visited",
 ]);
 const commonStateClasses = new Set([
   "is-active",
@@ -53,6 +55,7 @@ const commonStateClasses = new Set([
   "is-selected",
 ]);
 const stateAttributes = new Set([
+  "disabled",
   "aria-busy",
   "aria-checked",
   "aria-current",
@@ -142,18 +145,42 @@ export function validateAllowlist({ entries, now = new Date() }) {
 
 function isVisualPaintProperty(property) {
   if (visualPaintProperties.has(property)) return true;
-  if (/^border(?:$|-(?!collapse$|image(?:-|$)|radius(?:-|$)|spacing$))/.test(property)) {
+  if (/^border(?:$|-(?!collapse$|radius(?:-|$)|spacing$))/.test(property)) {
     return true;
   }
   if (/^outline(?:$|-(?!offset$))/.test(property)) return true;
   return /^text-decoration(?:-|$)/.test(property);
 }
 
+function manifestStateClasses(manifest) {
+  const stateSuffixes = new Set([...commonStateClasses].map((name) => name.replace(/^is-/, "")));
+  const manifestClasses = new Set([
+    ...(manifest.selectors?.stateClasses ?? []),
+    ...(manifest.classApi?.stateClasses ?? []),
+  ].map((selector) => selector.replace(/^\./, "").toLowerCase()));
+
+  for (const preset of manifest.presets ?? []) {
+    const suffixes = [
+      ...(manifest.classApi?.universalVisualSuffixes ?? []),
+      ...(manifest.classApi?.presetExtras?.[preset.id] ?? []),
+    ];
+    for (const suffix of suffixes) {
+      if (
+        stateSuffixes.has(suffix) ||
+        [...stateSuffixes].some((state) => suffix.endsWith(`-${state}`))
+      ) {
+        manifestClasses.add(`${preset.prefix}-${suffix}`.toLowerCase());
+      }
+    }
+  }
+
+  return manifestClasses;
+}
+
 function selectorHasState(rule, manifest) {
-  const manifestClasses = manifest.selectors?.stateClasses ?? [];
   const stateClasses = new Set([
     ...commonStateClasses,
-    ...manifestClasses.map((selector) => selector.replace(/^\./, "").toLowerCase()),
+    ...manifestStateClasses(manifest),
   ]);
   let stateful = false;
 

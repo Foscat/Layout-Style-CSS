@@ -27,6 +27,12 @@ test("layout rejects visual paint while permitting structural declarations", () 
     .ly-wrapper { border-top: 1px solid red; }
     .ly-wrapper { filter: drop-shadow(0 2px 4px red); }
     .ly-wrapper { text-decoration-color: red; }
+    .x {
+      border-image: url("frame.svg") 30;
+      border-radius: 1rem;
+      border-spacing: 1rem;
+      border-collapse: collapse;
+    }
   `;
   const result = auditOwnership({ css, allowlist: [], now: reviewedAt });
 
@@ -73,6 +79,13 @@ test("layout rejects visual paint while permitting structural declarations", () 
       line: 6,
       rule: "layout-visual-paint",
     },
+    {
+      target: "layout",
+      selector: ".x",
+      property: "border-image",
+      line: 8,
+      rule: "layout-visual-paint",
+    },
   ]);
 });
 
@@ -84,11 +97,20 @@ test("layout rejects native, data, and hover mechanics but permits static transf
     .ly-offset:hover { animation-name: pulse; }
     :is(.ly-offset, .custom-state) { transition: opacity 150ms; }
     :where(button:not(:disabled)) { translate: 0 -1px; }
+    :is(a:visited, button:popover-open) { transition-property: transform; }
+    :where(button[disabled], .saas-disabled) { animation: pulse 1s; }
   `;
   const result = auditOwnership({
     css,
     allowlist: [],
-    manifest: { selectors: { stateClasses: [".custom-state"] } },
+    manifest: {
+      selectors: { stateClasses: [".custom-state"] },
+      presets: [{ id: "minimal-saas", prefix: "saas" }],
+      classApi: {
+        universalVisualSuffixes: ["disabled"],
+        presetExtras: { "minimal-saas": [] },
+      },
+    },
     now: reviewedAt,
   });
 
@@ -126,6 +148,20 @@ test("layout rejects native, data, and hover mechanics but permits static transf
       selector: ":where(button:not(:disabled))",
       property: "translate",
       line: 7,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ":is(a:visited,button:popover-open)",
+      property: "transition-property",
+      line: 8,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ":where(button[disabled],.saas-disabled)",
+      property: "animation",
+      line: 9,
       rule: "layout-interaction-transform",
     },
   ]);
