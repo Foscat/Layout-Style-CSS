@@ -89,6 +89,32 @@ test("layout rejects visual paint while permitting structural declarations", () 
   ]);
 });
 
+test("layout rejects every color-bearing property family", () => {
+  const literals = [
+    ["accent-color", "#ff0066"],
+    ["caret-color", "red"],
+    ["column-rule-color", "blue"],
+    ["color", "red"],
+    ["color-scheme", "dark"],
+    ["fill", "red"],
+    ["stroke", "blue"],
+    ["flood-color", "red"],
+    ["lighting-color", "blue"],
+    ["stop-color", "red"],
+    ["scrollbar-color", "red blue"],
+  ];
+
+  for (const [property, value] of literals) {
+    const result = auditOwnership({
+      css: `.ly-wrapper { ${property}: ${value}; }`,
+      allowlist: [],
+      now: reviewedAt,
+    });
+    assert.equal(result.violations.length, 1, property);
+    assert.equal(result.violations[0].rule, "layout-visual-paint", property);
+  }
+});
+
 test("layout rejects native, data, and hover mechanics but permits static transforms", () => {
   const css = `
     .ly-offset { transform: translateX(1rem); }

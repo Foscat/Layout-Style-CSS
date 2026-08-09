@@ -191,6 +191,7 @@ export function validateAllowlist({ entries, now = new Date() }) {
 
 function isVisualPaintProperty(property) {
   if (visualPaintProperties.has(property)) return true;
+  if (property === "color-scheme" || property.endsWith("-color")) return true;
   if (/^border(?:$|-(?!collapse$|radius(?:-|$)|spacing$))/.test(property)) {
     return true;
   }
