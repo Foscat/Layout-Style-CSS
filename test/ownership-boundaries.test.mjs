@@ -99,6 +99,9 @@ test("layout rejects native, data, and hover mechanics but permits static transf
     :where(button:not(:disabled)) { translate: 0 -1px; }
     :is(a:visited, button:popover-open) { transition-property: transform; }
     :where(button[disabled], .saas-disabled) { animation: pulse 1s; }
+    :is(a:any-link, details[open]) { transition: opacity 100ms; }
+    :where(input[checked], input[required]) { animation: pulse 1s; }
+    :is(option[selected], textarea[readonly], [hidden]) { transform: scale(.98); }
   `;
   const result = auditOwnership({
     css,
@@ -164,7 +167,88 @@ test("layout rejects native, data, and hover mechanics but permits static transf
       line: 9,
       rule: "layout-interaction-transform",
     },
+    {
+      target: "layout",
+      selector: ":is(a:any-link,details[open])",
+      property: "transition",
+      line: 10,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ":where(input[checked],input[required])",
+      property: "animation",
+      line: 11,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ":is(option[selected],textarea[readonly],[hidden])",
+      property: "transform",
+      line: 12,
+      rule: "layout-interaction-transform",
+    },
   ]);
+});
+
+test("layout recognizes common state suffixes with its real manifest", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(new URL("../manifest.json", import.meta.url), "utf8"),
+  );
+  const css = `
+    .saas-disabled { transform: scale(.98); }
+    .result-selected { animation: pulse 1s; }
+    .navigation-active { transition: opacity 100ms; }
+    .card-static { transform: translateY(0); }
+  `;
+  const result = auditOwnership({ css, allowlist: [], manifest, now: reviewedAt });
+
+  assert.deepEqual(result.violations, [
+    {
+      target: "layout",
+      selector: ".saas-disabled",
+      property: "transform",
+      line: 2,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ".result-selected",
+      property: "animation",
+      line: 3,
+      rule: "layout-interaction-transform",
+    },
+    {
+      target: "layout",
+      selector: ".navigation-active",
+      property: "transition",
+      line: 4,
+      rule: "layout-interaction-transform",
+    },
+  ]);
+});
+
+test("layout recognizes every reflected native state inside functional selectors", () => {
+  const selectors = [
+    ":is(.surface,a:any-link)",
+    ":where(.surface,details[open])",
+    ":not(input[checked])",
+    ":is(.surface,input[required])",
+    ":where(.surface,option[selected])",
+    ":is(.surface,textarea[readonly])",
+    ":where(.surface,[hidden])",
+  ];
+
+  for (const selector of selectors) {
+    const result = auditOwnership({
+      css: `${selector} { transform: scale(.98); }`,
+      allowlist: [],
+      now: reviewedAt,
+    });
+
+    assert.equal(result.violations.length, 1, selector);
+    assert.equal(result.violations[0].selector, selector);
+  }
 });
 
 test("allowlist rejects every malformed, stale, broad, duplicate, and unmatched mutation", () => {

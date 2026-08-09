@@ -23,6 +23,7 @@ const visualPaintProperties = new Set([
 const transformProperties = new Set(["rotate", "scale", "transform", "translate"]);
 const nativeStatePseudos = new Set([
   "active",
+  "any-link",
   "checked",
   "disabled",
   "enabled",
@@ -54,8 +55,18 @@ const commonStateClasses = new Set([
   "is-pressed",
   "is-selected",
 ]);
+const commonStateSuffixes = new Set(
+  [...commonStateClasses].map((name) => name.replace(/^is-/, "")),
+);
+// Reflected native attributes are state selectors even when no pseudo-class is used.
 const stateAttributes = new Set([
+  "checked",
   "disabled",
+  "hidden",
+  "open",
+  "readonly",
+  "required",
+  "selected",
   "aria-busy",
   "aria-checked",
   "aria-current",
@@ -153,7 +164,6 @@ function isVisualPaintProperty(property) {
 }
 
 function manifestStateClasses(manifest) {
-  const stateSuffixes = new Set([...commonStateClasses].map((name) => name.replace(/^is-/, "")));
   const manifestClasses = new Set([
     ...(manifest.selectors?.stateClasses ?? []),
     ...(manifest.classApi?.stateClasses ?? []),
@@ -166,8 +176,8 @@ function manifestStateClasses(manifest) {
     ];
     for (const suffix of suffixes) {
       if (
-        stateSuffixes.has(suffix) ||
-        [...stateSuffixes].some((state) => suffix.endsWith(`-${state}`))
+        commonStateSuffixes.has(suffix) ||
+        [...commonStateSuffixes].some((state) => suffix.endsWith(`-${state}`))
       ) {
         manifestClasses.add(`${preset.prefix}-${suffix}`.toLowerCase());
       }
@@ -193,8 +203,12 @@ function selectorHasState(rule, manifest) {
       ) {
         stateful = true;
       }
-      if (node.type === "ClassSelector" && stateClasses.has(node.name.toLowerCase())) {
-        stateful = true;
+      if (node.type === "ClassSelector") {
+        const className = node.name.toLowerCase();
+        const hasCommonStateSuffix = [...commonStateSuffixes].some((suffix) =>
+          className.endsWith(`-${suffix}`),
+        );
+        if (stateClasses.has(className) || hasCommonStateSuffix) stateful = true;
       }
       if (
         node.type === "AttributeSelector" &&
