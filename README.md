@@ -24,6 +24,8 @@ import "layout-style-css";
 
 The full bundle includes the core modules and all personality profiles. No breakpoint configuration, wrapper, JavaScript, or companion library is required.
 
+Package and bundler defaults (`main`, `style`, and the root export) resolve to the readable `dist/layout-style-css.css` bundle for straightforward inspection and debugging. The `unpkg` and `jsdelivr` convenience fields remain minified, and `layout-style-css/min.css` is the explicit minified package import.
+
 ## Zero-Configuration Start
 
 Use `.ly-root` as the responsive boundary and keep the mobile DOM order authoritative:

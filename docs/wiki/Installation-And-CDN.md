@@ -18,6 +18,8 @@ import "layout-style-css";
 
 The root import is the zero-configuration full bundle. Focused exports are:
 
+Package and bundler defaults (`main`, `style`, and the root export) use the readable `dist/layout-style-css.css` file. The `unpkg` and `jsdelivr` convenience fields use `dist/layout-style-css.min.css`; package consumers can select the same minified output explicitly with `layout-style-css/min.css`.
+
 - `layout-style-css/min.css`
 - `layout-style-css/core.css`
 - `layout-style-css/foundation.css`

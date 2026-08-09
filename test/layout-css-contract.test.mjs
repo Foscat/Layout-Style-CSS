@@ -70,7 +70,11 @@ const expectedPublishedFiles = [
   "dist/personalities.css",
   "dist/personalities/*.css",
   "personalities.json",
-  "manifest.json"
+  "manifest.json",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "docs/wiki"
 ];
 const flattenedSourceFiles = [
   "foundation.css",
@@ -128,6 +132,21 @@ const [packReport] = JSON.parse(packResult.stdout);
 const expectedTarballFiles = [
   "LICENSE",
   "README.md",
+  "CHANGELOG.md",
+  "docs/wiki/Contributing.md",
+  "docs/wiki/Demo-And-GitHub-Pages.md",
+  "docs/wiki/Getting-Started.md",
+  "docs/wiki/Home.md",
+  "docs/wiki/Installation-And-CDN.md",
+  "docs/wiki/Layout-Primitives.md",
+  "docs/wiki/Layout-Recipes.md",
+  "docs/wiki/Layout-Styles.md",
+  "docs/wiki/Migrating-To-2.0.md",
+  "docs/wiki/Migrating-To-3.0.md",
+  "docs/wiki/Release-And-Publishing.md",
+  "docs/wiki/Security-And-Support.md",
+  "docs/wiki/UI-Style-Kit-Compatibility.md",
+  "docs/wiki/_Sidebar.md",
   "personalities.json",
   "manifest.json",
   "package.json",

@@ -4,7 +4,7 @@
   "description": "Dependency-free structural CSS for responsive wrappers, composition primitives, recipes, utilities, and layout personalities.",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://github.com/Foscat/layout-style-css#readme",
+  "homepage": "https://foscat.github.io/Layout-Style-CSS/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Foscat/layout-style-css.git"
@@ -24,7 +24,7 @@
     "shell-layouts"
   ],
   "main": "dist/layout-style-css.css",
-  "style": "dist/layout-style-css.min.css",
+  "style": "dist/layout-style-css.css",
   "unpkg": "dist/layout-style-css.min.css",
   "jsdelivr": "dist/layout-style-css.min.css",
   "scripts": {
@@ -33,7 +33,7 @@
     "lint": "stylelint \"styles/**/*.css\" \"demo/**/*.css\"",
     "check:demo-js": "node --check demo/demo.js",
     "check:ownership": "node scripts/check-css-ownership.mjs",
-    "test:static": "node --test --test-concurrency=1 test/manifest-contract.test.mjs test/ownership-boundaries.test.mjs test/release-preflight.test.mjs && node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
+    "test:static": "node --test --test-concurrency=1 test/manifest-contract.test.mjs test/ownership-boundaries.test.mjs test/package-contract.test.mjs test/release-preflight.test.mjs && node test/layout-css-contract.test.mjs && node test/release-docs-contract.test.mjs",
     "test:demo:quick": "node test/demo-smoke.test.mjs --quick --browser=chromium",
     "test:demo:chromium": "node test/demo-smoke.test.mjs --browser=chromium",
     "test:demo:firefox": "node test/demo-smoke.test.mjs --browser=firefox",
@@ -88,6 +88,10 @@
     "dist/personalities.css",
     "dist/personalities/*.css",
     "personalities.json",
-    "manifest.json"
+    "manifest.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs/wiki"
   ]
 }
