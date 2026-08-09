@@ -2,6 +2,21 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [3.0.1] - 2026-08-09
+
+### Changed
+
+- Corrected the GitHub Pages homepage used by npm, kept readable package defaults alongside explicit minified CDN metadata, and included the maintained packaged documentation.
+- Synchronized the package, lockfile, public manifest, demo metadata, Pages sitemap, release guidance, and current ecosystem contract while preserving the complete 13-export API and existing CSS behavior.
+
+### Security
+
+- Retained the audited dependency overrides and secure release tooling used by the protected publication workflow without adding runtime or peer dependencies.
+
+### Tests
+
+- Added version-sensitive package, manifest, layout, documentation, demo, Pages, release, packed-export, clean-install, and ecosystem checks for the patch candidate.
+
 ## [3.0.0] - 2026-07-29
 
 ### Breaking

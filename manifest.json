@@ -5,7 +5,7 @@
     "breakingChange": "increment-schemaVersion-before-removing-or-renaming-fields"
   },
   "name": "layout-style-css",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "entrypoints": {
     "default": "./dist/layout-style-css.css",
     "minified": "./dist/layout-style-css.min.css",

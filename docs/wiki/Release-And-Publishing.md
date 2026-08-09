@@ -1,6 +1,6 @@
 # Release And Publishing
 
-This guide describes the release gate for `layout-style-css@3.0.0`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
+This guide describes the release gate for `layout-style-css@3.0.1`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
 
 ## Local Candidate Gate
 
@@ -35,8 +35,8 @@ The bootstrap SHA is deliberately stable: companion workflows use it to load the
 
 Confirm:
 
-- package version is `3.0.0`
-- intended tag would be `v3.0.0`
+- package version is `3.0.1`
+- intended tag would be `v3.0.1`
 - runtime and peer dependencies are empty
 - exact exports and tarball files match the v3 contract
 - generated CSS matches authored sources
@@ -50,7 +50,7 @@ Only after explicit approval:
 1. Commit the verified candidate.
 2. Push the intended branch.
 3. Merge through the repository's normal review policy.
-4. Create the exact `v3.0.0` tag from the protected release commit.
+4. Create the exact `v3.0.1` tag from the protected release commit.
 5. Publish the GitHub Release.
 6. Let the protected npm workflow verify the tag and publish with provenance.
 7. Confirm the GitHub Release, tag, and npm registry state independently.

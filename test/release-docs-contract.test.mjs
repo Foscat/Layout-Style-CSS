@@ -84,7 +84,7 @@ assert(
 );
 
 for (const requiredText of [
-  "3.0.0",
+  "3.0.1",
   "Node.js 20",
   "dependency-free",
   "zero-configuration",
@@ -235,9 +235,34 @@ assert(
     changelog.includes("### Tests"),
   "Changelog must identify the dated v3 breaking release and verification work."
 );
+const patchReleaseHeadings = changelog.match(/^## \[3\.0\.1\] - 2026-08-09$/gm) ?? [];
+assert.equal(
+  patchReleaseHeadings.length,
+  1,
+  "Changelog must contain exactly one dated 3.0.1 release section."
+);
+const patchReleaseStart = changelog.indexOf(patchReleaseHeadings[0]);
+const patchReleaseEnd = changelog.indexOf("\n## [", patchReleaseStart + patchReleaseHeadings[0].length);
+const patchRelease = changelog.slice(
+  patchReleaseStart,
+  patchReleaseEnd === -1 ? changelog.length : patchReleaseEnd
+);
+for (const releaseTopic of [
+  /GitHub Pages homepage/i,
+  /readable package defaults/i,
+  /minified CDN metadata/i,
+  /packaged documentation/i,
+  /manifest/i,
+  /ecosystem/i,
+  /13-export API/i,
+  /tests/i,
+  /secure release tooling/i
+]) {
+  assert.match(patchRelease, releaseTopic, `The 3.0.1 changelog must cover ${releaseTopic}.`);
+}
 assert(
-  release.includes("layout-style-css@3.0.0") &&
-    release.includes("v3.0.0") &&
+  release.includes("layout-style-css@3.0.1") &&
+    release.includes("v3.0.1") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
 );
@@ -282,7 +307,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 }
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
-assert(publishWorkflow.includes("for example v3.0.0"));
+assert(publishWorkflow.includes("for example v3.0.1"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(
   !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&

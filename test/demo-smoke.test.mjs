@@ -128,7 +128,7 @@ const topologyEdges = [
 
 const assertStaticDemoContract = () => {
   assert.match(demoHtml, /Layout Style CSS v3/);
-  assert.match(demoHtml, /content="3\.0\.0"/);
+  assert.match(demoHtml, /content="3\.0\.1"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -136,17 +136,17 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.0"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.1"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.0\.0"/,
+    /href="\.\/demo\.css\?v=3\.0\.1"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.0\.0"/,
+    /src="\.\/demo\.js\?v=3\.0\.1"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
@@ -445,7 +445,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
 };
 
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.0.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.0.1", baseUrl).toString();
   const pairingFixture = {
     schemaVersion: 1,
     personalities: [
@@ -537,7 +537,7 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
 };
 
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.0.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.0.1", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
   const recoveryPage = await recoveryContext.newPage();
 

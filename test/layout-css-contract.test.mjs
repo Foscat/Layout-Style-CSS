@@ -106,7 +106,7 @@ function minifyCss(css) {
     .trim();
 }
 
-assert.equal(packageJson.version, "3.0.0", "The v3 branch must expose version 3.0.0");
+assert.equal(packageJson.version, "3.0.1", "The v3 branch must expose version 3.0.1");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(

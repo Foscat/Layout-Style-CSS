@@ -14,6 +14,9 @@ const manifest = JSON.parse(
 const packageLock = JSON.parse(
   await readFile(join(repositoryRoot, "package-lock.json"), "utf8"),
 );
+const ecosystemManifest = JSON.parse(
+  await readFile(join(repositoryRoot, "manifest.json"), "utf8"),
+);
 // Exact overrides keep the release audit deterministic without promoting transitive tooling to direct dependencies.
 const expectedSecurityOverrides = {
   "fast-uri": "3.1.5",
@@ -124,6 +127,14 @@ test("package defaults and homepage expose the intended distribution contract", 
       `package.json files[] must include ${requiredFile}`,
     );
   }
+});
+
+test("release metadata stays synchronized for the 3.0.1 patch", () => {
+  assert.equal(manifest.version, "3.0.1");
+  assert.equal(packageLock.version, "3.0.1");
+  assert.equal(packageLock.packages[""].version, "3.0.1");
+  assert.equal(ecosystemManifest.version, "3.0.1");
+  assert.equal(Object.keys(manifest.exports).length, 13);
 });
 
 test("release security overrides resolve audited transitive tooling", () => {
