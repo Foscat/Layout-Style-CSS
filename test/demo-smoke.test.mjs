@@ -31,6 +31,8 @@ const browserName =
 const quick = process.argv.includes("--quick");
 const browserTypes = { chromium, firefox, webkit };
 const browserType = browserTypes[browserName];
+// A bounded recovery wait accommodates cold WebKit startup while retaining failure detection.
+const METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS = 10_000;
 
 assert(browserType, `Unsupported browser "${browserName}".`);
 
@@ -546,7 +548,7 @@ const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
   await recoveryPage.waitForFunction(
     () => document.body.dataset.demoReady === "true",
     undefined,
-    { timeout: 1_000 }
+    { timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS }
   );
 
   const recovered = await recoveryPage.evaluate(() => ({

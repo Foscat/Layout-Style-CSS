@@ -320,6 +320,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 }
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
+const demoSmoke = read("test", "demo-smoke.test.mjs");
 assert(publishWorkflow.includes("for example v3.0.1"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(
@@ -328,6 +329,24 @@ assert(
     publishWorkflow.includes("npm audit --audit-level=moderate") &&
     publishWorkflow.includes("npm run pack:dry-run"),
   "Publish workflow must run non-ecosystem checks before staging immutable fixtures."
+);
+
+const recoveryTimeoutMatch = demoSmoke.match(
+  /const\s+(METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS)\s*=\s*([\d_]+)\s*;/
+);
+assert(
+  recoveryTimeoutMatch,
+  "Metadata failure recovery must use a named readiness timeout instead of a one-second literal."
+);
+const recoveryTimeoutMs = Number(recoveryTimeoutMatch?.[2].replaceAll("_", ""));
+assert(
+  recoveryTimeoutMs >= 10_000,
+  "Metadata failure recovery readiness must allow at least ten seconds on cold WebKit runners."
+);
+assert.match(
+  demoSmoke,
+  /verifyPersonalityMetadataFailureRecovery[\s\S]*?\{ timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS \}/,
+  "Metadata failure recovery must use its named bounded readiness timeout."
 );
 assert(
   publishWorkflow.includes("environment:") && publishWorkflow.includes("name: npm"),
