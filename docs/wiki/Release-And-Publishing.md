@@ -13,7 +13,9 @@ npm run release:verify
 git diff --check
 ```
 
-`npm run release:verify` includes `npm audit --audit-level=moderate`, the cross-engine browser matrix, Pages verification, tarball dry-run, and publish dry-run. It does not publish.
+`npm run release:verify` includes `npm audit --audit-level=moderate`, the cross-engine browser matrix, Pages verification, tarball dry-run, publish dry-run, and `npm run release:preflight`. It does not publish.
+
+The read-only ecosystem preflight uses the immutable UI fixture in `ecosystem-release-fixture.json`, overrides Layout Style with the candidate tarball, queries npm for every exact documented minimum/current version, resolves all packed exports (including personality modules), validates maintained documentation, and runs the reviewed clean-install matrices. Pull requests execute this same gate without enabling publish, tag, release, or deployment mutations.
 
 The package's `prepublishOnly` script runs `npm run release:verify`, so a direct npm publish uses the same full gate.
 
