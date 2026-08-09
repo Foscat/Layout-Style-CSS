@@ -29,6 +29,29 @@ Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interac
 
 The personality name does not promise colors, typography, borders, shadows, or interaction states. Pair the same name across libraries when desired, but import each library explicitly and let it own its layer.
 
+## Visual Pairing Guidance
+
+[`layout-style-css/personalities.json`](../../personalities.json) is the public, machine-readable pairing source used by the demo. Its entries are recommendations, never dependencies: `data-ly-layout`, `data-ui`, `data-theme`, and `data-mode` are independently selectable on the same document.
+
+| Layout personality | Visual pairing guidance |
+| --- | --- |
+| Minimal SaaS | Native match: `minimal-saas` |
+| Bento | Native match: `bento` |
+| Maximalist | Native match: `maximalist` |
+| Bauhaus | Native match: `bauhaus` |
+| Tactile | Native match: `tactile` |
+| Neumorphism | Native match: `neumorphism` |
+| Retrofuturism | Native match: `retrofuturism` |
+| Brutalism | Native match: `brutalism` |
+| Cyberpunk | Native match: `cyberpunk` |
+| Y2K | Native match: `y2k` |
+| Retro Glass | Native match: `retro-glass` |
+| F-pattern | Any visual preset; this is structure only |
+| Z-pattern | Any visual preset; this is structure only |
+| Split Screen | Any visual preset; this is structure only |
+| Mondrian | Any visual preset; this is structure only |
+| Synthwave | Recommended: `cyberpunk` or `retrofuturism`; the browser contract verifies each preset's distinct rendered article shadow while retaining `data-ly-layout="synthwave"` |
+
 ## Customization
 
 Override public tokens at `.ly-root` or a narrower scope:

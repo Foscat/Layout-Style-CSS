@@ -23,6 +23,7 @@ const recipesGuide = read("docs", "wiki", "Layout-Recipes.md");
 const stylesGuide = read("docs", "wiki", "Layout-Styles.md");
 const demoGuide = read("docs", "wiki", "Demo-And-GitHub-Pages.md");
 const release = read("docs", "wiki", "Release-And-Publishing.md");
+const releaseFixture = JSON.parse(read("ecosystem-release-fixture.json"));
 const support = read("docs", "wiki", "Security-And-Support.md");
 const sidebar = read("docs", "wiki", "_Sidebar.md");
 const v2Surface = JSON.parse(read("test", "fixtures", "v2-public-selectors.json"));
@@ -67,15 +68,24 @@ const currentGuidanceCorpus = [
     "Layout-Primitives.md",
     "Layout-Recipes.md",
     "Layout-Styles.md",
-    "Migrating-To-3.0.md",
     "Release-And-Publishing.md",
     "Security-And-Support.md",
     "UI-Style-Kit-Compatibility.md"
   ].map((file) => read("docs", "wiki", file))
 ].join("\n");
 
+assert(
+  !currentGuidanceCorpus.includes("layout-style-css/bridge.css"),
+  "Current v3 setup documentation must not require the removed bridge.css export."
+);
+assert(
+  migration.includes("layout-style-css/bridge.css") &&
+    /bridge\.css[^\n]*(?:removed|not shipped)/i.test(migration),
+  "Migration documentation must identify layout-style-css/bridge.css as removed from v3."
+);
+
 for (const requiredText of [
-  "3.0.0",
+  "3.0.1",
   "Node.js 20",
   "dependency-free",
   "zero-configuration",
@@ -226,15 +236,57 @@ assert(
     changelog.includes("### Tests"),
   "Changelog must identify the dated v3 breaking release and verification work."
 );
+const patchReleaseHeadings = changelog.match(/^## \[3\.0\.1\] - 2026-08-09$/gm) ?? [];
+assert.equal(
+  patchReleaseHeadings.length,
+  1,
+  "Changelog must contain exactly one dated 3.0.1 release section."
+);
+const patchReleaseStart = changelog.indexOf(patchReleaseHeadings[0]);
+const patchReleaseEnd = changelog.indexOf("\n## [", patchReleaseStart + patchReleaseHeadings[0].length);
+const patchRelease = changelog.slice(
+  patchReleaseStart,
+  patchReleaseEnd === -1 ? changelog.length : patchReleaseEnd
+);
+for (const releaseTopic of [
+  /GitHub Pages homepage/i,
+  /readable package defaults/i,
+  /minified CDN metadata/i,
+  /packaged documentation/i,
+  /manifest/i,
+  /ecosystem/i,
+  /13-export API/i,
+  /tests/i,
+  /secure release tooling/i
+]) {
+  assert.match(patchRelease, releaseTopic, `The 3.0.1 changelog must cover ${releaseTopic}.`);
+}
 assert(
-  release.includes("layout-style-css@3.0.0") &&
-    release.includes("v3.0.0") &&
+  release.includes("layout-style-css@3.0.1") &&
+    release.includes("v3.0.1") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
+);
+assert.deepEqual(
+  releaseFixture,
+  {
+    repository: "Foscat/ui-style-kit-css",
+    revision: "bdbb6a7e432f30b92de206cac6a00fe85394190c"
+  },
+  "Release automation must pin the reviewed UI Layout 3.0.1 bootstrap commit."
+);
+assert(
+  release.includes(releaseFixture.revision),
+  "Release documentation must name the exact reviewed UI fixture revision."
 );
 assert(support.includes("`3.x` | Yes"), "Support table must identify the supported v3 line.");
 assert(sidebar.includes("Migrating To 3.0"), "Wiki navigation must link the v3 migration guide.");
 
+// The manifest contract rebuilds dist, so built-artifact ownership tests must not overlap it.
+assert(
+  packageJson.scripts["test:static"].includes("--test-concurrency=1"),
+  "Static contract files must run sequentially to keep generated dist reads deterministic."
+);
 assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick --browser=chromium");
 for (const browser of ["chromium", "firefox", "webkit"]) {
   assert.equal(
@@ -268,9 +320,34 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 }
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
-assert(publishWorkflow.includes("for example v3.0.0"));
+const demoSmoke = read("test", "demo-smoke.test.mjs");
+assert(publishWorkflow.includes("for example v3.0.1"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
-assert(publishWorkflow.includes("npm run release:verify"));
+assert(
+  !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&
+    publishWorkflow.includes("npm run check:full") &&
+    publishWorkflow.includes("npm audit --audit-level=moderate") &&
+    publishWorkflow.includes("npm run pack:dry-run"),
+  "Publish workflow must run non-ecosystem checks before staging immutable fixtures."
+);
+
+const recoveryTimeoutMatch = demoSmoke.match(
+  /const\s+(METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS)\s*=\s*([\d_]+)\s*;/
+);
+assert(
+  recoveryTimeoutMatch,
+  "Metadata failure recovery must use a named readiness timeout instead of a one-second literal."
+);
+const recoveryTimeoutMs = Number(recoveryTimeoutMatch?.[2].replaceAll("_", ""));
+assert(
+  recoveryTimeoutMs >= 10_000,
+  "Metadata failure recovery readiness must allow at least ten seconds on cold WebKit runners."
+);
+assert.match(
+  demoSmoke,
+  /verifyPersonalityMetadataFailureRecovery[\s\S]*?\{ timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS \}/,
+  "Metadata failure recovery must use its named bounded readiness timeout."
+);
 assert(
   publishWorkflow.includes("environment:") && publishWorkflow.includes("name: npm"),
   "Publish job must use the protected npm GitHub Environment."

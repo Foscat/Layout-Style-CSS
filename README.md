@@ -2,7 +2,7 @@
 
 Zero-configuration, dependency-free structural CSS that responds to the width and height a layout actually receives.
 
-`layout-style-css@3.0.0` is a clean-break release. It provides intrinsic wrappers, composition primitives, seven semantic recipes, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
+`layout-style-css@3.0.1` is the current v3 patch release and preserves the clean-break structural contract introduced in 3.0.0. It provides intrinsic wrappers, composition primitives, seven semantic recipes, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ Zero-configuration, dependency-free structural CSS that responds to the width an
 ## Install
 
 ```bash
-npm install layout-style-css@3.0.0
+npm install layout-style-css@3.0.1
 ```
 
 Most applications need one import:
@@ -23,6 +23,8 @@ import "layout-style-css";
 ```
 
 The full bundle includes the core modules and all personality profiles. No breakpoint configuration, wrapper, JavaScript, or companion library is required.
+
+Package and bundler defaults (`main`, `style`, and the root export) resolve to the readable `dist/layout-style-css.css` bundle for straightforward inspection and debugging. The `unpkg` and `jsdelivr` convenience fields remain minified, and `layout-style-css/min.css` is the explicit minified package import.
 
 ## Zero-Configuration Start
 
@@ -151,6 +153,7 @@ Each personality is a token/topology profile consumed by the shared recipe engin
 | `layout-style-css/utilities.css` | Small structural utility set |
 | `layout-style-css/personalities.css` | All sixteen profiles |
 | `layout-style-css/personalities/minimal-saas.css` | One profile; substitute any public personality name |
+| `layout-style-css/personalities.json` | Public layout-to-visual pairing recommendations |
 | `layout-style-css/package.json` | Package metadata |
 
 The cascade order is `ly.reset`, `ly.tokens`, `ly.wrappers`, `ly.primitives`, `ly.recipes`, `ly.utilities`, and `ly.personalities`.
@@ -168,11 +171,13 @@ import "layout-style-css";
 
 This order lets UI Style Kit establish paint and theme roles, Interactive Surface add interaction states, and Layout apply structure.
 
+`data-ly-layout`, `data-ui`, `data-theme`, and `data-mode` are independently selectable. See [Layout Styles](docs/wiki/Layout-Styles.md#visual-pairing-guidance) for the full recommendation matrix; pairings are never dependencies.
+
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.0/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.1/dist/layout-style-css.min.css">
 ```
 
 ## Clean-Break Migration

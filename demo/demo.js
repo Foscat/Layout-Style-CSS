@@ -1,5 +1,6 @@
 const UI_STYLE_KIT_VERSION = "2.1.0";
 const UI_STYLE_KIT_MANIFEST_URL = `https://unpkg.com/ui-style-kit-css@${UI_STYLE_KIT_VERSION}/manifest.json`;
+const PERSONALITY_METADATA_URL = document.querySelector("script[data-personalities-url]")?.dataset.personalitiesUrl;
 const UI_STYLE_KIT_MANIFEST_FALLBACK = Object.freeze({
   version: UI_STYLE_KIT_VERSION,
   presets: Object.freeze([
@@ -77,6 +78,79 @@ async function loadUiStyleKitManifest() {
 }
 
 const UI_STYLE_KIT_MANIFEST = await loadUiStyleKitManifest();
+function normalizePersonalityMetadata(metadata) {
+  const personalities = Array.isArray(metadata?.personalities) ? metadata.personalities : [];
+  const validCompatibility = new Set(["native", "any", "recommended"]);
+  const normalized = personalities.map((personality) => ({
+    id: String(personality?.id ?? ""),
+    label: String(personality?.label ?? personality?.id ?? ""),
+    visualCompatibility: String(personality?.visualCompatibility ?? ""),
+    recommendedVisualPresets: Array.isArray(personality?.recommendedVisualPresets)
+      ? personality.recommendedVisualPresets.map(String)
+      : []
+  }));
+
+  if (
+    metadata?.schemaVersion !== 1 ||
+    normalized.length === 0 ||
+    normalized.some(({ id, label, visualCompatibility }) =>
+      !id || !label || !validCompatibility.has(visualCompatibility)
+    )
+  ) {
+    throw new Error("Layout personality metadata is missing a valid public pairing contract.");
+  }
+
+  return Object.freeze({
+    schemaVersion: metadata.schemaVersion,
+    personalities: Object.freeze(normalized.map((personality) => Object.freeze(personality)))
+  });
+}
+
+function minimalPersonalityFallback() {
+  return Object.freeze({
+    schemaVersion: 1,
+    personalities: Object.freeze([
+      Object.freeze({
+        id: "minimal-saas",
+        label: "Minimal SaaS",
+        visualCompatibility: "any",
+        recommendedVisualPresets: []
+      })
+    ])
+  });
+}
+
+async function loadPersonalityMetadata() {
+  try {
+    if (!PERSONALITY_METADATA_URL) {
+      throw new Error("The demo requires a local layout personality metadata URL.");
+    }
+
+    const response = await fetch(PERSONALITY_METADATA_URL, { cache: "force-cache" });
+
+    if (!response.ok) {
+      throw new Error(`Layout personality metadata request failed with HTTP ${response.status}.`);
+    }
+
+    return { metadata: normalizePersonalityMetadata(await response.json()), status: "" };
+  } catch (error) {
+    try {
+      return {
+        metadata: normalizePersonalityMetadata(window.LAYOUT_STYLE_PERSONALITY_METADATA),
+        status: "Layout pairing metadata is unavailable; using packaged fallback."
+      };
+    } catch {
+      console.error("Layout personality metadata and packaged fallback are unavailable.", error);
+      return {
+        metadata: minimalPersonalityFallback(),
+        status: "Layout pairing metadata is unavailable; Minimal SaaS remains available."
+      };
+    }
+  }
+}
+
+const PERSONALITY_METADATA_LOAD = await loadPersonalityMetadata();
+const PERSONALITY_METADATA = PERSONALITY_METADATA_LOAD.metadata;
 const ALLOWLISTS = Object.freeze({
   device: Object.freeze([
     "custom",
@@ -97,24 +171,7 @@ const ALLOWLISTS = Object.freeze({
     "gallery",
     "card-grid"
   ]),
-  personality: Object.freeze([
-    "minimal-saas",
-    "bauhaus",
-    "tactile",
-    "cyberpunk",
-    "f-pattern",
-    "brutalism",
-    "neumorphism",
-    "y2k",
-    "retro-glass",
-    "z-pattern",
-    "retrofuturism",
-    "mondrian",
-    "synthwave",
-    "bento",
-    "maximalist",
-    "split-screen"
-  ]),
+  personality: Object.freeze(PERSONALITY_METADATA.personalities.map(({ id }) => id)),
   container: Object.freeze([
     "auto",
     "20rem",
@@ -240,6 +297,7 @@ const recipePreview = document.querySelector("#recipePreview");
 const importsSnippet = document.querySelector("#importsSnippet");
 const markupSnippet = document.querySelector("#markupSnippet");
 const copyStatus = document.querySelector("#copyStatus");
+const personalityMetadataStatus = document.querySelector("#personalityMetadataStatus");
 const ecosystemStatus = document.querySelector("#ecosystemStatus");
 const containerReadout = document.querySelector("#containerReadout");
 const topologyReadout = document.querySelector("#topologyReadout");
@@ -255,6 +313,11 @@ const stateToggle = document.querySelector("#stateToggle");
 const mobileControlsQuery = window.matchMedia("(max-width: 63.999rem)");
 
 body.dataset.uiManifestVersion = UI_STYLE_KIT_MANIFEST.version;
+body.dataset.personalityMetadataVersion = String(PERSONALITY_METADATA.schemaVersion);
+syncPersonalityMetadataSelectOptions();
+if (personalityMetadataStatus) {
+  personalityMetadataStatus.textContent = PERSONALITY_METADATA_LOAD.status;
+}
 syncUiManifestSelectOptions();
 
 let state = readStateFromQuery();
@@ -437,6 +500,25 @@ function syncUiManifestSelectOptions() {
       })
     );
   }
+}
+
+function syncPersonalityMetadataSelectOptions() {
+  const select = controls.personality;
+
+  if (!select) {
+    return;
+  }
+
+  select.replaceChildren(
+    ...PERSONALITY_METADATA.personalities.map(({ id, label, visualCompatibility }) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = label;
+      option.dataset.visualCompatibility = visualCompatibility;
+      return option;
+    })
+  );
+  select.setAttribute("aria-busy", "false");
 }
 
 function syncUiKitClasses() {

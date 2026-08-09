@@ -1,6 +1,6 @@
 # Layout Style CSS v3
 
-`layout-style-css@3.0.0` is a dependency-free, CSS-only structural system for layouts that adapt to available width and height.
+`layout-style-css@3.0.1` is a dependency-free, CSS-only structural system for layouts that adapt to available width and height.
 
 ## Contract
 

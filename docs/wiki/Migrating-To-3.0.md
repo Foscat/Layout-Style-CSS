@@ -8,6 +8,7 @@
 | --- | --- |
 | `layout-style-css/legacy.css` | Canonical v3 hooks; `legacy.css` is not shipped |
 | `layout-style-css/integrations/ui-style-kit.css` | Import UI Style Kit paint explicitly; `integrations/ui-style-kit.css` is not shipped |
+| `layout-style-css/bridge.css` | Removed; compose UI Style Kit paint explicitly because `bridge.css` is not shipped |
 | `layout-style-css/css` (`./css`) | `layout-style-css` |
 | `layout-style-css/css.css` (`./css.css`) | `layout-style-css` |
 | `layout-style-css/min` (`./min`) | `layout-style-css/min.css` |

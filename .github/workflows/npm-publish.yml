@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release tag to publish, for example v3.0.0"
+        description: "Release tag to publish, for example v3.0.1"
         required: true
         type: string
 
@@ -79,10 +79,60 @@ jobs:
       - name: Install Playwright browsers
         run: npx --no-install playwright install --with-deps chromium firefox webkit
 
-      - name: Verify release package
-        run: npm run release:verify
+      # These checks are deliberately local-only. release:verify includes the
+      # ecosystem preflight, which cannot run until immutable fixtures are staged.
+      - name: Run non-ecosystem release checks
+        run: npm run check:full
+
+      - name: Audit release dependencies
+        run: npm audit --audit-level=moderate
+
+      - name: Inspect package tarball
+        run: npm run pack:dry-run
+
+      - name: Exercise publish packaging without lifecycle scripts
+        run: npm run publish:dry-run
+
+      - name: Resolve immutable UI release fixture
+        id: ui_fixture
+        run: node scripts/release-fixture-contract.mjs --write-github-outputs
+
+      - name: Check out reviewed UI release fixture
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.ui_fixture.outputs.ui_repository }}
+          ref: ${{ steps.ui_fixture.outputs.ui_revision }}
+          path: _ecosystem/ui-style-kit-css
+
+      - name: Install UI fixture dependencies
+        working-directory: _ecosystem/ui-style-kit-css
+        run: npm ci
+
+      - name: Resolve immutable Interactive companion
+        id: ecosystem_sources
+        working-directory: _ecosystem/ui-style-kit-css
+        run: node scripts/write-ecosystem-workflow-outputs.mjs
+
+      - name: Check out reviewed Interactive companion
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.ecosystem_sources.outputs.interactive_repository }}
+          ref: ${{ steps.ecosystem_sources.outputs.interactive_revision }}
+          path: _ecosystem/Interactive-Surface-CSS
+
+      - name: Install Interactive companion dependencies
+        working-directory: _ecosystem/Interactive-Surface-CSS
+        run: npm ci
+
+      - name: Install clean-consumer Chromium
+        working-directory: _ecosystem/ui-style-kit-css
+        run: npx playwright install --with-deps chromium
+
+      # Release mutation remains downstream of the same read-only gate used by pull requests.
+      - name: Run ecosystem release preflight
+        run: npm run release:preflight -- --fixture-root $GITHUB_WORKSPACE/_ecosystem/ui-style-kit-css --interactive-repo $GITHUB_WORKSPACE/_ecosystem/Interactive-Surface-CSS --interactive-docs-repo $GITHUB_WORKSPACE/_ecosystem/Interactive-Surface-CSS --layout-docs-repo $GITHUB_WORKSPACE
 
       - name: Publish package to npm
-        run: npm publish --access public --provenance
+        run: npm publish --access public --provenance --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

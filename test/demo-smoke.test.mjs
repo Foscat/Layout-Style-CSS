@@ -12,6 +12,7 @@ const demoJs = readFileSync(join(root, "demo", "demo.js"), "utf8");
 const uiManifest = JSON.parse(
   readFileSync(join(root, "node_modules", "ui-style-kit-css", "manifest.json"), "utf8")
 );
+const personalityMetadata = JSON.parse(readFileSync(join(root, "personalities.json"), "utf8"));
 const companionCssFixtures = Object.freeze({
   "ui-style-kit.visual.min.css": readFileSync(
     join(root, "node_modules", "ui-style-kit-css", "dist", "ui-style-kit.visual.min.css")
@@ -30,6 +31,8 @@ const browserName =
 const quick = process.argv.includes("--quick");
 const browserTypes = { chromium, firefox, webkit };
 const browserType = browserTypes[browserName];
+// A bounded recovery wait accommodates cold WebKit startup while retaining failure detection.
+const METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS = 10_000;
 
 assert(browserType, `Unsupported browser "${browserName}".`);
 
@@ -42,24 +45,7 @@ const recipes = [
   "gallery",
   "card-grid"
 ];
-const personalities = [
-  "minimal-saas",
-  "bauhaus",
-  "tactile",
-  "cyberpunk",
-  "f-pattern",
-  "brutalism",
-  "neumorphism",
-  "y2k",
-  "retro-glass",
-  "z-pattern",
-  "retrofuturism",
-  "mondrian",
-  "synthwave",
-  "bento",
-  "maximalist",
-  "split-screen"
-];
+const personalities = personalityMetadata.personalities.map(({ id }) => id);
 const wrappers = ["default", "compact", "prose", "content", "wide", "full", "breakout"];
 const devices = {
   "phone-portrait": { width: 360, height: 800 },
@@ -144,7 +130,7 @@ const topologyEdges = [
 
 const assertStaticDemoContract = () => {
   assert.match(demoHtml, /Layout Style CSS v3/);
-  assert.match(demoHtml, /content="3\.0\.0"/);
+  assert.match(demoHtml, /content="3\.0\.1"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -152,17 +138,17 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.0"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.1"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.0\.0"/,
+    /href="\.\/demo\.css\?v=3\.0\.1"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.0\.0"/,
+    /src="\.\/demo\.js\?v=3\.0\.1"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
@@ -458,6 +444,124 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   assert.equal(await page.locator("#recipeSelect").inputValue(), "docs");
   assert.equal(await page.locator("#personalitySelect").inputValue(), "bauhaus");
   assert.equal(await page.locator("[data-ly-recipe]").getAttribute("data-ly-responsive"), "manual");
+};
+
+const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
+  const metadataUrl = new URL("../personalities.json?v=3.0.1", baseUrl).toString();
+  const pairingFixture = {
+    schemaVersion: 1,
+    personalities: [
+      {
+        id: "minimal-saas",
+        label: "Minimal SaaS",
+        visualCompatibility: "native",
+        recommendedVisualPresets: ["minimal-saas"]
+      },
+      {
+        id: "synthwave",
+        label: "Synthwave",
+        visualCompatibility: "recommended",
+        recommendedVisualPresets: ["cyberpunk", "retrofuturism"]
+      }
+    ]
+  };
+
+  await page.route(metadataUrl, (route) =>
+    route.fulfill({
+      body: JSON.stringify(pairingFixture),
+      contentType: "application/json",
+      status: 200
+    })
+  );
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  assert.deepEqual(
+    await page.locator("#personalitySelect option").evaluateAll((options) =>
+      options.map((option) => ({
+        value: option.value,
+        label: option.textContent,
+        compatibility: option.dataset.visualCompatibility
+      }))
+    ),
+    [
+      { value: "minimal-saas", label: "Minimal SaaS", compatibility: "native" },
+      { value: "synthwave", label: "Synthwave", compatibility: "recommended" }
+    ],
+    "The personality switcher must render the layout pairing metadata it loads."
+  );
+
+  await page.unroute(metadataUrl);
+};
+
+const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
+  const synthwave = personalityMetadata.personalities.find(({ id }) => id === "synthwave");
+
+  assert.deepEqual(synthwave?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
+  assert.deepEqual(synthwave?.visualVerification?.computedProperties, {
+    cyberpunk: { boxShadow: "0px 0px 18px" },
+    retrofuturism: { boxShadow: "0px 10px 30px" }
+  });
+  for (const ui of synthwave.recommendedVisualPresets) {
+    await page.goto(
+      `${baseUrl}?ecosystem=layout-ui&personality=synthwave&ui=${ui}&theme=cyber-lime&mode=dark`,
+      { waitUntil: "domcontentloaded" }
+    );
+    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+    const rendered = await page.evaluate(() => {
+      /* A dedicated visible article isolates UI paint from the layout demo's own chrome. */
+      const pairingFixture = document.createElement("article");
+      pairingFixture.id = "pairingVisualFixture";
+      pairingFixture.textContent = "Visual pairing verification";
+      pairingFixture.style.position = "fixed";
+      pairingFixture.style.inset = "1rem 1rem auto auto";
+      pairingFixture.style.zIndex = "1000";
+      document.body.append(pairingFixture);
+
+      return {
+        layout: document.querySelector("#previewRoot")?.dataset.lyLayout,
+        ui: document.body.dataset.ui,
+        fixtureVisible: pairingFixture.getClientRects().length > 0,
+        pairingFixtureShadow: getComputedStyle(pairingFixture).boxShadow
+      };
+    });
+
+    assert.equal(rendered.layout, "synthwave", `${ui} must not override the independent layout selector.`);
+    assert.equal(rendered.ui, ui);
+    assert.equal(rendered.fixtureVisible, true, "The visual pairing fixture must participate in rendering.");
+    assert.match(
+      rendered.pairingFixtureShadow,
+      new RegExp(synthwave.visualVerification.computedProperties[ui].boxShadow),
+      `${ui} must retain its distinct rendered article shadow treatment.`
+    );
+  }
+};
+
+const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
+  const metadataUrl = new URL("../personalities.json?v=3.0.1", baseUrl).toString();
+  const recoveryContext = await page.context().browser().newContext();
+  const recoveryPage = await recoveryContext.newPage();
+
+  await recoveryPage.route(metadataUrl, (route) => route.fulfill({ status: 503, body: "Unavailable" }));
+  await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await recoveryPage.waitForFunction(
+    () => document.body.dataset.demoReady === "true",
+    undefined,
+    { timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS }
+  );
+
+  const recovered = await recoveryPage.evaluate(() => ({
+    fallback: window.LAYOUT_STYLE_PERSONALITY_METADATA?.personalities ?? [],
+    options: [...document.querySelectorAll("#personalitySelect option")].map((option) => option.value),
+    busy: document.querySelector("#personalitySelect")?.getAttribute("aria-busy"),
+    status: document.querySelector("#personalityMetadataStatus")?.textContent
+  }));
+
+  assert.deepEqual(recovered.options, recovered.fallback.map(({ id }) => id));
+  assert.equal(recovered.busy, "false");
+  assert.match(recovered.status ?? "", /using packaged fallback/i);
+  await recoveryContext.close();
 };
 
 const verifyTopologyEdges = async (page, baseUrl) => {
@@ -993,6 +1097,9 @@ page.on("console", (message) => {
 
 try {
   await installExternalFixtures(page);
+  await verifyPersonalityOptionsUsePairingMetadata(page, server.baseUrl);
+  await verifyPersonalityMetadataFailureRecovery(page, server.baseUrl);
+  await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);

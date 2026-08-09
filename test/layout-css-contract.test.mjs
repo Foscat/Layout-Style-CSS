@@ -8,6 +8,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const styles = join(root, "styles");
 const dist = join(root, "dist");
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
 
 const layerPrelude =
   "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
@@ -19,24 +20,7 @@ const focusedFiles = [
   "utilities.css",
   "personalities.css"
 ];
-const personalityNames = [
-  "minimal-saas",
-  "bento",
-  "maximalist",
-  "bauhaus",
-  "tactile",
-  "neumorphism",
-  "retrofuturism",
-  "brutalism",
-  "cyberpunk",
-  "y2k",
-  "retro-glass",
-  "f-pattern",
-  "z-pattern",
-  "split-screen",
-  "mondrian",
-  "synthwave"
-];
+const personalityNames = manifest.personalities;
 const recipeNames = [
   "app-shell",
   "dashboard",
@@ -70,6 +54,8 @@ const expectedExports = {
   "./utilities.css": "./dist/utilities.css",
   "./personalities.css": "./dist/personalities.css",
   "./personalities/*.css": "./dist/personalities/*.css",
+  "./personalities.json": "./personalities.json",
+  "./manifest.json": "./manifest.json",
   "./package.json": "./package.json"
 };
 const expectedPublishedFiles = [
@@ -82,7 +68,13 @@ const expectedPublishedFiles = [
   "dist/recipes.css",
   "dist/utilities.css",
   "dist/personalities.css",
-  "dist/personalities/*.css"
+  "dist/personalities/*.css",
+  "personalities.json",
+  "manifest.json",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "docs/wiki"
 ];
 const flattenedSourceFiles = [
   "foundation.css",
@@ -114,7 +106,7 @@ function minifyCss(css) {
     .trim();
 }
 
-assert.equal(packageJson.version, "3.0.0", "The v3 branch must expose version 3.0.0");
+assert.equal(packageJson.version, "3.0.1", "The v3 branch must expose version 3.0.1");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(
@@ -140,6 +132,23 @@ const [packReport] = JSON.parse(packResult.stdout);
 const expectedTarballFiles = [
   "LICENSE",
   "README.md",
+  "CHANGELOG.md",
+  "docs/wiki/Contributing.md",
+  "docs/wiki/Demo-And-GitHub-Pages.md",
+  "docs/wiki/Getting-Started.md",
+  "docs/wiki/Home.md",
+  "docs/wiki/Installation-And-CDN.md",
+  "docs/wiki/Layout-Primitives.md",
+  "docs/wiki/Layout-Recipes.md",
+  "docs/wiki/Layout-Styles.md",
+  "docs/wiki/Migrating-To-2.0.md",
+  "docs/wiki/Migrating-To-3.0.md",
+  "docs/wiki/Release-And-Publishing.md",
+  "docs/wiki/Security-And-Support.md",
+  "docs/wiki/UI-Style-Kit-Compatibility.md",
+  "docs/wiki/_Sidebar.md",
+  "personalities.json",
+  "manifest.json",
   "package.json",
   "dist/layout-style-css.css",
   "dist/layout-style-css.min.css",

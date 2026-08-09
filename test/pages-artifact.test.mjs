@@ -27,10 +27,12 @@ const requiredArtifactFiles = [
   "index.html",
   "demo.css",
   "demo.js",
+  "personality-metadata.js",
   "browserconfig.xml",
   "robots.txt",
   "sitemap.xml",
   "site.webmanifest",
+  "personalities.json",
   "assets/favicon.svg",
   "assets/apple-touch-icon.svg",
   "assets/social-card.png",
@@ -72,12 +74,14 @@ assert(
 for (const { attribute, path } of [
   { attribute: "href", path: "demo.css" },
   { attribute: "src", path: "demo.js" },
-  { attribute: "href", path: "dist/layout-style-css.css" }
+  { attribute: "src", path: "personality-metadata.js" },
+  { attribute: "href", path: "dist/layout-style-css.css" },
+  { attribute: "data-personalities-url", path: "personalities.json" }
 ]) {
   const contents = readFileSync(join(outputDir, ...path.split("/")));
   const fingerprint = createHash("sha256").update(contents).digest("hex").slice(0, 12);
   assert(
-    index.includes(`${attribute}="./${path}?v=3.0.0-${fingerprint}"`),
+    index.includes(`${attribute}="./${path}?v=3.0.1-${fingerprint}"`),
     `Pages should fingerprint ${path} from its deployed contents.`
   );
 }
@@ -97,7 +101,7 @@ assert(
   "Pages demo should preserve the source demo canonical URL"
 );
 assert(
-  index.includes('"version": "3.0.0"') && index.includes("Layout Style CSS v3"),
+  index.includes('"version": "3.0.1"') && index.includes("Layout Style CSS v3"),
   "Pages metadata should identify the v3 intrinsic responsive lab"
 );
 assert(
@@ -120,7 +124,7 @@ assert(
   sitemap.includes(`<loc>${expectedPagesBaseUrl}</loc>`),
   "The sitemap must use the case-sensitive Pages canonical URL."
 );
-assert(sitemap.includes("<lastmod>2026-07-29</lastmod>"), "Pages sitemap should carry v3 metadata");
+assert(sitemap.includes("<lastmod>2026-08-09</lastmod>"), "Pages sitemap should carry 3.0.1 metadata");
 
 const pagesWorkflow = readFileSync(pagesWorkflowPath, "utf8");
 const pagesPreflightStep = pagesWorkflow.indexOf("- name: Verify Pages configuration");

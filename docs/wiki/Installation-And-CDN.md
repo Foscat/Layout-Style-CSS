@@ -9,7 +9,7 @@
 ## Package
 
 ```bash
-npm install layout-style-css@3.0.0
+npm install layout-style-css@3.0.1
 ```
 
 ```js
@@ -17,6 +17,8 @@ import "layout-style-css";
 ```
 
 The root import is the zero-configuration full bundle. Focused exports are:
+
+Package and bundler defaults (`main`, `style`, and the root export) use the readable `dist/layout-style-css.css` file. The `unpkg` and `jsdelivr` convenience fields use `dist/layout-style-css.min.css`; package consumers can select the same minified output explicitly with `layout-style-css/min.css`.
 
 - `layout-style-css/min.css`
 - `layout-style-css/core.css`
@@ -34,11 +36,11 @@ The root import is the zero-configuration full bundle. Focused exports are:
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.1/dist/layout-style-css.min.css">
 ```
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.1/dist/layout-style-css.min.css">
 ```
 
 The CDN paths include `/dist/` because CDN clients address files in the published tarball, while package import maps use the public exports.

@@ -6,7 +6,7 @@
     <meta http-equiv="content-language" content="en-US">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="title" content="Layout Style CSS v3 Intrinsic Responsive Demo">
-    <meta name="version" content="3.0.0">
+    <meta name="version" content="3.0.1">
     <meta name="description" content="Explore zero-configuration intrinsic wrappers, responsive recipes, vertical adaptations, and sixteen layout personalities in Layout Style CSS v3.">
     <meta name="keywords" content="CSS layout library, container queries, layout recipes, UI Style Kit CSS, Interactive Surface CSS, responsive CSS">
     <meta name="author" content="Foscat">
@@ -47,7 +47,7 @@
     <meta property="og:image:height" content="630">
     <meta property="og:url" content="https://foscat.github.io/Layout-Style-CSS/">
     <meta property="og:site_name" content="layout-style-css">
-    <meta property="og:updated_time" content="2026-07-29T00:00:00-05:00">
+    <meta property="og:updated_time" content="2026-08-09T00:00:00-05:00">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Layout Style CSS v3 Intrinsic Responsive Demo">
     <meta name="twitter:description" content="Intrinsic responsive layouts that adapt to available width and height and pair cleanly with paint and interaction libraries.">
@@ -71,27 +71,28 @@
     <link id="uiKitStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.1.0/dist/ui-style-kit.visual.min.css" integrity="sha384-DUhB5MkNLJffjy7NRg13prdEcPTUR6zdPtameCyfq3tId/cM8o3ojpyvU/xdxZ8t" crossorigin="anonymous">
     <link id="uiKitInteractiveThemeStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.1.0/styles/interactive-surface-theme.css" integrity="sha384-t7ZuirMM/Qoeoz+/5+S4JxIGXs076pqlgMxv6FymZW3tGj7snT8J2ZlV2+sH6++j" crossorigin="anonymous">
     <link id="interactiveSurfaceStylesheet" rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.5.0/state-core.css" integrity="sha384-v2NwNOzOcQ5ed7W7OHahaKHXspqfD0p8XO+kueqrsyfEcuBO2izsAQb/J/PxF0eX" crossorigin="anonymous">
-    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css?v=3.0.0">
-    <link rel="stylesheet" href="./demo.css?v=3.0.0">
+    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css?v=3.0.1">
+    <link rel="stylesheet" href="./demo.css?v=3.0.1">
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "layout-style-css",
-        "version": "3.0.0",
+        "version": "3.0.1",
         "description": "A dependency-free CSS layout library for intrinsic wrappers, composition primitives, width and height responsive recipes, and spatial personalities.",
         "programmingLanguage": "CSS",
         "applicationCategory": "DeveloperApplication",
         "url": "https://foscat.github.io/Layout-Style-CSS/",
         "image": "https://foscat.github.io/Layout-Style-CSS/assets/social-card.png",
         "datePublished": "2026-07-29",
-        "dateModified": "2026-07-29",
+        "dateModified": "2026-08-09",
         "author": { "@type": "Organization", "name": "Foscat" },
         "publisher": { "@type": "Organization", "name": "Foscat" }
       }
     </script>
-    <script type="module" src="./demo.js?v=3.0.0"></script>
+    <script src="./personality-metadata.js?v=3.0.1"></script>
+    <script type="module" src="./demo.js?v=3.0.1" data-personalities-url="../personalities.json?v=3.0.1"></script>
   </head>
   <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-density="comfortable" data-ecosystem="all-three">
     <a class="demo-skip-link" href="#layoutLab">Skip to the layout lab</a>
@@ -161,25 +162,11 @@
           </label>
 
           <label for="personalitySelect">Personality
-            <select id="personalitySelect" data-query-key="personality" data-ui-kit="select">
-              <option value="minimal-saas">Minimal SaaS</option>
-              <option value="bauhaus">Bauhaus</option>
-              <option value="tactile">Tactile</option>
-              <option value="cyberpunk">Cyberpunk</option>
-              <option value="f-pattern">F-pattern</option>
-              <option value="brutalism">Brutalism</option>
-              <option value="neumorphism">Neumorphism</option>
-              <option value="y2k">Y2K</option>
-              <option value="retro-glass">Retro Glass</option>
-              <option value="z-pattern">Z-pattern</option>
-              <option value="retrofuturism">Retrofuturism</option>
-              <option value="mondrian">Mondrian</option>
-              <option value="synthwave">Synthwave</option>
-              <option value="bento">Bento</option>
-              <option value="maximalist">Maximalist</option>
-              <option value="split-screen">Split Screen</option>
+            <select id="personalitySelect" data-query-key="personality" data-ui-kit="select" aria-busy="true">
+              <option value="" disabled selected>Loading layout personalities</option>
             </select>
           </label>
+          <p id="personalityMetadataStatus" class="demo-copy-status" role="status" aria-live="polite"></p>
 
           <label for="containerSelect">Preview width
             <select id="containerSelect" data-query-key="container" data-ui-kit="select">

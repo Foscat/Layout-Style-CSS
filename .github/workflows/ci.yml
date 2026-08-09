@@ -64,3 +64,61 @@ jobs:
       # Keep engine failures isolated so a browser-specific regression is immediately visible.
       - name: Run rendered browser matrix
         run: npm run test:demo:${{ matrix.browser }}
+
+  release-preflight:
+    name: PR-safe ecosystem release preflight
+    if: github.event_name == 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out Layout candidate
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install candidate dependencies
+        run: npm ci
+
+      - name: Resolve immutable UI release fixture
+        id: ui_fixture
+        run: node scripts/release-fixture-contract.mjs --write-github-outputs
+
+      - name: Check out reviewed UI release fixture
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.ui_fixture.outputs.ui_repository }}
+          ref: ${{ steps.ui_fixture.outputs.ui_revision }}
+          path: _ecosystem/ui-style-kit-css
+
+      - name: Install UI fixture dependencies
+        working-directory: _ecosystem/ui-style-kit-css
+        run: npm ci
+
+      - name: Resolve immutable Interactive companion
+        id: ecosystem_sources
+        working-directory: _ecosystem/ui-style-kit-css
+        run: node scripts/write-ecosystem-workflow-outputs.mjs
+
+      - name: Check out reviewed Interactive companion
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.ecosystem_sources.outputs.interactive_repository }}
+          ref: ${{ steps.ecosystem_sources.outputs.interactive_revision }}
+          path: _ecosystem/Interactive-Surface-CSS
+
+      - name: Install Interactive companion dependencies
+        working-directory: _ecosystem/Interactive-Surface-CSS
+        run: npm ci
+
+      - name: Install clean-consumer Chromium
+        working-directory: _ecosystem/ui-style-kit-css
+        run: npx playwright install --with-deps chromium
+
+      # Candidate override is an npm-pack tarball; the other two sources stay at reviewed immutable commits.
+      - name: Run read-only release preflight
+        run: npm run release:preflight -- --fixture-root $GITHUB_WORKSPACE/_ecosystem/ui-style-kit-css --interactive-repo $GITHUB_WORKSPACE/_ecosystem/Interactive-Surface-CSS --interactive-docs-repo $GITHUB_WORKSPACE/_ecosystem/Interactive-Surface-CSS --layout-docs-repo $GITHUB_WORKSPACE
