@@ -72,6 +72,7 @@ const stateAttributes = new Set([
   "aria-current",
   "aria-disabled",
   "aria-expanded",
+  "aria-hidden",
   "aria-invalid",
   "aria-pressed",
   "aria-selected",
@@ -82,6 +83,40 @@ const stateAttributes = new Set([
   "data-pressed",
   "data-selected",
   "data-state",
+]);
+const sharedStateClassVocabulary = new Set([
+  "active",
+  "any-link",
+  "busy",
+  "busy-loading",
+  "checked",
+  "current",
+  "disabled",
+  "enabled",
+  "expanded",
+  "focus",
+  "focus-visible",
+  "focus-within",
+  "hidden",
+  "hover",
+  "indeterminate",
+  "invalid",
+  "loading",
+  "open",
+  "optional",
+  "persistent",
+  "placeholder-shown",
+  "popover-open",
+  "pressed",
+  "read-only",
+  "read-write",
+  "readonly",
+  "required",
+  "selected",
+  "target",
+  "user-invalid",
+  "valid",
+  "visited",
 ]);
 
 function propertyContract(propertyName) {
@@ -188,9 +223,15 @@ function manifestStateClasses(manifest) {
 }
 
 function selectorHasState(rule, manifest) {
-  const stateClasses = new Set([
+  const manifestClasses = manifestStateClasses(manifest);
+  const exactStateClasses = new Set([
     ...commonStateClasses,
-    ...manifestStateClasses(manifest),
+    ...sharedStateClassVocabulary,
+    ...manifestClasses,
+  ]);
+  const stateVocabulary = new Set([
+    ...sharedStateClassVocabulary,
+    ...manifestClasses,
   ]);
   let stateful = false;
 
@@ -205,10 +246,11 @@ function selectorHasState(rule, manifest) {
       }
       if (node.type === "ClassSelector") {
         const className = node.name.toLowerCase();
-        const hasCommonStateSuffix = [...commonStateSuffixes].some((suffix) =>
-          className.endsWith(`-${suffix}`),
+        const hasBoundarySuffix = [...stateVocabulary].some(
+          (state) =>
+            className.endsWith(`-${state}`) || className.endsWith(`_${state}`),
         );
-        if (stateClasses.has(className) || hasCommonStateSuffix) stateful = true;
+        if (exactStateClasses.has(className) || hasBoundarySuffix) stateful = true;
       }
       if (
         node.type === "AttributeSelector" &&

@@ -237,6 +237,15 @@ test("layout recognizes every reflected native state inside functional selectors
     ":where(.surface,option[selected])",
     ":is(.surface,textarea[readonly])",
     ":where(.surface,[hidden])",
+    ':is(.surface,[aria-busy="true"])',
+    ':is(.surface,[aria-checked="true"])',
+    ':is(.surface,[aria-current="true"])',
+    ':is(.surface,[aria-disabled="true"])',
+    ':is(.surface,[aria-expanded="true"])',
+    ':is(.surface,[aria-hidden="true"])',
+    ':is(.surface,[aria-invalid="true"])',
+    ':is(.surface,[aria-pressed="true"])',
+    ':is(.surface,[aria-selected="true"])',
   ];
 
   for (const selector of selectors) {
@@ -249,6 +258,73 @@ test("layout recognizes every reflected native state inside functional selectors
     assert.equal(result.violations.length, 1, selector);
     assert.equal(result.violations[0].selector, selector);
   }
+});
+
+test("layout recognizes exact and boundary-delimited state class vocabulary", () => {
+  const commonStates = [
+    "active",
+    "any-link",
+    "busy",
+    "busy-loading",
+    "checked",
+    "current",
+    "disabled",
+    "enabled",
+    "expanded",
+    "focus",
+    "focus-visible",
+    "focus-within",
+    "hidden",
+    "hover",
+    "indeterminate",
+    "invalid",
+    "loading",
+    "open",
+    "optional",
+    "persistent",
+    "placeholder-shown",
+    "popover-open",
+    "pressed",
+    "read-only",
+    "read-write",
+    "readonly",
+    "required",
+    "selected",
+    "target",
+    "user-invalid",
+    "valid",
+    "visited",
+  ];
+
+  for (const state of commonStates) {
+    for (const selector of [`.${state}`, `.navigation-${state}`, `.navigation_${state}`]) {
+      const result = auditOwnership({
+        css: `${selector} { transform: scale(.98); }`,
+        allowlist: [],
+        now: reviewedAt,
+      });
+
+      assert.equal(result.violations.length, 1, selector);
+      assert.equal(result.violations[0].property, "transform", selector);
+    }
+  }
+
+  for (const selector of [".custom-state", ".navigation-custom-state", ".navigation_custom-state"]) {
+    const result = auditOwnership({
+      css: `${selector} { animation: pulse 1s; }`,
+      allowlist: [],
+      manifest: { selectors: { stateClasses: [".custom-state"] } },
+      now: reviewedAt,
+    });
+    assert.equal(result.violations.length, 1, selector);
+  }
+
+  const controls = auditOwnership({
+    css: ".card-static { transform: scale(.98); } .proactive { transform: scale(.98); } .undisabled { transform: scale(.98); } .selectedness { transform: scale(.98); }",
+    allowlist: [],
+    now: reviewedAt,
+  });
+  assert.deepEqual(controls.violations, []);
 });
 
 test("allowlist rejects every malformed, stale, broad, duplicate, and unmatched mutation", () => {
