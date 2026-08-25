@@ -66,7 +66,14 @@
   },
   "thresholds": {
     "containerMinWidths": ["42rem", "44rem", "48rem", "52rem", "72rem"],
-    "viewportMaxHeights": ["44rem", "30rem"]
+    "viewportMaxHeights": ["44rem", "30rem"],
+    "recipes": {
+      "splitHero": { "wide": "42rem" },
+      "listDetail": { "wide": "44rem" },
+      "docs": { "wide": "48rem" },
+      "appShell": { "medium": "52rem", "wide": "72rem" },
+      "dashboard": { "medium": "52rem", "wide": "72rem" }
+    }
   },
   "tokens": {
     "geometry": [
@@ -92,7 +99,8 @@
       "--ly-split-hero-wide-areas", "--ly-split-hero-wide-columns", "--ly-center-max",
       "--ly-cover-padding", "--ly-z-header", "--ly-split-align", "--ly-media-align",
       "--ly-split-hero-align"
-    ]
+    ],
+    "extensionOnly": []
   },
   "companions": {
     "ui-style-kit-css": ">=2.1.0 <3.0.0",
