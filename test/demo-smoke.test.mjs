@@ -844,6 +844,7 @@ const verifySectionAndGutterContracts = async (browser, baseUrl) => {
   for (const height of [1080, 704, 480]) {
     const contractPage = await browser.newPage({ viewport: { width: 1440, height } });
     try {
+      await installExternalFixtures(contractPage);
       await contractPage.goto(`${baseUrl}?ecosystem=layout-only`, {
         waitUntil: "domcontentloaded"
       });
