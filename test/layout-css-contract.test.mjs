@@ -11,7 +11,7 @@ const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"))
 const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
 
 const layerPrelude =
-  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
+  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;";
 const focusedFiles = [
   "foundation.css",
   "wrappers.css",
@@ -246,6 +246,20 @@ assert(
   "Foundation must expose short and shallow viewport tiers"
 );
 assert(!foundation.includes("(orientation:"), "v3 must respond to space rather than orientation labels");
+for (const density of ["compact", "normal", "spacious"]) {
+  assert(
+    foundation.includes(`[data-ly-density="${density}"]`),
+    `Foundation must implement the ${density} density context.`
+  );
+}
+assert(
+  foundation.includes("@layer ly.context"),
+  "Explicit density contexts must live after personality defaults."
+);
+assert(
+  /--ly-section-padding-block:\s*clamp\(2rem,\s*4vh,\s*4rem\)/.test(foundation),
+  "Normal 3.1 sections need the conservative default rhythm."
+);
 
 for (const variant of ["compact", "prose", "content", "wide", "full", "breakout"]) {
   assert(wrappers.includes(`.ly-wrapper--${variant}`), `Missing wrapper variant: ${variant}`);

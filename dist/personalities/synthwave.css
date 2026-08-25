@@ -1,4 +1,4 @@
-@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
 
 @layer ly.personalities.synthwave {
   :where(.ly-root[data-ly-layout="synthwave"]) {

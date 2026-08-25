@@ -401,6 +401,14 @@ const installExternalFixtures = async (page) => {
   });
 };
 
+/**
+ * Verifies demo identity, required controls, durable query state, and legacy
+ * density URL normalization.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyIdentityAndControls = async (page, baseUrl) => {
   await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -444,6 +452,11 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   assert.equal(await page.locator("#recipeSelect").inputValue(), "docs");
   assert.equal(await page.locator("#personalitySelect").inputValue(), "bauhaus");
   assert.equal(await page.locator("[data-ly-recipe]").getAttribute("data-ly-responsive"), "manual");
+
+  await page.goto(`${baseUrl}?density=comfortable`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  assert.equal(await page.locator("#densitySelect").inputValue(), "normal");
+  assert.equal(await page.locator("#previewRoot").getAttribute("data-ly-density"), "normal");
 };
 
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
@@ -895,6 +908,97 @@ const verifySectionAndGutterContracts = async (browser, baseUrl) => {
   }
 };
 
+/**
+ * Verifies root, sibling, and nested density contexts across viewport-height
+ * tiers without relying on demo-only spacing controls.
+ *
+ * @param {import("@playwright/test").Browser} browser Active browser instance.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyDensityContexts = async (browser, baseUrl) => {
+  for (const height of [900, 600, 480]) {
+    const densityPage = await browser.newPage({ viewport: { width: 1440, height } });
+    try {
+      await installExternalFixtures(densityPage);
+      await densityPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+        waitUntil: "domcontentloaded"
+      });
+      await densityPage.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+      const result = await densityPage.evaluate(() => {
+        const root = document.createElement("div");
+        root.className = "ly-root";
+
+        /**
+         * Creates one density-scoped section for computed-style comparison.
+         *
+         * @param {"compact" | "normal" | "spacious"} density Public density value.
+         * @returns {HTMLElement} Density-scoped section fixture.
+         */
+        const createDensityFixture = (density) => {
+          const fixture = document.createElement("section");
+          fixture.className = "ly-section";
+          fixture.dataset.lyDensity = density;
+          fixture.style.display = "grid";
+          fixture.style.gap = "var(--ly-gap)";
+          fixture.append(document.createElement("span"), document.createElement("span"));
+          return fixture;
+        };
+
+        const compact = createDensityFixture("compact");
+        const normal = createDensityFixture("normal");
+        const spacious = createDensityFixture("spacious");
+        const nestedNormal = createDensityFixture("normal");
+        compact.append(nestedNormal);
+        root.append(compact, normal, spacious);
+        document.body.append(root);
+
+        /**
+         * Reads a computed CSS length as a numeric pixel value.
+         *
+         * @param {HTMLElement} element Element whose style is inspected.
+         * @param {string} property Computed CSS property or custom property.
+         * @returns {number} Parsed numeric value.
+         */
+        const computedNumber = (element, property) =>
+          parseFloat(getComputedStyle(element).getPropertyValue(property));
+        const values = {
+          compactGap: computedNumber(compact, "gap"),
+          normalGap: computedNumber(normal, "gap"),
+          spaciousGap: computedNumber(spacious, "gap"),
+          compactSectionPadding: computedNumber(compact, "padding-block-start"),
+          normalSectionPadding: computedNumber(normal, "padding-block-start"),
+          spaciousSectionPadding: computedNumber(spacious, "padding-block-start"),
+          nestedNormalGap: computedNumber(nestedNormal, "gap")
+        };
+        root.remove();
+        return values;
+      });
+
+      assert(
+        result.compactGap < result.normalGap && result.normalGap < result.spaciousGap,
+        `Density gaps must remain ordered at ${height}px: ${JSON.stringify(result)}`
+      );
+      assert(
+        result.compactSectionPadding < result.normalSectionPadding,
+        `Compact density must remain tighter than normal at ${height}px.`
+      );
+      assert(
+        result.normalSectionPadding < result.spaciousSectionPadding,
+        `Normal density must remain tighter than spacious at ${height}px.`
+      );
+      assert.equal(
+        result.nestedNormalGap,
+        result.normalGap,
+        `Nested normal density must reset its compact ancestor at ${height}px.`
+      );
+    } finally {
+      await densityPage.close();
+    }
+  }
+};
+
 const verifyDefaultFontHeightTiers = async (baseUrl) => {
   if (browserName !== "chromium") return;
 
@@ -1242,6 +1346,7 @@ try {
   await verifyManualAndNearestContainer(page, server.baseUrl);
   await verifyHeightBehavior(page, server.baseUrl);
   await verifySectionAndGutterContracts(browser, server.baseUrl);
+  await verifyDensityContexts(browser, server.baseUrl);
   await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);

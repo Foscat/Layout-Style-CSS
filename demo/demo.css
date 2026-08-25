@@ -45,12 +45,12 @@ body[data-mode="contrast"] {
   color-scheme: dark;
 }
 
-body[data-density="compact"] {
+body[data-demo-density="compact"] {
   --demo-density-gap: 0.5rem;
   --demo-region-padding: 0.75rem;
 }
 
-body[data-density="spacious"] {
+body[data-demo-density="spacious"] {
   --demo-density-gap: 1.5rem;
   --demo-region-padding: 1.5rem;
 }

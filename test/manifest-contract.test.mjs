@@ -106,7 +106,7 @@ test("public personality pairings inventory every exported layout profile withou
   assert.equal(personalityMetadata.selector, "data-ly-layout");
   assert.deepEqual(
     personalityMetadata.independentSelectors,
-    ["data-ly-layout", "data-ui", "data-theme", "data-mode"]
+    ["data-ly-layout", "data-ly-density", "data-ui", "data-theme", "data-mode"]
   );
   assert.deepEqual(personalityMetadata.personalities, manifest.personalityPairings);
   assert.deepEqual(personalityMetadata.personalities.map(({ id }) => id), personalities);

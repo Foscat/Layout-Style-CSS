@@ -1,4 +1,4 @@
-@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
 
 /* Composition primitives use intrinsic sizing so their content chooses reflow points. */
 
