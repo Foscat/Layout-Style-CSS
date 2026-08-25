@@ -85,7 +85,7 @@ assert(
 );
 
 for (const requiredText of [
-  "3.0.1",
+  "3.0.2",
   "Node.js 20",
   "dependency-free",
   "zero-configuration",
@@ -261,9 +261,15 @@ for (const releaseTopic of [
 ]) {
   assert.match(patchRelease, releaseTopic, `The 3.0.1 changelog must cover ${releaseTopic}.`);
 }
+const currentPatchHeadings = changelog.match(/^## \[3\.0\.2\] - 2026-08-25$/gm) ?? [];
+assert.equal(
+  currentPatchHeadings.length,
+  1,
+  "Changelog needs one dated 3.0.2 section."
+);
 assert(
-  release.includes("layout-style-css@3.0.1") &&
-    release.includes("v3.0.1") &&
+  release.includes("layout-style-css@3.0.2") &&
+    release.includes("v3.0.2") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
 );
@@ -271,9 +277,9 @@ assert.deepEqual(
   releaseFixture,
   {
     repository: "Foscat/ui-style-kit-css",
-    revision: "bdbb6a7e432f30b92de206cac6a00fe85394190c"
+    revision: "33e3c834aec62b85650dd14aea9d7d388abef191"
   },
-  "Release automation must pin the reviewed UI Layout 3.0.1 bootstrap commit."
+  "Release automation must pin the reviewed UI Layout 3.0.2 bootstrap commit."
 );
 assert(
   release.includes(releaseFixture.revision),
@@ -321,7 +327,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
 const demoSmoke = read("test", "demo-smoke.test.mjs");
-assert(publishWorkflow.includes("for example v3.0.1"));
+assert(publishWorkflow.includes("for example v3.0.2"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(
   !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&

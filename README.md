@@ -2,7 +2,7 @@
 
 Zero-configuration, dependency-free structural CSS that responds to the width and height a layout actually receives.
 
-`layout-style-css@3.0.1` is the current v3 patch release and preserves the clean-break structural contract introduced in 3.0.0. It provides intrinsic wrappers, composition primitives, seven semantic recipes, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
+`layout-style-css@3.0.2` is the current v3 patch release and preserves the clean-break structural contract introduced in 3.0.0. It provides intrinsic wrappers, composition primitives, seven semantic recipes, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ Zero-configuration, dependency-free structural CSS that responds to the width an
 ## Install
 
 ```bash
-npm install layout-style-css@3.0.1
+npm install layout-style-css@3.0.2
 ```
 
 Most applications need one import:
@@ -68,6 +68,8 @@ Wrappers are optional measure and nesting controls. Every wrapper uses logical p
 
 All lanes clamp to the available inline size, including allocations from 320px through ultrawide screens.
 
+`--ly-page-padding-inline` supplies the default `--ly-wrapper-gutter` value. Override `--ly-wrapper-gutter` on `.ly-root` or a narrower scope to control rendered Wrapper padding; safe-area compensation is still applied once at the Wrapper edge.
+
 ## Composition Primitives
 
 The core includes:
@@ -92,6 +94,8 @@ Recipes use attributes only. The stacked semantic source order is always safe, a
 | `data-ly-recipe="dashboard"` | Medium at `52rem`, wide at `72rem` |
 | `data-ly-recipe="gallery"` | Intrinsic tracks; no topology breakpoint |
 | `data-ly-recipe="card-grid"` | Intrinsic tracks; no topology breakpoint |
+
+App Shell base, medium, and wide topologies own matching row definitions. This keeps the primary workspace flexible while header and footer tracks remain intrinsic, including personality-specific four-row topologies.
 
 Canonical regions use `data-ly-area`, including `header`, `sidebar`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, and `secondary`.
 
@@ -128,6 +132,8 @@ The system responds to available block size without orientation queries:
 - At viewport heights of `44rem` or less, gaps, section padding, header height, and bounded-scroll maxima tighten.
 - At viewport heights of `30rem` or less, recipe-owned sticky behavior becomes normal flow, and cover/shell minimums stop forcing full-height regions.
 - Safe-area block insets remain available, and required regions are never hidden solely because the viewport is short.
+
+`--ly-section-padding-block` controls normal sections. `--ly-section-padding-block-compact` independently controls `.ly-section--compact`, preserving a smaller rhythm through the regular, short, and shallow height tiers.
 
 Use the public height, gap, measure, ratio, rail, media, card, and grid-minimum custom properties for advanced tuning. Defaults use `100vh` fallbacks followed by `100dvh`.
 
@@ -176,8 +182,8 @@ This order lets UI Style Kit establish paint and theme roles, Interactive Surfac
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.1/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.2/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.2/dist/layout-style-css.min.css">
 ```
 
 ## Clean-Break Migration

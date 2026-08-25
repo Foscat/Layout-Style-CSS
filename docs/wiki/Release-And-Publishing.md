@@ -1,6 +1,6 @@
 # Release And Publishing
 
-This guide describes the release gate for `layout-style-css@3.0.1`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
+This guide describes the release gate for `layout-style-css@3.0.2`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
 
 ## Local Candidate Gate
 
@@ -23,7 +23,7 @@ The package's `prepublishOnly` script runs `npm run release:verify`, so a direct
 
 The immutable cross-repository pins require this exact remote sequence:
 
-1. Push a stable UI bootstrap ref containing `bdbb6a7e432f30b92de206cac6a00fe85394190c`.
+1. Push a stable UI bootstrap ref containing `33e3c834aec62b85650dd14aea9d7d388abef191`.
 2. Push and merge Interactive Surface CSS and Layout Style CSS with merge commits so their reviewed commit SHAs remain reachable.
 3. Update and verify the final UI companion pins against those merged companion commits.
 4. Push the final UI branch, rerun its ecosystem preflight, and merge UI with a merge commit.
@@ -35,8 +35,8 @@ The bootstrap SHA is deliberately stable: companion workflows use it to load the
 
 Confirm:
 
-- package version is `3.0.1`
-- intended tag would be `v3.0.1`
+- package version is `3.0.2`
+- intended tag would be `v3.0.2`
 - runtime and peer dependencies are empty
 - exact exports and tarball files match the v3 contract
 - generated CSS matches authored sources
@@ -50,7 +50,7 @@ Only after explicit approval:
 1. Commit the verified candidate.
 2. Push the intended branch.
 3. Merge through the repository's normal review policy.
-4. Create the exact `v3.0.1` tag from the protected release commit.
+4. Create the exact `v3.0.2` tag from the protected release commit.
 5. Publish the GitHub Release.
 6. Let the protected npm workflow verify the tag and publish with provenance.
 7. Confirm the GitHub Release, tag, and npm registry state independently.
