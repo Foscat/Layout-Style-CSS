@@ -2,6 +2,18 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [3.0.2] - 2026-08-25
+
+### Fixed
+
+- Matched App Shell row tracks to base, medium, wide, and personality-specific area topologies so primary content receives flexible height while headers and footers remain intrinsic.
+- Separated compact section spacing from normal section spacing and preserved the compact-smaller-than-normal invariant across regular, short, and shallow viewport heights.
+- Connected the documented page-padding and Wrapper-gutter tokens to rendered Wrapper padding while retaining safe-area handling.
+
+### Tests
+
+- Added static and rendered regression coverage for App Shell row counts, flexible workspace allocation, compact section ordering, public gutter overrides, generated CSS parity, package metadata, and Pages artifacts.
+
 ## [3.0.1] - 2026-08-09
 
 ### Changed

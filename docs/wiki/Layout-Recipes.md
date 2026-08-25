@@ -16,6 +16,8 @@ Recipes are attribute-only semantic layouts. The mobile DOM order is authoritati
 
 Recipe roots also establish `ly-scope`, so child compositions can respond without extra setup.
 
+App Shell base, medium, and wide topologies own matching row definitions. Header and footer tracks remain intrinsic while the main workspace receives the flexible row, including personality-specific four-row topologies.
+
 ## Areas
 
 Canonical `data-ly-area` values are:

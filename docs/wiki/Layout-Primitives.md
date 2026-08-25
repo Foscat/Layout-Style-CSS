@@ -19,6 +19,8 @@ Wrappers are optional local responsive scopes:
 
 Breakout children select clamped lanes with `data-ly-lane="content"`, `data-ly-lane="feature"`, or `data-ly-lane="full"`.
 
+`--ly-page-padding-inline` supplies the default `--ly-wrapper-gutter` value. `--ly-wrapper-gutter` controls rendered Wrapper padding at the scope where it is overridden, while the Wrapper applies safe-area compensation once at its outer edge.
+
 ## Flow
 
 - `.ly-stack` creates vertical flow.
@@ -48,6 +50,8 @@ In normal use, only `.ly-reel` introduces intentional horizontal scrolling, and 
 Page, cover, and bounded scroll behaviors use `vh` fallbacks followed by dynamic viewport units such as `100dvh`.
 
 At `44rem` viewport height or less, gaps and scroll maxima tighten. At `30rem` or less, forced cover/shell minimums and recipe-owned sticky positioning are removed. Required regions remain in normal document flow.
+
+`--ly-section-padding-block` controls normal `.ly-section` spacing. `--ly-section-padding-block-compact` controls `.ly-section--compact` independently and remains smaller than the normal value across regular, short, and shallow viewport heights.
 
 ## Public Tuning
 

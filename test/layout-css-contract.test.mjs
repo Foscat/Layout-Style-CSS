@@ -106,7 +106,7 @@ function minifyCss(css) {
     .trim();
 }
 
-assert.equal(packageJson.version, "3.0.1", "The v3 branch must expose version 3.0.1");
+assert.equal(packageJson.version, "3.0.2", "The patch branch must expose version 3.0.2");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(
@@ -256,11 +256,19 @@ assert(
   "Every wrapper must establish the shared responsive scope"
 );
 assert(
-  /--ly-wrapper-fluid-gutter:\s*clamp\(1rem,\s*3vw,\s*3rem\)/.test(wrappers) &&
-    /@supports\s*\(width:\s*1cqi\)[\s\S]*--ly-wrapper-fluid-gutter:\s*clamp\(1rem,\s*3cqi,\s*3rem\)/.test(
-      wrappers
+  /--ly-wrapper-gutter:\s*var\(--ly-page-padding-inline\)/.test(foundation) &&
+    /--ly-wrapper-fluid-gutter:\s*var\(--ly-wrapper-gutter\)/.test(wrappers) &&
+    /padding-inline:\s*var\(--ly-wrapper-local-gutter\)/.test(wrappers),
+  "Public Wrapper gutter tokens must reach rendered Wrapper padding."
+);
+assert(
+  /--ly-section-padding-block-compact:\s*clamp\(1\.5rem,\s*3\.5vh,\s*3rem\)/.test(
+    foundation
+  ) &&
+    /\.ly-section--compact\s*\{[^}]*padding-block:\s*var\(--ly-section-padding-block-compact\)/s.test(
+      primitives
     ),
-  "Wrapper gutters must enhance the viewport fallback only when cqi is supported"
+  "Compact sections need an independent public padding token."
 );
 assert(
   /\.ly-wrapper--breakout\s*\{[^}]*--ly-wrapper-max:\s*100%/s.test(wrappers),
@@ -329,6 +337,24 @@ assert(
 );
 for (const threshold of ["42rem", "44rem", "48rem", "52rem", "72rem"]) {
   assert(recipes.includes(`@container ly-scope (min-width: ${threshold})`), `Missing ${threshold} recipe tier`);
+}
+const appShellRowTokens = {
+  base: "--ly-app-shell-base-rows",
+  medium: "--ly-app-shell-medium-rows",
+  wide: "--ly-app-shell-wide-rows"
+};
+for (const [topology, token] of Object.entries(appShellRowTokens)) {
+  assert(foundation.includes(`${token}:`), `App Shell ${topology} rows need a public token.`);
+  assert(
+    recipes.includes(`grid-template-rows: var(${token})`),
+    `App Shell ${topology} topology must consume ${token}.`
+  );
+}
+for (const personality of ["bento", "neumorphism", "split-screen", "tactile"]) {
+  assert(
+    readStyle(`personalities/${personality}.css`).includes("--ly-app-shell-wide-rows:"),
+    `${personality} must describe its four-row wide App Shell.`
+  );
 }
 assert(
   recipes.includes("container-name: ly-scope;") && recipes.includes("container-type: inline-size;"),

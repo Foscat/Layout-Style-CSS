@@ -23,6 +23,8 @@ Every profile feeds the same wrapper, primitive, and recipe engine. Profiles tun
 
 A profile must remain visibly distinct through at least two spatial characteristics. Personality files may not declare their own `@container`, viewport, or orientation breakpoint systems.
 
+When a profile supplies an App Shell area template, its matching row definition must contain the same number of rows and keep the main workspace on the flexible track.
+
 ## Ownership
 
 Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interaction styling.

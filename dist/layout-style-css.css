@@ -25,14 +25,14 @@
     --ly-wrapper-prose: 68ch;
     --ly-wrapper-content: 72rem;
     --ly-wrapper-wide: 112rem;
-    --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-page-padding-inline: clamp(1rem, 3vw, 3rem);
     --ly-safe-area-inline: max(
       env(safe-area-inset-left, 0px),
       env(safe-area-inset-right, 0px)
     );
     --ly-safe-area-block-start: env(safe-area-inset-top, 0px);
     --ly-safe-area-block-end: env(safe-area-inset-bottom, 0px);
-    --ly-wrapper-gutter: max(var(--ly-page-padding-inline), var(--ly-safe-area-inline));
+    --ly-wrapper-gutter: var(--ly-page-padding-inline);
 
     --ly-profile-gap: var(--ly-space-5);
     --ly-gap: var(--ly-profile-gap);
@@ -40,6 +40,7 @@
     --ly-stack-gap: var(--ly-space-4);
     --ly-cluster-gap: var(--ly-space-3);
     --ly-section-padding-block: clamp(3rem, 7vh, 6rem);
+    --ly-section-padding-block-compact: clamp(1.5rem, 3.5vh, 3rem);
     --ly-header-height: 4.5rem;
     --ly-sticky-position: sticky;
     --ly-cover-min: 100vh;
@@ -67,11 +68,13 @@
     --ly-gallery-min: 12rem;
     --ly-card-grid-min: 16rem;
 
+    --ly-app-shell-base-rows: auto auto minmax(0, 1fr) auto auto;
     --ly-app-shell-medium-areas:
       "header header"
       "sidebar main"
       "aside main"
       "footer footer";
+    --ly-app-shell-medium-rows: auto auto minmax(0, 1fr) auto;
     --ly-app-shell-medium-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
       minmax(0, 1fr);
@@ -79,6 +82,7 @@
       "sidebar header header"
       "sidebar main aside"
       "sidebar footer footer";
+    --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto;
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
       minmax(0, 1fr)
@@ -128,6 +132,13 @@
     min-block-size: 0;
   }
 
+  /* Prefer the nearest layout scope for gutters when container units parse. */
+  @supports (width: 1cqi) {
+    :where(.ly-root) {
+      --ly-page-padding-inline: clamp(1rem, 3cqi, 3rem);
+    }
+  }
+
   /* Enhance viewport-bound tokens only when dynamic viewport units parse. */
   @supports (height: 100dvh) {
     :where(.ly-root) {
@@ -165,6 +176,7 @@
       --ly-stack-gap: min(var(--ly-space-4), 3vh);
       --ly-cluster-gap: min(var(--ly-space-3), 2vh);
       --ly-section-padding-block: clamp(1.5rem, 6vh, 3rem);
+      --ly-section-padding-block-compact: clamp(0.75rem, 3vh, 1.25rem);
       --ly-header-height: 3.5rem;
       --ly-scroll-max: min(62vh, 34rem);
     }
@@ -174,6 +186,7 @@
         --ly-stack-gap: min(var(--ly-space-4), 3dvh);
         --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
         --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+        --ly-section-padding-block-compact: clamp(0.75rem, 3dvh, 1.25rem);
         --ly-scroll-max: min(62dvh, 34rem);
       }
     }
@@ -185,6 +198,7 @@
       --ly-shell-min: auto;
       --ly-sticky-position: static;
       --ly-section-padding-block: var(--ly-space-5);
+      --ly-section-padding-block-compact: var(--ly-space-3);
       --ly-scroll-max: max(12rem, calc(100vh - 8rem));
     }
 
@@ -202,7 +216,7 @@
 @layer ly.wrappers {
   .ly-wrapper {
     --ly-wrapper-max: var(--ly-personality-wrapper-max, var(--ly-wrapper-content));
-    --ly-wrapper-fluid-gutter: clamp(1rem, 3vw, 3rem);
+    --ly-wrapper-fluid-gutter: var(--ly-wrapper-gutter);
     --ly-wrapper-local-gutter: max(
       var(--ly-wrapper-fluid-gutter),
       var(--ly-safe-area-inline)
@@ -214,13 +228,6 @@
     max-inline-size: 100%;
     margin-inline: auto;
     padding-inline: var(--ly-wrapper-local-gutter);
-  }
-
-  /* Container-relative gutters enhance the universally valid viewport fallback. */
-  @supports (width: 1cqi) {
-    .ly-wrapper {
-      --ly-wrapper-fluid-gutter: clamp(1rem, 3cqi, 3rem);
-    }
   }
 
   .ly-wrapper--compact {
@@ -325,11 +332,11 @@
   }
 
   .ly-section--compact {
-    --ly-section-padding-block: var(--ly-space-7);
+    padding-block: var(--ly-section-padding-block-compact);
   }
 
   .ly-section--flush {
-    --ly-section-padding-block: 0;
+    padding-block: 0;
   }
 
   .ly-readable {
@@ -516,7 +523,7 @@
       "main"
       "aside"
       "footer";
-    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: var(--ly-app-shell-base-rows);
   }
 
   [data-ly-recipe="dashboard"],
@@ -647,6 +654,7 @@
     [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]) {
       grid-template-areas: var(--ly-app-shell-medium-areas);
       grid-template-columns: var(--ly-app-shell-medium-columns);
+      grid-template-rows: var(--ly-app-shell-medium-rows);
     }
 
     [data-ly-recipe="dashboard"]:not([data-ly-responsive="manual"]) {
@@ -659,6 +667,7 @@
     [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]) {
       grid-template-areas: var(--ly-app-shell-wide-areas);
       grid-template-columns: var(--ly-app-shell-wide-columns);
+      grid-template-rows: var(--ly-app-shell-wide-rows);
     }
 
     [data-ly-recipe="dashboard"]:not([data-ly-responsive="manual"]) {
@@ -793,6 +802,7 @@
       "sidebar main main"
       "aside main main"
       "footer footer footer";
+    --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.3fr)
       minmax(0, 1fr)
@@ -855,6 +865,7 @@
       "sidebar main"
       "aside main"
       "footer footer";
+    --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.28fr)
       minmax(0, 1fr);
@@ -877,6 +888,7 @@
       "main sidebar"
       "aside sidebar"
       "footer sidebar";
+    --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto auto;
     --ly-app-shell-wide-columns:
       minmax(0, 1fr)
       minmax(min(100%, var(--ly-recipe-rail)), 0.3fr);
@@ -1042,6 +1054,7 @@
       "main sidebar"
       "aside sidebar"
       "footer footer";
+    --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto auto;
     --ly-app-shell-wide-columns:
       minmax(0, 1fr)
       minmax(0, 1fr);

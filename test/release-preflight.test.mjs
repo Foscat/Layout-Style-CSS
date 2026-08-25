@@ -11,7 +11,7 @@ const rootDir = path.resolve(
   "..",
 );
 const reviewedUiFixtureRevision =
-  "bdbb6a7e432f30b92de206cac6a00fe85394190c";
+  "33e3c834aec62b85650dd14aea9d7d388abef191";
 let releaseContract;
 try {
   releaseContract = await import("../scripts/release-fixture-contract.mjs");

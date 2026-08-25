@@ -21,7 +21,7 @@ const ecosystemManifest = JSON.parse(
 const expectedSecurityOverrides = {
   "fast-uri": "3.1.5",
   "js-yaml": "4.3.1",
-  nanoid: "3.3.17",
+  nanoid: "3.3.18",
   postcss: "8.5.23",
 };
 const expectedExports = {
@@ -129,11 +129,11 @@ test("package defaults and homepage expose the intended distribution contract", 
   }
 });
 
-test("release metadata stays synchronized for the 3.0.1 patch", () => {
-  assert.equal(manifest.version, "3.0.1");
-  assert.equal(packageLock.version, "3.0.1");
-  assert.equal(packageLock.packages[""].version, "3.0.1");
-  assert.equal(ecosystemManifest.version, "3.0.1");
+test("release metadata stays synchronized for the 3.0.2 patch", () => {
+  assert.equal(manifest.version, "3.0.2");
+  assert.equal(packageLock.version, "3.0.2");
+  assert.equal(packageLock.packages[""].version, "3.0.2");
+  assert.equal(ecosystemManifest.version, "3.0.2");
   assert.equal(Object.keys(manifest.exports).length, 13);
 });
 

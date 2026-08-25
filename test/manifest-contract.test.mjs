@@ -52,7 +52,8 @@ const geometryTokens = [
   "--ly-page-padding-inline", "--ly-safe-area-inline", "--ly-safe-area-block-start",
   "--ly-safe-area-block-end", "--ly-wrapper-gutter", "--ly-wrapper-max", "--ly-profile-gap",
   "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap",
-  "--ly-section-padding-block", "--ly-header-height", "--ly-sticky-position", "--ly-cover-min",
+  "--ly-section-padding-block", "--ly-section-padding-block-compact", "--ly-header-height",
+  "--ly-sticky-position", "--ly-cover-min",
   "--ly-shell-min", "--ly-scroll-max", "--ly-switcher-threshold", "--ly-sidebar-size",
   "--ly-sidebar-content-min", "--ly-grid-columns", "--ly-grid-min", "--ly-split-min",
   "--ly-pane-min", "--ly-pane-size", "--ly-media-min", "--ly-media-size", "--ly-reel-item-min",
@@ -77,7 +78,7 @@ const internalLayoutTokens = [
 test("ecosystem manifest publishes the structural API and package export", () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.name, packageJson.name);
-  assert.equal(manifest.version, "3.0.1");
+  assert.equal(manifest.version, "3.0.2");
   assert.equal(manifest.version, packageJson.version);
   assert.equal(manifest.schemaPolicy.compatibility, "additive-within-major");
   assert.equal(

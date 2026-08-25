@@ -42,7 +42,7 @@
       "main"
       "aside"
       "footer";
-    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: var(--ly-app-shell-base-rows);
   }
 
   [data-ly-recipe="dashboard"],
@@ -173,6 +173,7 @@
     [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]) {
       grid-template-areas: var(--ly-app-shell-medium-areas);
       grid-template-columns: var(--ly-app-shell-medium-columns);
+      grid-template-rows: var(--ly-app-shell-medium-rows);
     }
 
     [data-ly-recipe="dashboard"]:not([data-ly-responsive="manual"]) {
@@ -185,6 +186,7 @@
     [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]) {
       grid-template-areas: var(--ly-app-shell-wide-areas);
       grid-template-columns: var(--ly-app-shell-wide-columns);
+      grid-template-rows: var(--ly-app-shell-wide-rows);
     }
 
     [data-ly-recipe="dashboard"]:not([data-ly-responsive="manual"]) {

@@ -130,7 +130,7 @@ const topologyEdges = [
 
 const assertStaticDemoContract = () => {
   assert.match(demoHtml, /Layout Style CSS v3/);
-  assert.match(demoHtml, /content="3\.0\.1"/);
+  assert.match(demoHtml, /content="3\.0\.2"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -138,17 +138,17 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.1"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.2"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.0\.1"/,
+    /href="\.\/demo\.css\?v=3\.0\.2"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.0\.1"/,
+    /src="\.\/demo\.js\?v=3\.0\.2"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
@@ -447,7 +447,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
 };
 
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.0.1", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.0.2", baseUrl).toString();
   const pairingFixture = {
     schemaVersion: 1,
     personalities: [
@@ -538,30 +538,45 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies that metadata failure falls back to the packaged personality list
+ * inside a hermetic browser context with local companion stylesheet fixtures.
+ *
+ * @param {import("@playwright/test").Page} page Active demo page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.0.1", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.0.2", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
-  const recoveryPage = await recoveryContext.newPage();
+  try {
+    const recoveryPage = await recoveryContext.newPage();
+    await installExternalFixtures(recoveryPage);
+    await recoveryPage.route(metadataUrl, (route) =>
+      route.fulfill({ status: 503, body: "Unavailable" })
+    );
+    await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+      waitUntil: "domcontentloaded"
+    });
+    await recoveryPage.waitForFunction(
+      () => document.body.dataset.demoReady === "true",
+      undefined,
+      { timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS }
+    );
 
-  await recoveryPage.route(metadataUrl, (route) => route.fulfill({ status: 503, body: "Unavailable" }));
-  await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
-  await recoveryPage.waitForFunction(
-    () => document.body.dataset.demoReady === "true",
-    undefined,
-    { timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS }
-  );
+    const recovered = await recoveryPage.evaluate(() => ({
+      fallback: window.LAYOUT_STYLE_PERSONALITY_METADATA?.personalities ?? [],
+      options: [...document.querySelectorAll("#personalitySelect option")].map((option) => option.value),
+      busy: document.querySelector("#personalitySelect")?.getAttribute("aria-busy"),
+      status: document.querySelector("#personalityMetadataStatus")?.textContent
+    }));
 
-  const recovered = await recoveryPage.evaluate(() => ({
-    fallback: window.LAYOUT_STYLE_PERSONALITY_METADATA?.personalities ?? [],
-    options: [...document.querySelectorAll("#personalitySelect option")].map((option) => option.value),
-    busy: document.querySelector("#personalitySelect")?.getAttribute("aria-busy"),
-    status: document.querySelector("#personalityMetadataStatus")?.textContent
-  }));
-
-  assert.deepEqual(recovered.options, recovered.fallback.map(({ id }) => id));
-  assert.equal(recovered.busy, "false");
-  assert.match(recovered.status ?? "", /using packaged fallback/i);
-  await recoveryContext.close();
+    assert.deepEqual(recovered.options, recovered.fallback.map(({ id }) => id));
+    assert.equal(recovered.busy, "false");
+    assert.match(recovered.status ?? "", /using packaged fallback/i);
+  } finally {
+    await recoveryContext.close();
+  }
 };
 
 const verifyTopologyEdges = async (page, baseUrl) => {
@@ -595,6 +610,64 @@ const verifyTopologyEdges = async (page, baseUrl) => {
       assert.match(above.areas, new RegExp(area), `${edge.recipe} missed area ${area}.`);
     }
     assertNoHorizontalFailures(above, `${edge.recipe} at ${edge.above}`);
+  }
+};
+
+/**
+ * Verifies that each automatic App Shell topology exposes one explicit row per
+ * named area row and gives the primary workspace more height than intrinsic
+ * header and footer tracks.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyAppShellRowGeometry = async (page, baseUrl) => {
+  const cases = [
+    { label: "base", width: "51rem", personality: "minimal-saas", rows: 5 },
+    { label: "medium", width: "53rem", personality: "minimal-saas", rows: 4 },
+    ...personalities.map((personality) => ({
+      label: `wide ${personality}`,
+      width: "73rem",
+      personality,
+      rows: ["bento", "neumorphism", "split-screen", "tactile"].includes(personality)
+        ? 4
+        : 3
+    }))
+  ];
+
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  for (const testCase of cases) {
+    await page.goto(
+      `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=${testCase.width}&height=50rem&personality=${testCase.personality}`,
+      { waitUntil: "domcontentloaded" }
+    );
+    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+    const geometry = await page.locator('[data-ly-recipe="app-shell"]').evaluate((recipe) => {
+      const style = getComputedStyle(recipe);
+      const areaRows = style.gridTemplateAreas.match(/"[^"]+"/g) ?? [];
+      const main = recipe.querySelector('[data-ly-area="main"]').getBoundingClientRect();
+      const header = recipe.querySelector('[data-ly-area="header"]').getBoundingClientRect();
+      const footer = recipe.querySelector('[data-ly-area="footer"]').getBoundingClientRect();
+      return {
+        areaRows: areaRows.length,
+        explicitRows: style.gridTemplateRows.split(/\s+/).filter(Boolean).length,
+        mainHeight: main.height,
+        headerHeight: header.height,
+        footerHeight: footer.height
+      };
+    });
+
+    assert.equal(geometry.areaRows, testCase.rows, `${testCase.label} area-row count drifted.`);
+    assert.equal(
+      geometry.explicitRows,
+      testCase.rows,
+      `${testCase.label} explicit rows must match its area rows.`
+    );
+    assert(
+      geometry.mainHeight > geometry.headerHeight && geometry.mainHeight > geometry.footerHeight,
+      `${testCase.label} must allocate flexible height to the primary workspace.`
+    );
   }
 };
 
@@ -756,6 +829,69 @@ const verifyHeightBehavior = async (page, baseUrl) => {
       `${recipe} placed required content outside normal document flow.`
     );
     assert.equal(reachability.shell, "auto", `${recipe} retained a forced shell height.`);
+  }
+};
+
+/**
+ * Verifies compact section ordering across viewport-height tiers and proves
+ * that both public Wrapper gutter tokens control computed padding.
+ *
+ * @param {import("@playwright/test").Browser} browser Active browser instance.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifySectionAndGutterContracts = async (browser, baseUrl) => {
+  for (const height of [1080, 704, 480]) {
+    const contractPage = await browser.newPage({ viewport: { width: 1440, height } });
+    try {
+      await installExternalFixtures(contractPage);
+      await contractPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+        waitUntil: "domcontentloaded"
+      });
+      await contractPage.waitForFunction(() => document.body.dataset.demoReady === "true");
+      const result = await contractPage.evaluate(() => {
+        const root = document.createElement("div");
+        root.className = "ly-root";
+        root.style.inlineSize = "62.5rem";
+
+        const normal = document.createElement("section");
+        normal.className = "ly-section";
+        normal.textContent = "Normal section";
+        const compact = document.createElement("section");
+        compact.className = "ly-section ly-section--compact";
+        compact.textContent = "Compact section";
+        const wrapper = document.createElement("div");
+        wrapper.className = "ly-wrapper";
+        wrapper.textContent = "Wrapper";
+        root.append(normal, compact, wrapper);
+        document.body.append(root);
+
+        const normalPadding = parseFloat(getComputedStyle(normal).paddingBlockStart);
+        const compactPadding = parseFloat(getComputedStyle(compact).paddingBlockStart);
+        root.style.setProperty("--ly-page-padding-inline", "22px");
+        root.style.removeProperty("--ly-wrapper-gutter");
+        const pageTokenPadding = parseFloat(getComputedStyle(wrapper).paddingInlineStart);
+        root.style.setProperty("--ly-wrapper-gutter", "34px");
+        const gutterTokenPadding = parseFloat(getComputedStyle(wrapper).paddingInlineStart);
+        root.remove();
+
+        return {
+          normalPadding,
+          compactPadding,
+          pageTokenPadding,
+          gutterTokenPadding
+        };
+      });
+
+      assert(
+        result.compactPadding < result.normalPadding,
+        `Compact section padding must stay below normal padding at ${height}px: ${JSON.stringify(result)}`
+      );
+      assert.equal(result.pageTokenPadding, 22, "Page padding token must control Wrapper padding.");
+      assert.equal(result.gutterTokenPadding, 34, "Wrapper gutter token must control padding.");
+    } finally {
+      await contractPage.close();
+    }
   }
 };
 
@@ -1102,8 +1238,10 @@ try {
   await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
+  await verifyAppShellRowGeometry(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);
   await verifyHeightBehavior(page, server.baseUrl);
+  await verifySectionAndGutterContracts(browser, server.baseUrl);
   await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
