@@ -6,6 +6,7 @@
 - [Layout Styles](Layout-Styles)
 - [Companion Compatibility](UI-Style-Kit-Compatibility)
 - [Migrating To 3.0](Migrating-To-3.0)
+- [Migrating To 3.1](Migrating-To-3.1)
 - [Demo And GitHub Pages](Demo-And-GitHub-Pages)
 - [Release And Publishing](Release-And-Publishing)
 - [Security And Support](Security-And-Support)

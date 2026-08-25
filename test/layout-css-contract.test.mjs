@@ -106,7 +106,7 @@ function minifyCss(css) {
     .trim();
 }
 
-assert.equal(packageJson.version, "3.0.2", "The patch branch must expose version 3.0.2");
+assert.equal(packageJson.version, "3.1.0", "The minor branch must expose version 3.1.0");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(
@@ -143,6 +143,7 @@ const expectedTarballFiles = [
   "docs/wiki/Layout-Styles.md",
   "docs/wiki/Migrating-To-2.0.md",
   "docs/wiki/Migrating-To-3.0.md",
+  "docs/wiki/Migrating-To-3.1.md",
   "docs/wiki/Release-And-Publishing.md",
   "docs/wiki/Security-And-Support.md",
   "docs/wiki/UI-Style-Kit-Compatibility.md",

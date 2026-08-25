@@ -2,7 +2,7 @@
 
 Zero-configuration, dependency-free structural CSS that responds to the width and height a layout actually receives.
 
-`layout-style-css@3.0.2` is the current v3 patch release and preserves the clean-break structural contract introduced in 3.0.0. It provides intrinsic wrappers, composition primitives, seven semantic recipes, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
+`layout-style-css@3.1.0` is the current additive v3 release. It provides intrinsic wrappers, composition primitives, seven semantic recipes, explicit local density controls, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ Zero-configuration, dependency-free structural CSS that responds to the width an
 ## Install
 
 ```bash
-npm install layout-style-css@3.0.2
+npm install layout-style-css@3.1.0
 ```
 
 Most applications need one import:
@@ -44,6 +44,17 @@ Use `.ly-root` as the responsive boundary and keep the mobile DOM order authorit
 
 `.ly-root`, wrappers, and recipe roots establish the named `ly-scope` inline-size container. A recipe works directly in the root; when it is nested in a wrapper, it responds to that nearest wrapper.
 
+## Density Contexts
+
+Normal density is the zero-configuration default. Use `data-ly-density="compact"`, `data-ly-density="normal"`, or `data-ly-density="spacious"` on `.ly-root` or any nested layout subtree. A nested density explicitly resets inherited gaps and section rhythm, so task controls can remain compact inside a spacious marketing page.
+
+```html
+<main class="ly-root" data-ly-density="normal">
+  <section data-ly-density="compact">Dense application controls</section>
+  <section data-ly-density="spacious">Campaign presentation</section>
+</main>
+```
+
 ## Wrappers
 
 Wrappers are optional measure and nesting controls. Every wrapper uses logical properties, fluid container-relative gutters, safe-area compensation, and shrink-safe sizing.
@@ -54,6 +65,7 @@ Wrappers are optional measure and nesting controls. Every wrapper uses logical p
 | `.ly-wrapper--compact` | `40rem` compact measure |
 | `.ly-wrapper--prose` | `68ch` reading measure |
 | `.ly-wrapper--content` | `72rem` content measure |
+| `.ly-wrapper--workspace` | `96rem` task-oriented application measure |
 | `.ly-wrapper--wide` | `112rem` wide measure |
 | `.ly-wrapper--full` | Full available inline size |
 | `.ly-wrapper--breakout` | Clamped content, feature, and full lanes |
@@ -79,7 +91,9 @@ The core includes:
 - `.ly-panes` and `.ly-media`
 - `.ly-reel`, `.ly-frame`, and `.ly-scroll`
 
-Grid and flex primitives wrap intrinsically whenever track wrapping can replace a query. Page, cover, and bounded-scroll sizing use `vh` fallbacks followed by `100dvh`-aware behavior. Only `.ly-reel` deliberately scrolls horizontally; only `.ly-scroll` deliberately creates a bounded vertical scroll region.
+Grid and flex primitives wrap intrinsically whenever track wrapping can replace a query. Base `.ly-scroll` owns overflow but no height cap. Add `.ly-scroll--bounded` for the stable `--ly-scroll-max` cap or `.ly-scroll--viewport` for height-aware `--ly-scroll-viewport-max` behavior. Only `.ly-reel` deliberately scrolls horizontally; only the Scroll family deliberately creates vertical scrolling.
+
+Gap utilities `.ly-gap-0` through `.ly-gap-9` assign `gap` only on the element carrying the class. They do not alter inherited primitive gap variables. Override `--ly-gap`, `--ly-grid-gap`, `--ly-stack-gap`, or `--ly-cluster-gap` when a shared spacing context is intentional.
 
 ## Automatic Recipe Engine
 
@@ -94,6 +108,8 @@ Recipes use attributes only. The stacked semantic source order is always safe, a
 | `data-ly-recipe="dashboard"` | Medium at `52rem`, wide at `72rem` |
 | `data-ly-recipe="gallery"` | Intrinsic tracks; no topology breakpoint |
 | `data-ly-recipe="card-grid"` | Intrinsic tracks; no topology breakpoint |
+
+The same ownership is available in `manifest.json` through `thresholds.recipes`, alongside the generic container-width and viewport-height arrays. Release checks verify every mapping against authored queries and require every public geometry token to reach a runtime CSS declaration.
 
 App Shell base, medium, and wide topologies own matching row definitions. This keeps the primary workspace flexible while header and footer tracks remain intrinsic, including personality-specific four-row topologies.
 
@@ -162,7 +178,7 @@ Each personality is a token/topology profile consumed by the shared recipe engin
 | `layout-style-css/personalities.json` | Public layout-to-visual pairing recommendations |
 | `layout-style-css/package.json` | Package metadata |
 
-The cascade order is `ly.reset`, `ly.tokens`, `ly.wrappers`, `ly.primitives`, `ly.recipes`, `ly.utilities`, and `ly.personalities`.
+The cascade order is `ly.reset`, `ly.tokens`, `ly.wrappers`, `ly.primitives`, `ly.recipes`, `ly.utilities`, `ly.personalities`, and `ly.context`. Unlayered application CSS remains stronger than every library layer.
 
 ## Ecosystem Imports
 
@@ -177,18 +193,18 @@ import "layout-style-css";
 
 This order lets UI Style Kit establish paint and theme roles, Interactive Surface add interaction states, and Layout apply structure.
 
-`data-ly-layout`, `data-ui`, `data-theme`, and `data-mode` are independently selectable. See [Layout Styles](docs/wiki/Layout-Styles.md#visual-pairing-guidance) for the full recommendation matrix; pairings are never dependencies.
+`data-ly-layout`, `data-ly-density`, `data-ui`, `data-theme`, and `data-mode` are independently selectable. See [Layout Styles](docs/wiki/Layout-Styles.md#visual-pairing-guidance) for the full recommendation matrix; pairings are never dependencies.
 
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.2/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.2/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.1.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.1.0/dist/layout-style-css.min.css">
 ```
 
 ## Clean-Break Migration
 
-v3 has no compatibility bundle. It removes `legacy.css`, the deprecated UI Style Kit structural bridge, v1/v2 aliases, responsive `ly-md-*` and `ly-lg-*` utilities, and all visual-order utilities. See [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md) for exact mappings.
+v3 has no compatibility bundle. It removes `legacy.css`, the deprecated UI Style Kit structural bridge, v1/v2 aliases, responsive `ly-md-*` and `ly-lg-*` utilities, and all visual-order utilities. See [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md) for the major-version mappings and [Migrating To 3.1](docs/wiki/Migrating-To-3.1.md) for density, local gap, and Scroll behavior changes.
 
 ## Demo And Verification
 
@@ -214,6 +230,7 @@ npm run release:verify
 - [Layout Recipes](docs/wiki/Layout-Recipes.md)
 - [Layout Styles](docs/wiki/Layout-Styles.md)
 - [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md)
+- [Migrating To 3.1](docs/wiki/Migrating-To-3.1.md)
 - [Demo And GitHub Pages](docs/wiki/Demo-And-GitHub-Pages.md)
 - [Release And Publishing](docs/wiki/Release-And-Publishing.md)
 - [Security And Support](docs/wiki/Security-And-Support.md)

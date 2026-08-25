@@ -2,6 +2,26 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [3.1.0] - 2026-08-25
+
+### Added
+
+- Added compact, normal, and spacious density contexts that can be applied at the root or to a nested layout subtree.
+- Added the `96rem` workspace Wrapper, all ten local gap utilities, explicit bounded and viewport-relative Scroll modifiers, and recipe-owned threshold metadata.
+
+### Changed
+
+- Made normal section spacing more conservative while retaining the former marketing rhythm through spacious density.
+- Made gap utilities local to the element carrying the class and made base Scroll rely on its containing layout for height constraints.
+
+### Migration
+
+- Use spacious density for the former section rhythm, explicit inherited gap tokens for a shared spacing context, and `ly-scroll--viewport` for the former viewport-relative Scroll behavior.
+
+### Tests
+
+- Added density, workspace utilization, nested-gap isolation, Scroll-mode, public-token liveness, threshold metadata, cross-height, generated-output, package, and Pages contracts.
+
 ## [3.0.2] - 2026-08-25
 
 ### Fixed

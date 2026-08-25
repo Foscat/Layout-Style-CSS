@@ -125,6 +125,24 @@ export function validateRepositoryWorkflows(repositoryRoot) {
   validateWorkflowSources(workflows);
 }
 
+/**
+ * Resolves the reviewed Interactive Surface checkout used by local ecosystem
+ * verification while retaining the sibling-repository default used in CI.
+ *
+ * @param {string} repositoryRoot Layout Style repository root.
+ * @param {NodeJS.ProcessEnv | Record<string, string | undefined>} [environment] Environment values.
+ * @returns {string} Absolute Interactive Surface repository path.
+ */
+export function resolveInteractiveRoot(
+  repositoryRoot,
+  environment = process.env,
+) {
+  return path.resolve(
+    environment.CSS_ECOSYSTEM_INTERACTIVE_ROOT ??
+      path.join(repositoryRoot, "..", "Interactive-Surface-CSS"),
+  );
+}
+
 async function runCli(args) {
   const descriptor = readFixtureDescriptor(rootDir);
   if (args.includes("--write-github-outputs")) {
@@ -152,11 +170,7 @@ async function runCli(args) {
   const packageName = JSON.parse(
     fs.readFileSync(path.join(rootDir, "package.json"), "utf8"),
   ).name;
-  const siblingInteractive = path.resolve(
-    rootDir,
-    "..",
-    "Interactive-Surface-CSS",
-  );
+  const siblingInteractive = resolveInteractiveRoot(rootDir);
   const commandArgs = [
     preflightModule,
     "--fixture-root",

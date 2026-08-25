@@ -13,6 +13,7 @@ Wrappers are optional local responsive scopes:
 - `.ly-wrapper--compact`
 - `.ly-wrapper--prose`
 - `.ly-wrapper--content`
+- `.ly-wrapper--workspace`
 - `.ly-wrapper--wide`
 - `.ly-wrapper--full`
 - `.ly-wrapper--breakout`
@@ -20,6 +21,8 @@ Wrappers are optional local responsive scopes:
 Breakout children select clamped lanes with `data-ly-lane="content"`, `data-ly-lane="feature"`, or `data-ly-lane="full"`.
 
 `--ly-page-padding-inline` supplies the default `--ly-wrapper-gutter` value. `--ly-wrapper-gutter` controls rendered Wrapper padding at the scope where it is overridden, while the Wrapper applies safe-area compensation once at its outer edge.
+
+Use content for conventional page content and workspace for task-oriented application layouts that need the `96rem` measure.
 
 ## Flow
 
@@ -41,13 +44,15 @@ Breakout children select clamped lanes with `data-ly-lane="content"`, `data-ly-l
 
 - `.ly-frame` keeps a configurable aspect ratio.
 - `.ly-reel` is the deliberate horizontal-flow primitive.
-- `.ly-scroll` is the deliberate bounded vertical-scroll primitive.
+- `.ly-scroll` owns vertical overflow without imposing a height cap.
+- `.ly-scroll--bounded` applies the stable `--ly-scroll-max` cap.
+- `.ly-scroll--viewport` applies the height-aware `--ly-scroll-viewport-max` cap.
 
-In normal use, only `.ly-reel` introduces intentional horizontal scrolling, and only `.ly-scroll` introduces intentional vertical scrolling. Other wrappers, primitives, and recipes clamp to their available inline size.
+In normal use, only `.ly-reel` introduces intentional horizontal scrolling, and only `.ly-scroll` and its modifiers introduce intentional vertical scrolling. Other wrappers, primitives, and recipes clamp to their available inline size.
 
 ## Height Behavior
 
-Page, cover, and bounded scroll behaviors use `vh` fallbacks followed by dynamic viewport units such as `100dvh`.
+Page, cover, and viewport-relative Scroll behaviors use `vh` fallbacks followed by dynamic viewport units such as `100dvh`. Bounded Scroll remains application-controlled across viewport tiers.
 
 At `44rem` viewport height or less, gaps and scroll maxima tighten. At `30rem` or less, forced cover/shell minimums and recipe-owned sticky positioning are removed. Required regions remain in normal document flow.
 
@@ -64,3 +69,7 @@ Advanced consumers can override stable custom properties for:
 - shell, cover, and bounded-scroll sizing
 
 These tokens tune behavior without creating a second breakpoint system.
+
+## Local Gap Utilities
+
+`.ly-gap-0` through `.ly-gap-9` set `gap` only on the element carrying the class. Nested primitives keep their own default gaps. For an intentionally inherited spacing context, set `--ly-gap`, `--ly-grid-gap`, `--ly-stack-gap`, or `--ly-cluster-gap` on the shared ancestor instead.

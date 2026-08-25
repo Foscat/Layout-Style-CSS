@@ -11,7 +11,7 @@ const rootDir = path.resolve(
   "..",
 );
 const reviewedUiFixtureRevision =
-  "33e3c834aec62b85650dd14aea9d7d388abef191";
+  "a44dd41bf3611aba0a20bddfd00eb37938ca884f";
 let releaseContract;
 try {
   releaseContract = await import("../scripts/release-fixture-contract.mjs");
@@ -44,6 +44,19 @@ test("pins an immutable reviewed UI release fixture and writes exact checkout ou
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
+});
+
+test("local release verification accepts an explicit reviewed Interactive fixture", () => {
+  assert.equal(
+    releaseContract.resolveInteractiveRoot("C:/workspace/Layout-Style-CSS", {
+      CSS_ECOSYSTEM_INTERACTIVE_ROOT: "C:/fixtures/Interactive-Surface-CSS"
+    }),
+    path.resolve("C:/fixtures/Interactive-Surface-CSS")
+  );
+  assert.equal(
+    releaseContract.resolveInteractiveRoot("C:/workspace/Layout-Style-CSS", {}),
+    path.resolve("C:/workspace/Interactive-Surface-CSS")
+  );
 });
 
 test("pull requests execute read-only preflight and npm publish stays downstream", () => {

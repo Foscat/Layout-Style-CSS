@@ -9,7 +9,7 @@
 ## Package
 
 ```bash
-npm install layout-style-css@3.0.2
+npm install layout-style-css@3.1.0
 ```
 
 ```js
@@ -36,11 +36,11 @@ Package and bundler defaults (`main`, `style`, and the root export) use the read
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.0.2/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.1.0/dist/layout-style-css.min.css">
 ```
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.0.2/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.1.0/dist/layout-style-css.min.css">
 ```
 
 The CDN paths include `/dist/` because CDN clients address files in the published tarball, while package import maps use the public exports.
@@ -69,9 +69,10 @@ The module order is:
 5. `ly.recipes`
 6. `ly.utilities`
 7. `ly.personalities`
+8. `ly.context`
 
-Application styles can override public custom properties without reordering the package modules.
+The final context layer lets explicit density profiles override personality defaults. Unlayered application styles remain stronger than every package layer and can override public custom properties without reordering modules.
 
 ## Clean-Break Note
 
-v3 does not export a compatibility bundle, legacy aliases, the deprecated structural bridge, extensionless aliases, or responsive/order utility families. See [Migrating To 3.0](Migrating-To-3.0.md).
+v3 does not export a compatibility bundle, legacy aliases, the deprecated structural bridge, extensionless aliases, or responsive/order utility families. See [Migrating To 3.0](Migrating-To-3.0.md) for the major migration and [Migrating To 3.1](Migrating-To-3.1.md) for current behavioral refinements.

@@ -8,14 +8,17 @@ const normalizeLineEndings = (value) => value.replace(/\r\n?/g, "\n");
 const read = (...parts) => normalizeLineEndings(readFileSync(join(root, ...parts), "utf8"));
 const packageJson = JSON.parse(read("package.json"));
 const migrationPath = join(root, "docs", "wiki", "Migrating-To-3.0.md");
+const minorMigrationPath = join(root, "docs", "wiki", "Migrating-To-3.1.md");
 const v2SurfacePath = join(root, "test", "fixtures", "v2-public-selectors.json");
 
 assert(existsSync(migrationPath), "The v3 package must ship a complete v2-to-v3 migration guide.");
+assert(existsSync(minorMigrationPath), "The v3.1 package must ship its focused migration guide.");
 assert(existsSync(v2SurfacePath), "Migration coverage requires a checked-in v2 public selector fixture.");
 
 const readme = read("README.md");
 const changelog = read("CHANGELOG.md");
 const migration = read("docs", "wiki", "Migrating-To-3.0.md");
+const minorMigration = read("docs", "wiki", "Migrating-To-3.1.md");
 const installation = read("docs", "wiki", "Installation-And-CDN.md");
 const compatibility = read("docs", "wiki", "UI-Style-Kit-Compatibility.md");
 const primitivesGuide = read("docs", "wiki", "Layout-Primitives.md");
@@ -50,6 +53,7 @@ for (const selector of removedV2Selectors) {
 const docsCorpus = [
   readme,
   migration,
+  minorMigration,
   installation,
   compatibility,
   primitivesGuide,
@@ -68,6 +72,7 @@ const currentGuidanceCorpus = [
     "Layout-Primitives.md",
     "Layout-Recipes.md",
     "Layout-Styles.md",
+    "Migrating-To-3.1.md",
     "Release-And-Publishing.md",
     "Security-And-Support.md",
     "UI-Style-Kit-Compatibility.md"
@@ -85,7 +90,7 @@ assert(
 );
 
 for (const requiredText of [
-  "3.0.2",
+  "3.1.0",
   "Node.js 20",
   "dependency-free",
   "zero-configuration",
@@ -107,6 +112,22 @@ for (const requiredText of [
   "mobile DOM order"
 ]) {
   assert(docsCorpus.includes(requiredText), `V3 documentation must explain ${requiredText}.`);
+}
+
+for (const minorContract of [
+  'data-ly-density="compact"',
+  'data-ly-density="normal"',
+  'data-ly-density="spacious"',
+  "ly-wrapper--workspace",
+  "ly-gap-9",
+  "ly-scroll--bounded",
+  "ly-scroll--viewport",
+  "thresholds.recipes"
+]) {
+  assert(
+    currentGuidanceCorpus.includes(minorContract),
+    `Current 3.1 documentation must explain ${minorContract}.`
+  );
 }
 
 for (const exportPath of [
@@ -169,7 +190,7 @@ for (const recipe of [
   );
 }
 
-for (const wrapper of ["compact", "prose", "content", "wide", "full", "breakout"]) {
+for (const wrapper of ["compact", "prose", "content", "workspace", "wide", "full", "breakout"]) {
   assert(docsCorpus.includes(`ly-wrapper--${wrapper}`), `Documentation must cover ${wrapper}.`);
 }
 for (const lane of ["content", "feature", "full"]) {
@@ -267,9 +288,11 @@ assert.equal(
   1,
   "Changelog needs one dated 3.0.2 section."
 );
+const minorReleaseHeadings = changelog.match(/^## \[3\.1\.0\] - 2026-08-25$/gm) ?? [];
+assert.equal(minorReleaseHeadings.length, 1, "Changelog needs one dated 3.1.0 section.");
 assert(
-  release.includes("layout-style-css@3.0.2") &&
-    release.includes("v3.0.2") &&
+  release.includes("layout-style-css@3.1.0") &&
+    release.includes("v3.1.0") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
 );
@@ -277,9 +300,9 @@ assert.deepEqual(
   releaseFixture,
   {
     repository: "Foscat/ui-style-kit-css",
-    revision: "33e3c834aec62b85650dd14aea9d7d388abef191"
+    revision: "a44dd41bf3611aba0a20bddfd00eb37938ca884f"
   },
-  "Release automation must pin the reviewed UI Layout 3.0.2 bootstrap commit."
+  "Release automation must pin the reviewed UI Layout 3.1.0 bootstrap commit."
 );
 assert(
   release.includes(releaseFixture.revision),
@@ -287,6 +310,7 @@ assert(
 );
 assert(support.includes("`3.x` | Yes"), "Support table must identify the supported v3 line.");
 assert(sidebar.includes("Migrating To 3.0"), "Wiki navigation must link the v3 migration guide.");
+assert(sidebar.includes("Migrating To 3.1"), "Wiki navigation must link the v3.1 migration guide.");
 
 // The manifest contract rebuilds dist, so built-artifact ownership tests must not overlap it.
 assert(
@@ -327,7 +351,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
 const demoSmoke = read("test", "demo-smoke.test.mjs");
-assert(publishWorkflow.includes("for example v3.0.2"));
+assert(publishWorkflow.includes("for example v3.1.0"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(
   !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&
