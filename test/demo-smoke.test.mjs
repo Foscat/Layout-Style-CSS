@@ -538,30 +538,45 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies that metadata failure falls back to the packaged personality list
+ * inside a hermetic browser context with local companion stylesheet fixtures.
+ *
+ * @param {import("@playwright/test").Page} page Active demo page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
   const metadataUrl = new URL("../personalities.json?v=3.0.2", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
-  const recoveryPage = await recoveryContext.newPage();
+  try {
+    const recoveryPage = await recoveryContext.newPage();
+    await installExternalFixtures(recoveryPage);
+    await recoveryPage.route(metadataUrl, (route) =>
+      route.fulfill({ status: 503, body: "Unavailable" })
+    );
+    await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+      waitUntil: "domcontentloaded"
+    });
+    await recoveryPage.waitForFunction(
+      () => document.body.dataset.demoReady === "true",
+      undefined,
+      { timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS }
+    );
 
-  await recoveryPage.route(metadataUrl, (route) => route.fulfill({ status: 503, body: "Unavailable" }));
-  await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
-  await recoveryPage.waitForFunction(
-    () => document.body.dataset.demoReady === "true",
-    undefined,
-    { timeout: METADATA_FAILURE_RECOVERY_READINESS_TIMEOUT_MS }
-  );
+    const recovered = await recoveryPage.evaluate(() => ({
+      fallback: window.LAYOUT_STYLE_PERSONALITY_METADATA?.personalities ?? [],
+      options: [...document.querySelectorAll("#personalitySelect option")].map((option) => option.value),
+      busy: document.querySelector("#personalitySelect")?.getAttribute("aria-busy"),
+      status: document.querySelector("#personalityMetadataStatus")?.textContent
+    }));
 
-  const recovered = await recoveryPage.evaluate(() => ({
-    fallback: window.LAYOUT_STYLE_PERSONALITY_METADATA?.personalities ?? [],
-    options: [...document.querySelectorAll("#personalitySelect option")].map((option) => option.value),
-    busy: document.querySelector("#personalitySelect")?.getAttribute("aria-busy"),
-    status: document.querySelector("#personalityMetadataStatus")?.textContent
-  }));
-
-  assert.deepEqual(recovered.options, recovered.fallback.map(({ id }) => id));
-  assert.equal(recovered.busy, "false");
-  assert.match(recovered.status ?? "", /using packaged fallback/i);
-  await recoveryContext.close();
+    assert.deepEqual(recovered.options, recovered.fallback.map(({ id }) => id));
+    assert.equal(recovered.busy, "false");
+    assert.match(recovered.status ?? "", /using packaged fallback/i);
+  } finally {
+    await recoveryContext.close();
+  }
 };
 
 const verifyTopologyEdges = async (page, baseUrl) => {
