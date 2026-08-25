@@ -330,6 +330,24 @@ assert(
 for (const threshold of ["42rem", "44rem", "48rem", "52rem", "72rem"]) {
   assert(recipes.includes(`@container ly-scope (min-width: ${threshold})`), `Missing ${threshold} recipe tier`);
 }
+const appShellRowTokens = {
+  base: "--ly-app-shell-base-rows",
+  medium: "--ly-app-shell-medium-rows",
+  wide: "--ly-app-shell-wide-rows"
+};
+for (const [topology, token] of Object.entries(appShellRowTokens)) {
+  assert(foundation.includes(`${token}:`), `App Shell ${topology} rows need a public token.`);
+  assert(
+    recipes.includes(`grid-template-rows: var(${token})`),
+    `App Shell ${topology} topology must consume ${token}.`
+  );
+}
+for (const personality of ["bento", "neumorphism", "split-screen", "tactile"]) {
+  assert(
+    readStyle(`personalities/${personality}.css`).includes("--ly-app-shell-wide-rows:"),
+    `${personality} must describe its four-row wide App Shell.`
+  );
+}
 assert(
   recipes.includes("container-name: ly-scope;") && recipes.includes("container-type: inline-size;"),
   "Recipe roots must scope nested responsive compositions"

@@ -16,6 +16,7 @@
       "main sidebar"
       "aside sidebar"
       "footer footer";
+    --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto auto;
     --ly-app-shell-wide-columns:
       minmax(0, 1fr)
       minmax(0, 1fr);

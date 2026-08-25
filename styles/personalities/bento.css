@@ -14,6 +14,7 @@
       "sidebar main main"
       "aside main main"
       "footer footer footer";
+    --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.3fr)
       minmax(0, 1fr)

@@ -240,13 +240,13 @@ Add the matching row consumer to each automatic query:
 
 - [ ] **Step 6: Add four-row personality tokens**
 
-Add this token beside the App Shell wide-area token in Bento, Split Screen, and Tactile:
+Add this token beside the App Shell wide-area token in Bento and Tactile:
 
 ```css
 --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
 ```
 
-Add this token in Neumorphism because its `main` occupies the second row:
+Add this token in Neumorphism and Split Screen because their `main` occupies the second row:
 
 ```css
 --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto auto;

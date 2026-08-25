@@ -598,6 +598,64 @@ const verifyTopologyEdges = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies that each automatic App Shell topology exposes one explicit row per
+ * named area row and gives the primary workspace more height than intrinsic
+ * header and footer tracks.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyAppShellRowGeometry = async (page, baseUrl) => {
+  const cases = [
+    { label: "base", width: "51rem", personality: "minimal-saas", rows: 5 },
+    { label: "medium", width: "53rem", personality: "minimal-saas", rows: 4 },
+    ...personalities.map((personality) => ({
+      label: `wide ${personality}`,
+      width: "73rem",
+      personality,
+      rows: ["bento", "neumorphism", "split-screen", "tactile"].includes(personality)
+        ? 4
+        : 3
+    }))
+  ];
+
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  for (const testCase of cases) {
+    await page.goto(
+      `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=${testCase.width}&height=50rem&personality=${testCase.personality}`,
+      { waitUntil: "domcontentloaded" }
+    );
+    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+    const geometry = await page.locator('[data-ly-recipe="app-shell"]').evaluate((recipe) => {
+      const style = getComputedStyle(recipe);
+      const areaRows = style.gridTemplateAreas.match(/"[^"]+"/g) ?? [];
+      const main = recipe.querySelector('[data-ly-area="main"]').getBoundingClientRect();
+      const header = recipe.querySelector('[data-ly-area="header"]').getBoundingClientRect();
+      const footer = recipe.querySelector('[data-ly-area="footer"]').getBoundingClientRect();
+      return {
+        areaRows: areaRows.length,
+        explicitRows: style.gridTemplateRows.split(/\s+/).filter(Boolean).length,
+        mainHeight: main.height,
+        headerHeight: header.height,
+        footerHeight: footer.height
+      };
+    });
+
+    assert.equal(geometry.areaRows, testCase.rows, `${testCase.label} area-row count drifted.`);
+    assert.equal(
+      geometry.explicitRows,
+      testCase.rows,
+      `${testCase.label} explicit rows must match its area rows.`
+    );
+    assert(
+      geometry.mainHeight > geometry.headerHeight && geometry.mainHeight > geometry.footerHeight,
+      `${testCase.label} must allocate flexible height to the primary workspace.`
+    );
+  }
+};
+
 const verifyManualAndNearestContainer = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(
@@ -1102,6 +1160,7 @@ try {
   await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
+  await verifyAppShellRowGeometry(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);
   await verifyHeightBehavior(page, server.baseUrl);
   await verifyDefaultFontHeightTiers(server.baseUrl);
