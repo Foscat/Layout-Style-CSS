@@ -21,6 +21,7 @@
     --ly-wrapper-compact: 40rem;
     --ly-wrapper-prose: 68ch;
     --ly-wrapper-content: 72rem;
+    --ly-wrapper-workspace: 96rem;
     --ly-wrapper-wide: 112rem;
     --ly-page-padding-inline: clamp(1rem, 3vw, 3rem);
     --ly-safe-area-inline: max(

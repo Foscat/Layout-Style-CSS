@@ -46,7 +46,16 @@ const recipes = [
   "card-grid"
 ];
 const personalities = personalityMetadata.personalities.map(({ id }) => id);
-const wrappers = ["default", "compact", "prose", "content", "wide", "full", "breakout"];
+const wrappers = [
+  "default",
+  "compact",
+  "prose",
+  "content",
+  "workspace",
+  "wide",
+  "full",
+  "breakout"
+];
 const devices = {
   "phone-portrait": { width: 360, height: 800 },
   "phone-landscape": { width: 800, height: 360 },
@@ -1119,6 +1128,60 @@ const verifyMinimumWidth = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies that the workspace Wrapper exposes a distinct task-oriented content
+ * measure between the conventional content and wide variants.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyWorkspaceMeasure = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const widths = await page.evaluate(() => {
+    const root = document.createElement("div");
+    root.className = "ly-root";
+
+    /**
+     * Creates a Wrapper whose inner child exposes its usable content measure.
+     *
+     * @param {"content" | "workspace" | "wide"} variant Wrapper variant.
+     * @returns {{wrapper: HTMLElement, inner: HTMLElement}} Wrapper fixture.
+     */
+    const createWrapperFixture = (variant) => {
+      const wrapper = document.createElement("section");
+      wrapper.className = `ly-wrapper ly-wrapper--${variant}`;
+      const inner = document.createElement("div");
+      inner.textContent = `${variant} measure`;
+      wrapper.append(inner);
+      return { wrapper, inner };
+    };
+
+    const content = createWrapperFixture("content");
+    const workspace = createWrapperFixture("workspace");
+    const wide = createWrapperFixture("wide");
+    root.append(content.wrapper, workspace.wrapper, wide.wrapper);
+    document.body.append(root);
+    const result = {
+      contentWidth: content.inner.getBoundingClientRect().width,
+      workspaceWidth: workspace.inner.getBoundingClientRect().width,
+      wideWidth: wide.inner.getBoundingClientRect().width
+    };
+    root.remove();
+    return result;
+  });
+
+  assert(widths.workspaceWidth > widths.contentWidth, "Workspace must use more width than content.");
+  assert(widths.workspaceWidth < widths.wideWidth, "Workspace must remain narrower than wide.");
+  assert(
+    widths.workspaceWidth >= 1536,
+    `Workspace content measure must reach 96rem at a wide viewport: ${JSON.stringify(widths)}`
+  );
+};
+
 const verifyBreakoutGeometry = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
@@ -1351,6 +1414,7 @@ try {
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
+  await verifyWorkspaceMeasure(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);

@@ -261,9 +261,16 @@ assert(
   "Normal 3.1 sections need the conservative default rhythm."
 );
 
-for (const variant of ["compact", "prose", "content", "wide", "full", "breakout"]) {
+for (const variant of ["compact", "prose", "content", "workspace", "wide", "full", "breakout"]) {
   assert(wrappers.includes(`.ly-wrapper--${variant}`), `Missing wrapper variant: ${variant}`);
 }
+assert(
+  /--ly-wrapper-workspace:\s*96rem/.test(foundation) &&
+    /\.ly-wrapper--workspace\s*\{[^}]*--ly-wrapper-max:\s*var\(--ly-wrapper-workspace\)/s.test(
+      wrappers
+    ),
+  "Workspace Wrapper must expose and consume the 96rem application measure."
+);
 assert(
   wrappers.includes("container-name: ly-scope;") &&
     wrappers.includes("container-type: inline-size;"),

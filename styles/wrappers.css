@@ -31,6 +31,10 @@
     --ly-wrapper-max: var(--ly-wrapper-content);
   }
 
+  .ly-wrapper--workspace {
+    --ly-wrapper-max: var(--ly-wrapper-workspace);
+  }
+
   .ly-wrapper--wide {
     --ly-wrapper-max: var(--ly-wrapper-wide);
   }

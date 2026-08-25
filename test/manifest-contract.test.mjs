@@ -48,7 +48,8 @@ const personalities = manifest.personalities;
 const geometryTokens = [
   "--ly-space-0", "--ly-space-1", "--ly-space-2", "--ly-space-3", "--ly-space-4",
   "--ly-space-5", "--ly-space-6", "--ly-space-7", "--ly-space-8", "--ly-space-9",
-  "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-wide",
+  "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-workspace",
+  "--ly-wrapper-wide",
   "--ly-page-padding-inline", "--ly-safe-area-inline", "--ly-safe-area-block-start",
   "--ly-safe-area-block-end", "--ly-wrapper-gutter", "--ly-wrapper-max", "--ly-profile-gap",
   "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap",
@@ -162,7 +163,9 @@ test("build regenerates public pairing metadata from manifest records", () => {
 test("ecosystem manifest describes real structural selectors, thresholds, and tokens", () => {
   assert.deepEqual(manifest.selectors.stable, [".ly-root", ".ly-wrapper"]);
   assert.deepEqual(manifest.selectors.deprecated, []);
-  assert.deepEqual(manifest.wrappers, ["compact", "prose", "content", "wide", "full", "breakout"]);
+  assert.deepEqual(manifest.wrappers, [
+    "compact", "prose", "content", "workspace", "wide", "full", "breakout"
+  ]);
   assert.deepEqual(manifest.primitives, [
     "page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster",
     "center", "cover", "switcher", "sidebar", "grid", "split", "panes", "media", "reel", "frame", "scroll"

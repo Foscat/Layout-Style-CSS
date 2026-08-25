@@ -161,7 +161,16 @@ const ALLOWLISTS = Object.freeze({
     "desktop-landscape",
     "desktop-portrait"
   ]),
-  wrapper: Object.freeze(["default", "compact", "prose", "content", "wide", "full", "breakout"]),
+  wrapper: Object.freeze([
+    "default",
+    "compact",
+    "prose",
+    "content",
+    "workspace",
+    "wide",
+    "full",
+    "breakout"
+  ]),
   recipe: Object.freeze([
     "app-shell",
     "dashboard",
