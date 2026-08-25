@@ -175,9 +175,16 @@
 
   .ly-scroll {
     min-block-size: 0;
-    max-block-size: var(--ly-scroll-max);
     overflow-x: clip;
     overflow-y: auto;
     overscroll-behavior-block: contain;
+  }
+
+  .ly-scroll--bounded {
+    max-block-size: var(--ly-scroll-max);
+  }
+
+  .ly-scroll--viewport {
+    max-block-size: var(--ly-scroll-viewport-max);
   }
 }

@@ -1294,6 +1294,14 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
   assert.equal(result.cardGridGap, "48px", "The local gap utility did not affect a Card Grid.");
 };
 
+/**
+ * Verifies intrinsic primitive overflow behavior and the three explicit Scroll
+ * sizing modes at narrow and wide viewport allocations.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyPrimitiveOverflow = async (page, baseUrl) => {
   const primitives = [
     "stack",
@@ -1316,13 +1324,76 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
+  const scrollModes = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    wrapper.style.setProperty("--ly-scroll-max", "20rem");
+    wrapper.style.setProperty("--ly-scroll-viewport-max", "12rem");
+
+    /**
+     * Creates one long-content Scroll fixture.
+     *
+     * @param {string} className Scroll class list.
+     * @param {string} id Stable fixture identifier.
+     * @returns {HTMLElement} Populated Scroll fixture.
+     */
+    const createScrollFixture = (className, id) => {
+      const fixture = document.createElement("div");
+      fixture.className = className;
+      fixture.id = id;
+      for (let index = 0; index < 30; index += 1) {
+        const item = document.createElement("p");
+        item.textContent = `Scrollable activity ${index + 1}`;
+        fixture.append(item);
+      }
+      return fixture;
+    };
+
+    const containedParent = document.createElement("div");
+    containedParent.style.display = "grid";
+    containedParent.style.gridTemplateRows = "8rem";
+    const contained = createScrollFixture("ly-scroll", "scroll-contained");
+    const bounded = createScrollFixture("ly-scroll ly-scroll--bounded", "scroll-bounded");
+    const viewport = createScrollFixture("ly-scroll ly-scroll--viewport", "scroll-viewport");
+    containedParent.append(contained);
+    wrapper.replaceChildren(containedParent, bounded, viewport);
+
+    /**
+     * Captures the computed constraint and rendered overflow for a Scroll.
+     *
+     * @param {HTMLElement} element Scroll fixture.
+     * @returns {{maxBlockSize: string, scrollHeight: number, clientHeight: number}} Scroll metrics.
+     */
+    const scrollMetrics = (element) => ({
+      maxBlockSize: getComputedStyle(element).maxBlockSize,
+      scrollHeight: element.scrollHeight,
+      clientHeight: element.clientHeight
+    });
+
+    return {
+      contained: scrollMetrics(contained),
+      bounded: scrollMetrics(bounded),
+      viewport: scrollMetrics(viewport)
+    };
+  });
+
+  assert.equal(scrollModes.contained.maxBlockSize, "none");
+  assert.equal(scrollModes.bounded.maxBlockSize, "320px");
+  assert.equal(scrollModes.viewport.maxBlockSize, "192px");
+  for (const [mode, metrics] of Object.entries(scrollModes)) {
+    assert(
+      metrics.scrollHeight > metrics.clientHeight,
+      `${mode} Scroll did not overflow inside its intended constraint.`
+    );
+  }
+
   for (const width of [320, 1440]) {
     await page.setViewportSize({ width, height: 800 });
     for (const primitive of primitives) {
       const result = await page.evaluate((primitiveName) => {
         const wrapper = document.querySelector("#previewWrapper");
         const fixture = document.createElement("section");
-        fixture.className = `ly-${primitiveName}`;
+        fixture.className =
+          primitiveName === "scroll" ? "ly-scroll ly-scroll--bounded" : `ly-${primitiveName}`;
         fixture.style.setProperty("--ly-scroll-max", "8rem");
         fixture.style.setProperty("--ly-cover-min", "20rem");
 

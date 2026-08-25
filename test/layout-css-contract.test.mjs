@@ -321,11 +321,29 @@ assert(!primitives.includes("@container"), "Intrinsic primitives must not depend
 assert(
   /--ly-cover-min:\s*100vh/.test(foundation) &&
     /--ly-shell-min:\s*100vh/.test(foundation) &&
-    /--ly-scroll-max:\s*min\(70vh,\s*50rem\)/.test(foundation) &&
     /@supports\s*\(height:\s*100dvh\)[\s\S]*--ly-cover-min:\s*100dvh[\s\S]*--ly-shell-min:\s*100dvh/.test(
       foundation
     ),
   "Dynamic viewport tokens must enhance valid vh defaults through feature detection"
+);
+assert(
+  /--ly-scroll-max:\s*50rem/.test(foundation) &&
+    /--ly-scroll-viewport-max:\s*min\(70vh,\s*50rem\)/.test(foundation),
+  "Bounded and viewport-relative Scroll need separate public maxima."
+);
+assert(
+  /\.ly-scroll\s*\{[^}]*overflow-y:\s*auto/s.test(primitives) &&
+    !/\.ly-scroll\s*\{[^}]*max-block-size:/s.test(primitives),
+  "Base Scroll must not impose a height cap."
+);
+assert(
+  /\.ly-scroll--bounded\s*\{[^}]*max-block-size:\s*var\(--ly-scroll-max\)/s.test(
+    primitives
+  ) &&
+    /\.ly-scroll--viewport\s*\{[^}]*max-block-size:\s*var\(--ly-scroll-viewport-max\)/s.test(
+      primitives
+    ),
+  "Scroll modifiers must consume distinct maxima."
 );
 assert(
   /--ly-split-primary:\s*1fr/.test(foundation) &&

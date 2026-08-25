@@ -411,6 +411,12 @@ function createAction(sequence) {
   });
 }
 
+/**
+ * Creates one semantic recipe region and its representative preview content.
+ *
+ * @param {string} area Canonical recipe area name.
+ * @returns {HTMLElement} Populated preview region.
+ */
 function createRegion(area) {
   const semanticTags = {
     header: "header",
@@ -439,7 +445,7 @@ function createRegion(area) {
 
   if (area === "secondary") {
     const scroll = createElement("div", {
-      className: "ly-scroll demo-list-scroll",
+      className: "ly-scroll ly-scroll--bounded demo-list-scroll",
       attributes: { tabindex: "0", "aria-label": "Scrollable detail activity" }
     });
 
