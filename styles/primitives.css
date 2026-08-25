@@ -34,11 +34,11 @@
   }
 
   .ly-section--compact {
-    --ly-section-padding-block: var(--ly-space-7);
+    padding-block: var(--ly-section-padding-block-compact);
   }
 
   .ly-section--flush {
-    --ly-section-padding-block: 0;
+    padding-block: 0;
   }
 
   .ly-readable {

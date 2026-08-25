@@ -22,14 +22,14 @@
     --ly-wrapper-prose: 68ch;
     --ly-wrapper-content: 72rem;
     --ly-wrapper-wide: 112rem;
-    --ly-page-padding-inline: clamp(1rem, 4vw, 3rem);
+    --ly-page-padding-inline: clamp(1rem, 3vw, 3rem);
     --ly-safe-area-inline: max(
       env(safe-area-inset-left, 0px),
       env(safe-area-inset-right, 0px)
     );
     --ly-safe-area-block-start: env(safe-area-inset-top, 0px);
     --ly-safe-area-block-end: env(safe-area-inset-bottom, 0px);
-    --ly-wrapper-gutter: max(var(--ly-page-padding-inline), var(--ly-safe-area-inline));
+    --ly-wrapper-gutter: var(--ly-page-padding-inline);
 
     --ly-profile-gap: var(--ly-space-5);
     --ly-gap: var(--ly-profile-gap);
@@ -37,6 +37,7 @@
     --ly-stack-gap: var(--ly-space-4);
     --ly-cluster-gap: var(--ly-space-3);
     --ly-section-padding-block: clamp(3rem, 7vh, 6rem);
+    --ly-section-padding-block-compact: clamp(1.5rem, 3.5vh, 3rem);
     --ly-header-height: 4.5rem;
     --ly-sticky-position: sticky;
     --ly-cover-min: 100vh;
@@ -128,6 +129,13 @@
     min-block-size: 0;
   }
 
+  /* Prefer the nearest layout scope for gutters when container units parse. */
+  @supports (width: 1cqi) {
+    :where(.ly-root) {
+      --ly-page-padding-inline: clamp(1rem, 3cqi, 3rem);
+    }
+  }
+
   /* Enhance viewport-bound tokens only when dynamic viewport units parse. */
   @supports (height: 100dvh) {
     :where(.ly-root) {
@@ -165,6 +173,7 @@
       --ly-stack-gap: min(var(--ly-space-4), 3vh);
       --ly-cluster-gap: min(var(--ly-space-3), 2vh);
       --ly-section-padding-block: clamp(1.5rem, 6vh, 3rem);
+      --ly-section-padding-block-compact: clamp(0.75rem, 3vh, 1.25rem);
       --ly-header-height: 3.5rem;
       --ly-scroll-max: min(62vh, 34rem);
     }
@@ -174,6 +183,7 @@
         --ly-stack-gap: min(var(--ly-space-4), 3dvh);
         --ly-cluster-gap: min(var(--ly-space-3), 2dvh);
         --ly-section-padding-block: clamp(1.5rem, 6dvh, 3rem);
+        --ly-section-padding-block-compact: clamp(0.75rem, 3dvh, 1.25rem);
         --ly-scroll-max: min(62dvh, 34rem);
       }
     }
@@ -185,6 +195,7 @@
       --ly-shell-min: auto;
       --ly-sticky-position: static;
       --ly-section-padding-block: var(--ly-space-5);
+      --ly-section-padding-block-compact: var(--ly-space-3);
       --ly-scroll-max: max(12rem, calc(100vh - 8rem));
     }
 

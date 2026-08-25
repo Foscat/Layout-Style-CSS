@@ -817,6 +817,68 @@ const verifyHeightBehavior = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies compact section ordering across viewport-height tiers and proves
+ * that both public Wrapper gutter tokens control computed padding.
+ *
+ * @param {import("@playwright/test").Browser} browser Active browser instance.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifySectionAndGutterContracts = async (browser, baseUrl) => {
+  for (const height of [1080, 704, 480]) {
+    const contractPage = await browser.newPage({ viewport: { width: 1440, height } });
+    try {
+      await contractPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+        waitUntil: "domcontentloaded"
+      });
+      await contractPage.waitForFunction(() => document.body.dataset.demoReady === "true");
+      const result = await contractPage.evaluate(() => {
+        const root = document.createElement("div");
+        root.className = "ly-root";
+        root.style.inlineSize = "62.5rem";
+
+        const normal = document.createElement("section");
+        normal.className = "ly-section";
+        normal.textContent = "Normal section";
+        const compact = document.createElement("section");
+        compact.className = "ly-section ly-section--compact";
+        compact.textContent = "Compact section";
+        const wrapper = document.createElement("div");
+        wrapper.className = "ly-wrapper";
+        wrapper.textContent = "Wrapper";
+        root.append(normal, compact, wrapper);
+        document.body.append(root);
+
+        const normalPadding = parseFloat(getComputedStyle(normal).paddingBlockStart);
+        const compactPadding = parseFloat(getComputedStyle(compact).paddingBlockStart);
+        root.style.setProperty("--ly-page-padding-inline", "22px");
+        root.style.removeProperty("--ly-wrapper-gutter");
+        const pageTokenPadding = parseFloat(getComputedStyle(wrapper).paddingInlineStart);
+        root.style.setProperty("--ly-wrapper-gutter", "34px");
+        const gutterTokenPadding = parseFloat(getComputedStyle(wrapper).paddingInlineStart);
+        root.remove();
+
+        return {
+          normalPadding,
+          compactPadding,
+          pageTokenPadding,
+          gutterTokenPadding
+        };
+      });
+
+      assert(
+        result.compactPadding < result.normalPadding,
+        `Compact section padding must stay below normal padding at ${height}px: ${JSON.stringify(result)}`
+      );
+      assert.equal(result.pageTokenPadding, 22, "Page padding token must control Wrapper padding.");
+      assert.equal(result.gutterTokenPadding, 34, "Wrapper gutter token must control padding.");
+    } finally {
+      await contractPage.close();
+    }
+  }
+};
+
 const verifyDefaultFontHeightTiers = async (baseUrl) => {
   if (browserName !== "chromium") return;
 
@@ -1163,6 +1225,7 @@ try {
   await verifyAppShellRowGeometry(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);
   await verifyHeightBehavior(page, server.baseUrl);
+  await verifySectionAndGutterContracts(browser, server.baseUrl);
   await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);

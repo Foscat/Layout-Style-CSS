@@ -256,11 +256,19 @@ assert(
   "Every wrapper must establish the shared responsive scope"
 );
 assert(
-  /--ly-wrapper-fluid-gutter:\s*clamp\(1rem,\s*3vw,\s*3rem\)/.test(wrappers) &&
-    /@supports\s*\(width:\s*1cqi\)[\s\S]*--ly-wrapper-fluid-gutter:\s*clamp\(1rem,\s*3cqi,\s*3rem\)/.test(
-      wrappers
+  /--ly-wrapper-gutter:\s*var\(--ly-page-padding-inline\)/.test(foundation) &&
+    /--ly-wrapper-fluid-gutter:\s*var\(--ly-wrapper-gutter\)/.test(wrappers) &&
+    /padding-inline:\s*var\(--ly-wrapper-local-gutter\)/.test(wrappers),
+  "Public Wrapper gutter tokens must reach rendered Wrapper padding."
+);
+assert(
+  /--ly-section-padding-block-compact:\s*clamp\(1\.5rem,\s*3\.5vh,\s*3rem\)/.test(
+    foundation
+  ) &&
+    /\.ly-section--compact\s*\{[^}]*padding-block:\s*var\(--ly-section-padding-block-compact\)/s.test(
+      primitives
     ),
-  "Wrapper gutters must enhance the viewport fallback only when cqi is supported"
+  "Compact sections need an independent public padding token."
 );
 assert(
   /\.ly-wrapper--breakout\s*\{[^}]*--ly-wrapper-max:\s*100%/s.test(wrappers),

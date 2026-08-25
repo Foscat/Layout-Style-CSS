@@ -5,7 +5,7 @@
 @layer ly.wrappers {
   .ly-wrapper {
     --ly-wrapper-max: var(--ly-personality-wrapper-max, var(--ly-wrapper-content));
-    --ly-wrapper-fluid-gutter: clamp(1rem, 3vw, 3rem);
+    --ly-wrapper-fluid-gutter: var(--ly-wrapper-gutter);
     --ly-wrapper-local-gutter: max(
       var(--ly-wrapper-fluid-gutter),
       var(--ly-safe-area-inline)
@@ -17,13 +17,6 @@
     max-inline-size: 100%;
     margin-inline: auto;
     padding-inline: var(--ly-wrapper-local-gutter);
-  }
-
-  /* Container-relative gutters enhance the universally valid viewport fallback. */
-  @supports (width: 1cqi) {
-    .ly-wrapper {
-      --ly-wrapper-fluid-gutter: clamp(1rem, 3cqi, 3rem);
-    }
   }
 
   .ly-wrapper--compact {
