@@ -1217,6 +1217,14 @@ const verifyBreakoutGeometry = async (page, baseUrl) => {
   );
 };
 
+/**
+ * Verifies nested personality-token isolation and proves gap utilities affect
+ * only the element carrying the utility class.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full&personality=minimal-saas`, {
@@ -1228,6 +1236,7 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
     const innerRoot = document.createElement("section");
     innerRoot.className = "ly-root";
     innerRoot.dataset.lyLayout = "bauhaus";
+    innerRoot.dataset.lyDensity = "normal";
     innerRoot.style.inlineSize = "50rem";
     innerRoot.style.maxInlineSize = "100%";
 
@@ -1240,15 +1249,22 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
       splitHero.append(region);
     }
 
-    const stack = document.createElement("div");
-    stack.className = "ly-stack ly-gap-0";
-    stack.append(document.createElement("span"), document.createElement("span"));
+    const outerGap = document.createElement("div");
+    outerGap.className = "ly-stack ly-gap-8";
+    const innerDefaultGap = document.createElement("div");
+    innerDefaultGap.className = "ly-stack";
+    innerDefaultGap.append(document.createElement("span"), document.createElement("span"));
+    const innerLocalGap = document.createElement("div");
+    innerLocalGap.className = "ly-stack ly-gap-5";
+    innerLocalGap.append(document.createElement("span"), document.createElement("span"));
+    outerGap.append(innerDefaultGap, innerLocalGap);
 
-    const cluster = document.createElement("div");
-    cluster.className = "ly-cluster ly-gap-8";
-    cluster.append(document.createElement("span"), document.createElement("span"));
+    const cardGrid = document.createElement("div");
+    cardGrid.dataset.lyRecipe = "card-grid";
+    cardGrid.className = "ly-gap-7";
+    cardGrid.append(document.createElement("article"), document.createElement("article"));
 
-    innerRoot.append(splitHero, stack, cluster);
+    innerRoot.append(splitHero, outerGap, cardGrid);
     document.querySelector("#layoutLab").append(innerRoot);
 
     const splitStyle = getComputedStyle(splitHero);
@@ -1258,16 +1274,24 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
       primary: splitStyle.getPropertyValue("--ly-split-primary").trim(),
       secondary: splitStyle.getPropertyValue("--ly-split-secondary").trim(),
       splitDifference: Math.abs(contentWidth - mediaWidth),
-      stackGap: getComputedStyle(stack).rowGap,
-      clusterGap: getComputedStyle(cluster).columnGap
+      outerGap: getComputedStyle(outerGap).rowGap,
+      innerDefaultGap: getComputedStyle(innerDefaultGap).rowGap,
+      innerLocalGap: getComputedStyle(innerLocalGap).rowGap,
+      cardGridGap: getComputedStyle(cardGrid).gap
     };
   });
 
   assert.equal(result.primary, "1fr", "The outer personality leaked its primary split ratio.");
   assert.equal(result.secondary, "1fr", "The outer personality leaked its secondary split ratio.");
   assert(result.splitDifference <= 2, "A nested neutral split did not render equal tracks.");
-  assert.equal(result.stackGap, "0px", "The zero-gap utility did not affect a stack.");
-  assert.equal(result.clusterGap, "64px", "The gap utility did not affect a cluster.");
+  assert.equal(result.outerGap, "64px", "The outer Stack did not receive its local gap.");
+  assert.equal(
+    result.innerDefaultGap,
+    "16px",
+    "A nested default Stack inherited its ancestor's local gap utility."
+  );
+  assert.equal(result.innerLocalGap, "24px", "The nested local gap did not override its own Stack.");
+  assert.equal(result.cardGridGap, "48px", "The local gap utility did not affect a Card Grid.");
 };
 
 const verifyPrimitiveOverflow = async (page, baseUrl) => {

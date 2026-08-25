@@ -386,10 +386,22 @@ assert(!/\bly-(?:md|lg)-/.test(utilities), "Fixed responsive utility families mu
 assert(!/\bly-order-/.test(utilities), "Visual order utilities must be removed");
 assert(!utilities.includes(".ly-bleed"), "The scrollbar-unsafe viewport bleed utility must be removed");
 assert(!utilities.includes("100vw"), "Utilities must not use scrollbar-unsafe viewport widths");
-for (const gap of ["0", "2", "4", "6", "8"]) {
+for (let gap = 0; gap <= 9; gap += 1) {
   const rule = utilities.match(new RegExp(`\\.ly-gap-${gap}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
-  for (const token of ["--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap"]) {
-    assert(rule.includes(`${token}:`), `.ly-gap-${gap} must set ${token}.`);
+  assert(
+    rule.includes(`gap: var(--ly-space-${gap})`),
+    `.ly-gap-${gap} must map directly to --ly-space-${gap}.`
+  );
+  for (const inheritedToken of [
+    "--ly-gap",
+    "--ly-grid-gap",
+    "--ly-stack-gap",
+    "--ly-cluster-gap"
+  ]) {
+    assert(
+      !rule.includes(`${inheritedToken}:`),
+      `.ly-gap-${gap} must not redefine ${inheritedToken}.`
+    );
   }
 }
 assert(!/(?:^|[;{}\n\r])\s*order\s*:/.test(authoredCss), "Layout source must never set visual order");
