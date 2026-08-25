@@ -46,7 +46,16 @@ const recipes = [
   "card-grid"
 ];
 const personalities = personalityMetadata.personalities.map(({ id }) => id);
-const wrappers = ["default", "compact", "prose", "content", "wide", "full", "breakout"];
+const wrappers = [
+  "default",
+  "compact",
+  "prose",
+  "content",
+  "workspace",
+  "wide",
+  "full",
+  "breakout"
+];
 const devices = {
   "phone-portrait": { width: 360, height: 800 },
   "phone-landscape": { width: 800, height: 360 },
@@ -130,7 +139,7 @@ const topologyEdges = [
 
 const assertStaticDemoContract = () => {
   assert.match(demoHtml, /Layout Style CSS v3/);
-  assert.match(demoHtml, /content="3\.0\.2"/);
+  assert.match(demoHtml, /content="3\.1\.0"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -138,17 +147,17 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.0\.2"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.1\.0"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.0\.2"/,
+    /href="\.\/demo\.css\?v=3\.1\.0"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.0\.2"/,
+    /src="\.\/demo\.js\?v=3\.1\.0"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
@@ -401,6 +410,14 @@ const installExternalFixtures = async (page) => {
   });
 };
 
+/**
+ * Verifies demo identity, required controls, durable query state, and legacy
+ * density URL normalization.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyIdentityAndControls = async (page, baseUrl) => {
   await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -444,10 +461,15 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   assert.equal(await page.locator("#recipeSelect").inputValue(), "docs");
   assert.equal(await page.locator("#personalitySelect").inputValue(), "bauhaus");
   assert.equal(await page.locator("[data-ly-recipe]").getAttribute("data-ly-responsive"), "manual");
+
+  await page.goto(`${baseUrl}?density=comfortable`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  assert.equal(await page.locator("#densitySelect").inputValue(), "normal");
+  assert.equal(await page.locator("#previewRoot").getAttribute("data-ly-density"), "normal");
 };
 
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.0.2", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.1.0", baseUrl).toString();
   const pairingFixture = {
     schemaVersion: 1,
     personalities: [
@@ -547,7 +569,7 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
  * @returns {Promise<void>}
  */
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.0.2", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.1.0", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
   try {
     const recoveryPage = await recoveryContext.newPage();
@@ -895,6 +917,97 @@ const verifySectionAndGutterContracts = async (browser, baseUrl) => {
   }
 };
 
+/**
+ * Verifies root, sibling, and nested density contexts across viewport-height
+ * tiers without relying on demo-only spacing controls.
+ *
+ * @param {import("@playwright/test").Browser} browser Active browser instance.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyDensityContexts = async (browser, baseUrl) => {
+  for (const height of [900, 600, 480]) {
+    const densityPage = await browser.newPage({ viewport: { width: 1440, height } });
+    try {
+      await installExternalFixtures(densityPage);
+      await densityPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+        waitUntil: "domcontentloaded"
+      });
+      await densityPage.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+      const result = await densityPage.evaluate(() => {
+        const root = document.createElement("div");
+        root.className = "ly-root";
+
+        /**
+         * Creates one density-scoped section for computed-style comparison.
+         *
+         * @param {"compact" | "normal" | "spacious"} density Public density value.
+         * @returns {HTMLElement} Density-scoped section fixture.
+         */
+        const createDensityFixture = (density) => {
+          const fixture = document.createElement("section");
+          fixture.className = "ly-section";
+          fixture.dataset.lyDensity = density;
+          fixture.style.display = "grid";
+          fixture.style.gap = "var(--ly-gap)";
+          fixture.append(document.createElement("span"), document.createElement("span"));
+          return fixture;
+        };
+
+        const compact = createDensityFixture("compact");
+        const normal = createDensityFixture("normal");
+        const spacious = createDensityFixture("spacious");
+        const nestedNormal = createDensityFixture("normal");
+        compact.append(nestedNormal);
+        root.append(compact, normal, spacious);
+        document.body.append(root);
+
+        /**
+         * Reads a computed CSS length as a numeric pixel value.
+         *
+         * @param {HTMLElement} element Element whose style is inspected.
+         * @param {string} property Computed CSS property or custom property.
+         * @returns {number} Parsed numeric value.
+         */
+        const computedNumber = (element, property) =>
+          parseFloat(getComputedStyle(element).getPropertyValue(property));
+        const values = {
+          compactGap: computedNumber(compact, "gap"),
+          normalGap: computedNumber(normal, "gap"),
+          spaciousGap: computedNumber(spacious, "gap"),
+          compactSectionPadding: computedNumber(compact, "padding-block-start"),
+          normalSectionPadding: computedNumber(normal, "padding-block-start"),
+          spaciousSectionPadding: computedNumber(spacious, "padding-block-start"),
+          nestedNormalGap: computedNumber(nestedNormal, "gap")
+        };
+        root.remove();
+        return values;
+      });
+
+      assert(
+        result.compactGap < result.normalGap && result.normalGap < result.spaciousGap,
+        `Density gaps must remain ordered at ${height}px: ${JSON.stringify(result)}`
+      );
+      assert(
+        result.compactSectionPadding < result.normalSectionPadding,
+        `Compact density must remain tighter than normal at ${height}px.`
+      );
+      assert(
+        result.normalSectionPadding < result.spaciousSectionPadding,
+        `Normal density must remain tighter than spacious at ${height}px.`
+      );
+      assert.equal(
+        result.nestedNormalGap,
+        result.normalGap,
+        `Nested normal density must reset its compact ancestor at ${height}px.`
+      );
+    } finally {
+      await densityPage.close();
+    }
+  }
+};
+
 const verifyDefaultFontHeightTiers = async (baseUrl) => {
   if (browserName !== "chromium") return;
 
@@ -1015,6 +1128,60 @@ const verifyMinimumWidth = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies that the workspace Wrapper exposes a distinct task-oriented content
+ * measure between the conventional content and wide variants.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyWorkspaceMeasure = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const widths = await page.evaluate(() => {
+    const root = document.createElement("div");
+    root.className = "ly-root";
+
+    /**
+     * Creates a Wrapper whose inner child exposes its usable content measure.
+     *
+     * @param {"content" | "workspace" | "wide"} variant Wrapper variant.
+     * @returns {{wrapper: HTMLElement, inner: HTMLElement}} Wrapper fixture.
+     */
+    const createWrapperFixture = (variant) => {
+      const wrapper = document.createElement("section");
+      wrapper.className = `ly-wrapper ly-wrapper--${variant}`;
+      const inner = document.createElement("div");
+      inner.textContent = `${variant} measure`;
+      wrapper.append(inner);
+      return { wrapper, inner };
+    };
+
+    const content = createWrapperFixture("content");
+    const workspace = createWrapperFixture("workspace");
+    const wide = createWrapperFixture("wide");
+    root.append(content.wrapper, workspace.wrapper, wide.wrapper);
+    document.body.append(root);
+    const result = {
+      contentWidth: content.inner.getBoundingClientRect().width,
+      workspaceWidth: workspace.inner.getBoundingClientRect().width,
+      wideWidth: wide.inner.getBoundingClientRect().width
+    };
+    root.remove();
+    return result;
+  });
+
+  assert(widths.workspaceWidth > widths.contentWidth, "Workspace must use more width than content.");
+  assert(widths.workspaceWidth < widths.wideWidth, "Workspace must remain narrower than wide.");
+  assert(
+    widths.workspaceWidth >= 1536,
+    `Workspace content measure must reach 96rem at a wide viewport: ${JSON.stringify(widths)}`
+  );
+};
+
 const verifyBreakoutGeometry = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
@@ -1050,6 +1217,14 @@ const verifyBreakoutGeometry = async (page, baseUrl) => {
   );
 };
 
+/**
+ * Verifies nested personality-token isolation and proves gap utilities affect
+ * only the element carrying the utility class.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full&personality=minimal-saas`, {
@@ -1061,6 +1236,7 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
     const innerRoot = document.createElement("section");
     innerRoot.className = "ly-root";
     innerRoot.dataset.lyLayout = "bauhaus";
+    innerRoot.dataset.lyDensity = "normal";
     innerRoot.style.inlineSize = "50rem";
     innerRoot.style.maxInlineSize = "100%";
 
@@ -1073,15 +1249,22 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
       splitHero.append(region);
     }
 
-    const stack = document.createElement("div");
-    stack.className = "ly-stack ly-gap-0";
-    stack.append(document.createElement("span"), document.createElement("span"));
+    const outerGap = document.createElement("div");
+    outerGap.className = "ly-stack ly-gap-8";
+    const innerDefaultGap = document.createElement("div");
+    innerDefaultGap.className = "ly-stack";
+    innerDefaultGap.append(document.createElement("span"), document.createElement("span"));
+    const innerLocalGap = document.createElement("div");
+    innerLocalGap.className = "ly-stack ly-gap-5";
+    innerLocalGap.append(document.createElement("span"), document.createElement("span"));
+    outerGap.append(innerDefaultGap, innerLocalGap);
 
-    const cluster = document.createElement("div");
-    cluster.className = "ly-cluster ly-gap-8";
-    cluster.append(document.createElement("span"), document.createElement("span"));
+    const cardGrid = document.createElement("div");
+    cardGrid.dataset.lyRecipe = "card-grid";
+    cardGrid.className = "ly-gap-7";
+    cardGrid.append(document.createElement("article"), document.createElement("article"));
 
-    innerRoot.append(splitHero, stack, cluster);
+    innerRoot.append(splitHero, outerGap, cardGrid);
     document.querySelector("#layoutLab").append(innerRoot);
 
     const splitStyle = getComputedStyle(splitHero);
@@ -1091,18 +1274,34 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
       primary: splitStyle.getPropertyValue("--ly-split-primary").trim(),
       secondary: splitStyle.getPropertyValue("--ly-split-secondary").trim(),
       splitDifference: Math.abs(contentWidth - mediaWidth),
-      stackGap: getComputedStyle(stack).rowGap,
-      clusterGap: getComputedStyle(cluster).columnGap
+      outerGap: getComputedStyle(outerGap).rowGap,
+      innerDefaultGap: getComputedStyle(innerDefaultGap).rowGap,
+      innerLocalGap: getComputedStyle(innerLocalGap).rowGap,
+      cardGridGap: getComputedStyle(cardGrid).gap
     };
   });
 
   assert.equal(result.primary, "1fr", "The outer personality leaked its primary split ratio.");
   assert.equal(result.secondary, "1fr", "The outer personality leaked its secondary split ratio.");
   assert(result.splitDifference <= 2, "A nested neutral split did not render equal tracks.");
-  assert.equal(result.stackGap, "0px", "The zero-gap utility did not affect a stack.");
-  assert.equal(result.clusterGap, "64px", "The gap utility did not affect a cluster.");
+  assert.equal(result.outerGap, "64px", "The outer Stack did not receive its local gap.");
+  assert.equal(
+    result.innerDefaultGap,
+    "16px",
+    "A nested default Stack inherited its ancestor's local gap utility."
+  );
+  assert.equal(result.innerLocalGap, "24px", "The nested local gap did not override its own Stack.");
+  assert.equal(result.cardGridGap, "48px", "The local gap utility did not affect a Card Grid.");
 };
 
+/**
+ * Verifies intrinsic primitive overflow behavior and the three explicit Scroll
+ * sizing modes at narrow and wide viewport allocations.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
 const verifyPrimitiveOverflow = async (page, baseUrl) => {
   const primitives = [
     "stack",
@@ -1125,13 +1324,76 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
+  const scrollModes = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    wrapper.style.setProperty("--ly-scroll-max", "20rem");
+    wrapper.style.setProperty("--ly-scroll-viewport-max", "12rem");
+
+    /**
+     * Creates one long-content Scroll fixture.
+     *
+     * @param {string} className Scroll class list.
+     * @param {string} id Stable fixture identifier.
+     * @returns {HTMLElement} Populated Scroll fixture.
+     */
+    const createScrollFixture = (className, id) => {
+      const fixture = document.createElement("div");
+      fixture.className = className;
+      fixture.id = id;
+      for (let index = 0; index < 30; index += 1) {
+        const item = document.createElement("p");
+        item.textContent = `Scrollable activity ${index + 1}`;
+        fixture.append(item);
+      }
+      return fixture;
+    };
+
+    const containedParent = document.createElement("div");
+    containedParent.style.display = "grid";
+    containedParent.style.gridTemplateRows = "8rem";
+    const contained = createScrollFixture("ly-scroll", "scroll-contained");
+    const bounded = createScrollFixture("ly-scroll ly-scroll--bounded", "scroll-bounded");
+    const viewport = createScrollFixture("ly-scroll ly-scroll--viewport", "scroll-viewport");
+    containedParent.append(contained);
+    wrapper.replaceChildren(containedParent, bounded, viewport);
+
+    /**
+     * Captures the computed constraint and rendered overflow for a Scroll.
+     *
+     * @param {HTMLElement} element Scroll fixture.
+     * @returns {{maxBlockSize: string, scrollHeight: number, clientHeight: number}} Scroll metrics.
+     */
+    const scrollMetrics = (element) => ({
+      maxBlockSize: getComputedStyle(element).maxBlockSize,
+      scrollHeight: element.scrollHeight,
+      clientHeight: element.clientHeight
+    });
+
+    return {
+      contained: scrollMetrics(contained),
+      bounded: scrollMetrics(bounded),
+      viewport: scrollMetrics(viewport)
+    };
+  });
+
+  assert.equal(scrollModes.contained.maxBlockSize, "none");
+  assert.equal(scrollModes.bounded.maxBlockSize, "320px");
+  assert.equal(scrollModes.viewport.maxBlockSize, "192px");
+  for (const [mode, metrics] of Object.entries(scrollModes)) {
+    assert(
+      metrics.scrollHeight > metrics.clientHeight,
+      `${mode} Scroll did not overflow inside its intended constraint.`
+    );
+  }
+
   for (const width of [320, 1440]) {
     await page.setViewportSize({ width, height: 800 });
     for (const primitive of primitives) {
       const result = await page.evaluate((primitiveName) => {
         const wrapper = document.querySelector("#previewWrapper");
         const fixture = document.createElement("section");
-        fixture.className = `ly-${primitiveName}`;
+        fixture.className =
+          primitiveName === "scroll" ? "ly-scroll ly-scroll--bounded" : `ly-${primitiveName}`;
         fixture.style.setProperty("--ly-scroll-max", "8rem");
         fixture.style.setProperty("--ly-cover-min", "20rem");
 
@@ -1242,10 +1504,12 @@ try {
   await verifyManualAndNearestContainer(page, server.baseUrl);
   await verifyHeightBehavior(page, server.baseUrl);
   await verifySectionAndGutterContracts(browser, server.baseUrl);
+  await verifyDensityContexts(browser, server.baseUrl);
   await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
+  await verifyWorkspaceMeasure(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);

@@ -6,7 +6,7 @@
     <meta http-equiv="content-language" content="en-US">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="title" content="Layout Style CSS v3 Intrinsic Responsive Demo">
-    <meta name="version" content="3.0.2">
+    <meta name="version" content="3.1.0">
     <meta name="description" content="Explore zero-configuration intrinsic wrappers, responsive recipes, vertical adaptations, and sixteen layout personalities in Layout Style CSS v3.">
     <meta name="keywords" content="CSS layout library, container queries, layout recipes, UI Style Kit CSS, Interactive Surface CSS, responsive CSS">
     <meta name="author" content="Foscat">
@@ -71,15 +71,15 @@
     <link id="uiKitStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.1.0/dist/ui-style-kit.visual.min.css" integrity="sha384-DUhB5MkNLJffjy7NRg13prdEcPTUR6zdPtameCyfq3tId/cM8o3ojpyvU/xdxZ8t" crossorigin="anonymous">
     <link id="uiKitInteractiveThemeStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.1.0/styles/interactive-surface-theme.css" integrity="sha384-t7ZuirMM/Qoeoz+/5+S4JxIGXs076pqlgMxv6FymZW3tGj7snT8J2ZlV2+sH6++j" crossorigin="anonymous">
     <link id="interactiveSurfaceStylesheet" rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.5.0/state-core.css" integrity="sha384-v2NwNOzOcQ5ed7W7OHahaKHXspqfD0p8XO+kueqrsyfEcuBO2izsAQb/J/PxF0eX" crossorigin="anonymous">
-    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css?v=3.0.2">
-    <link rel="stylesheet" href="./demo.css?v=3.0.2">
+    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css?v=3.1.0">
+    <link rel="stylesheet" href="./demo.css?v=3.1.0">
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "layout-style-css",
-        "version": "3.0.2",
+        "version": "3.1.0",
         "description": "A dependency-free CSS layout library for intrinsic wrappers, composition primitives, width and height responsive recipes, and spatial personalities.",
         "programmingLanguage": "CSS",
         "applicationCategory": "DeveloperApplication",
@@ -91,10 +91,10 @@
         "publisher": { "@type": "Organization", "name": "Foscat" }
       }
     </script>
-    <script src="./personality-metadata.js?v=3.0.2"></script>
-    <script type="module" src="./demo.js?v=3.0.2" data-personalities-url="../personalities.json?v=3.0.2"></script>
+    <script src="./personality-metadata.js?v=3.1.0"></script>
+    <script type="module" src="./demo.js?v=3.1.0" data-personalities-url="../personalities.json?v=3.1.0"></script>
   </head>
-  <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-density="comfortable" data-ecosystem="all-three">
+  <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-demo-density="normal" data-ecosystem="all-three">
     <a class="demo-skip-link" href="#layoutLab">Skip to the layout lab</a>
 
     <header class="demo-topbar">
@@ -143,6 +143,7 @@
               <option value="compact">Compact · 40rem</option>
               <option value="prose">Prose · 68ch</option>
               <option value="content">Content · 72rem</option>
+              <option value="workspace">Workspace · 96rem</option>
               <option value="wide">Wide · 112rem</option>
               <option value="full">Full width</option>
               <option value="breakout">Breakout lanes</option>
@@ -208,7 +209,7 @@
           <label for="densitySelect">Density
             <select id="densitySelect" data-query-key="density" data-ui-kit="select">
               <option value="compact">Compact</option>
-              <option value="comfortable">Comfortable</option>
+              <option value="normal">Normal</option>
               <option value="spacious">Spacious</option>
             </select>
           </label>
@@ -292,7 +293,7 @@
           </div>
 
           <div id="previewFrame" class="demo-preview-frame" data-container-width="auto" data-container-height="auto">
-            <div id="previewRoot" class="ly-root demo-preview-root" data-ly-layout="minimal-saas" data-demo-height-tier="regular">
+            <div id="previewRoot" class="ly-root demo-preview-root" data-ly-layout="minimal-saas" data-ly-density="normal" data-demo-height-tier="regular">
               <div id="previewWrapper" class="ly-wrapper">
                 <div id="recipePreview" class="demo-recipe" data-ly-recipe="app-shell">
                   <header class="ly-header ly-header--sticky demo-region" data-ly-area="header" data-demo-sequence="header">

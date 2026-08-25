@@ -4,6 +4,7 @@
   "selector": "data-ly-layout",
   "independentSelectors": [
     "data-ly-layout",
+    "data-ly-density",
     "data-ui",
     "data-theme",
     "data-mode"

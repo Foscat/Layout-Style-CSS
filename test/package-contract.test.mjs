@@ -59,6 +59,7 @@ const requiredPackagedDocuments = [
   "docs/wiki/Layout-Styles.md",
   "docs/wiki/Migrating-To-2.0.md",
   "docs/wiki/Migrating-To-3.0.md",
+  "docs/wiki/Migrating-To-3.1.md",
   "docs/wiki/Release-And-Publishing.md",
   "docs/wiki/Security-And-Support.md",
   "docs/wiki/UI-Style-Kit-Compatibility.md",
@@ -129,11 +130,11 @@ test("package defaults and homepage expose the intended distribution contract", 
   }
 });
 
-test("release metadata stays synchronized for the 3.0.2 patch", () => {
-  assert.equal(manifest.version, "3.0.2");
-  assert.equal(packageLock.version, "3.0.2");
-  assert.equal(packageLock.packages[""].version, "3.0.2");
-  assert.equal(ecosystemManifest.version, "3.0.2");
+test("release metadata stays synchronized for the 3.1.0 minor", () => {
+  assert.equal(manifest.version, "3.1.0");
+  assert.equal(packageLock.version, "3.1.0");
+  assert.equal(packageLock.packages[""].version, "3.1.0");
+  assert.equal(ecosystemManifest.version, "3.1.0");
   assert.equal(Object.keys(manifest.exports).length, 13);
 });
 

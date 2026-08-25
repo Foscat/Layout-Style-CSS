@@ -1,4 +1,4 @@
-@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
 
 /* Optional structural utilities expose direct token overrides without breakpoint tiers. */
 
@@ -16,40 +16,16 @@
   .ly-span-4 { grid-column: span 4; }
   .ly-span-full { grid-column: 1 / -1; }
 
-  .ly-gap-0 {
-    --ly-gap: var(--ly-space-0);
-    --ly-grid-gap: var(--ly-space-0);
-    --ly-stack-gap: var(--ly-space-0);
-    --ly-cluster-gap: var(--ly-space-0);
-  }
-
-  .ly-gap-2 {
-    --ly-gap: var(--ly-space-2);
-    --ly-grid-gap: var(--ly-space-2);
-    --ly-stack-gap: var(--ly-space-2);
-    --ly-cluster-gap: var(--ly-space-2);
-  }
-
-  .ly-gap-4 {
-    --ly-gap: var(--ly-space-4);
-    --ly-grid-gap: var(--ly-space-4);
-    --ly-stack-gap: var(--ly-space-4);
-    --ly-cluster-gap: var(--ly-space-4);
-  }
-
-  .ly-gap-6 {
-    --ly-gap: var(--ly-space-6);
-    --ly-grid-gap: var(--ly-space-6);
-    --ly-stack-gap: var(--ly-space-6);
-    --ly-cluster-gap: var(--ly-space-6);
-  }
-
-  .ly-gap-8 {
-    --ly-gap: var(--ly-space-8);
-    --ly-grid-gap: var(--ly-space-8);
-    --ly-stack-gap: var(--ly-space-8);
-    --ly-cluster-gap: var(--ly-space-8);
-  }
+  .ly-gap-0 { gap: var(--ly-space-0); }
+  .ly-gap-1 { gap: var(--ly-space-1); }
+  .ly-gap-2 { gap: var(--ly-space-2); }
+  .ly-gap-3 { gap: var(--ly-space-3); }
+  .ly-gap-4 { gap: var(--ly-space-4); }
+  .ly-gap-5 { gap: var(--ly-space-5); }
+  .ly-gap-6 { gap: var(--ly-space-6); }
+  .ly-gap-7 { gap: var(--ly-space-7); }
+  .ly-gap-8 { gap: var(--ly-space-8); }
+  .ly-gap-9 { gap: var(--ly-space-9); }
 
   .ly-pad-0 { padding: var(--ly-space-0); }
   .ly-pad-2 { padding: var(--ly-space-2); }

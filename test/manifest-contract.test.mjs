@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { generate, parse, walk } from "css-tree";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
@@ -48,13 +49,15 @@ const personalities = manifest.personalities;
 const geometryTokens = [
   "--ly-space-0", "--ly-space-1", "--ly-space-2", "--ly-space-3", "--ly-space-4",
   "--ly-space-5", "--ly-space-6", "--ly-space-7", "--ly-space-8", "--ly-space-9",
-  "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-wide",
+  "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-workspace",
+  "--ly-wrapper-wide",
   "--ly-page-padding-inline", "--ly-safe-area-inline", "--ly-safe-area-block-start",
   "--ly-safe-area-block-end", "--ly-wrapper-gutter", "--ly-wrapper-max", "--ly-profile-gap",
   "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap",
   "--ly-section-padding-block", "--ly-section-padding-block-compact", "--ly-header-height",
   "--ly-sticky-position", "--ly-cover-min",
-  "--ly-shell-min", "--ly-scroll-max", "--ly-switcher-threshold", "--ly-sidebar-size",
+  "--ly-shell-min", "--ly-scroll-max", "--ly-scroll-viewport-max", "--ly-switcher-threshold",
+  "--ly-sidebar-size",
   "--ly-sidebar-content-min", "--ly-grid-columns", "--ly-grid-min", "--ly-split-min",
   "--ly-pane-min", "--ly-pane-size", "--ly-media-min", "--ly-media-size", "--ly-reel-item-min",
   "--ly-reel-item-max", "--ly-frame-ratio", "--ly-split-primary", "--ly-split-secondary",
@@ -75,10 +78,64 @@ const internalLayoutTokens = [
   "--ly-wrapper-local-gutter"
 ];
 
+/**
+ * Returns the authored source for one container-query threshold block.
+ *
+ * @param {string} css Recipe stylesheet source.
+ * @param {string} threshold Minimum inline-size value.
+ * @returns {string} Matching query block source.
+ */
+function containerQuerySource(css, threshold) {
+  const start = css.indexOf(`@container ly-scope (min-width: ${threshold})`);
+  assert(start >= 0, `Missing ${threshold} container query.`);
+  const next = css.indexOf("@container ly-scope", start + 1);
+  return css.slice(start, next === -1 ? css.length : next);
+}
+
+/**
+ * Finds custom properties that contribute transitively to non-custom CSS
+ * declarations through var() references.
+ *
+ * @param {string} css Authored CSS source.
+ * @returns {Set<string>} Runtime-consumed custom-property names.
+ */
+function runtimeConsumedCustomProperties(css) {
+  const dependencies = new Map();
+  const directConsumers = new Set();
+  const ast = parse(css);
+
+  walk(ast, {
+    visit: "Declaration",
+    enter(node) {
+      const value = generate(node.value);
+      const references = [...value.matchAll(/var\(\s*(--ly-[a-z0-9-]+)/g)].map(
+        ([, token]) => token
+      );
+      if (node.property.startsWith("--")) {
+        const existing = dependencies.get(node.property) ?? new Set();
+        references.forEach((token) => existing.add(token));
+        dependencies.set(node.property, existing);
+      } else {
+        references.forEach((token) => directConsumers.add(token));
+      }
+    }
+  });
+
+  const consumed = new Set();
+  const pending = [...directConsumers];
+  while (pending.length > 0) {
+    const token = pending.pop();
+    if (consumed.has(token)) continue;
+    consumed.add(token);
+    for (const dependency of dependencies.get(token) ?? []) pending.push(dependency);
+  }
+  return consumed;
+}
+
 test("ecosystem manifest publishes the structural API and package export", () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.name, packageJson.name);
-  assert.equal(manifest.version, "3.0.2");
+  assert.equal(manifest.version, "3.1.0");
   assert.equal(manifest.version, packageJson.version);
   assert.equal(manifest.schemaPolicy.compatibility, "additive-within-major");
   assert.equal(
@@ -106,7 +163,7 @@ test("public personality pairings inventory every exported layout profile withou
   assert.equal(personalityMetadata.selector, "data-ly-layout");
   assert.deepEqual(
     personalityMetadata.independentSelectors,
-    ["data-ly-layout", "data-ui", "data-theme", "data-mode"]
+    ["data-ly-layout", "data-ly-density", "data-ui", "data-theme", "data-mode"]
   );
   assert.deepEqual(personalityMetadata.personalities, manifest.personalityPairings);
   assert.deepEqual(personalityMetadata.personalities.map(({ id }) => id), personalities);
@@ -162,7 +219,9 @@ test("build regenerates public pairing metadata from manifest records", () => {
 test("ecosystem manifest describes real structural selectors, thresholds, and tokens", () => {
   assert.deepEqual(manifest.selectors.stable, [".ly-root", ".ly-wrapper"]);
   assert.deepEqual(manifest.selectors.deprecated, []);
-  assert.deepEqual(manifest.wrappers, ["compact", "prose", "content", "wide", "full", "breakout"]);
+  assert.deepEqual(manifest.wrappers, [
+    "compact", "prose", "content", "workspace", "wide", "full", "breakout"
+  ]);
   assert.deepEqual(manifest.primitives, [
     "page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster",
     "center", "cover", "switcher", "sidebar", "grid", "split", "panes", "media", "reel", "frame", "scroll"
@@ -177,9 +236,29 @@ test("ecosystem manifest describes real structural selectors, thresholds, and to
   assert.deepEqual(manifest.containers, { names: ["ly-scope"], type: "inline-size" });
   assert.deepEqual(manifest.thresholds, {
     containerMinWidths: ["42rem", "44rem", "48rem", "52rem", "72rem"],
-    viewportMaxHeights: ["44rem", "30rem"]
+    viewportMaxHeights: ["44rem", "30rem"],
+    recipes: {
+      splitHero: { wide: "42rem" },
+      listDetail: { wide: "44rem" },
+      docs: { wide: "48rem" },
+      appShell: { medium: "52rem", wide: "72rem" },
+      dashboard: { medium: "52rem", wide: "72rem" }
+    }
   });
+  const recipesCss = readFileSync(join(root, "styles", "recipes.css"), "utf8");
+  for (const [recipe, tiers] of Object.entries(manifest.thresholds.recipes)) {
+    const selectorName = recipe.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+    for (const threshold of Object.values(tiers)) {
+      assert(
+        containerQuerySource(recipesCss, threshold).includes(
+          `[data-ly-recipe="${selectorName}"]`
+        ),
+        `${recipe} must own its documented ${threshold} threshold.`
+      );
+    }
+  }
   assert.deepEqual(manifest.tokens.geometry, geometryTokens);
+  assert.deepEqual(manifest.tokens.extensionOnly, []);
   assert.deepEqual(manifest.companions, {
     "ui-style-kit-css": ">=2.1.0 <3.0.0",
     "interactive-surface-css": ">=1.5.0 <2.0.0"
@@ -224,5 +303,24 @@ test("geometry manifest inventories documented and implemented public controls b
   }
   for (const token of internalLayoutTokens) {
     assert(!manifest.tokens.geometry.includes(token), `${token} must remain implementation-only`);
+  }
+
+  const consumedTokens = runtimeConsumedCustomProperties(coreSources);
+  const extensionOnlyTokens = new Set(manifest.tokens.extensionOnly);
+  for (const token of manifest.tokens.geometry) {
+    assert(
+      consumedTokens.has(token) || extensionOnlyTokens.has(token),
+      `${token} must be runtime-consumed or explicitly extension-only.`
+    );
+  }
+  for (const token of extensionOnlyTokens) {
+    assert(
+      manifest.tokens.geometry.includes(token),
+      `${token} must remain a public geometry token.`
+    );
+    assert(
+      !consumedTokens.has(token),
+      `${token} no longer needs an extension-only classification.`
+    );
   }
 });

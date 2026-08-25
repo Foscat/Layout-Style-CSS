@@ -25,6 +25,10 @@ A profile must remain visibly distinct through at least two spatial characterist
 
 When a profile supplies an App Shell area template, its matching row definition must contain the same number of rows and keep the main workspace on the flexible track.
 
+## Density Contexts
+
+Normal density is the zero-configuration default. `data-ly-density="compact"`, `data-ly-density="normal"`, and `data-ly-density="spacious"` override personality spacing at the root or on a nested layout subtree. A nested density context intentionally resets inherited gap and section tokens while leaving the selected personality unchanged.
+
 ## Ownership
 
 Layout owns structure. UI Style Kit owns paint. Interactive Surface owns interaction styling.
@@ -33,7 +37,7 @@ The personality name does not promise colors, typography, borders, shadows, or i
 
 ## Visual Pairing Guidance
 
-[`layout-style-css/personalities.json`](../../personalities.json) is the public, machine-readable pairing source used by the demo. Its entries are recommendations, never dependencies: `data-ly-layout`, `data-ui`, `data-theme`, and `data-mode` are independently selectable on the same document.
+[`layout-style-css/personalities.json`](../../personalities.json) is the public, machine-readable pairing source used by the demo. Its entries are recommendations, never dependencies: `data-ly-layout`, `data-ly-density`, `data-ui`, `data-theme`, and `data-mode` are independently selectable on the same document.
 
 | Layout personality | Visual pairing guidance |
 | --- | --- |

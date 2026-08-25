@@ -1,9 +1,9 @@
 # Getting Started
 
-Install `layout-style-css@3.0.2` and import the root bundle:
+Install `layout-style-css@3.1.0` and import the root bundle:
 
 ```bash
-npm install layout-style-css@3.0.2
+npm install layout-style-css@3.1.0
 ```
 
 ```js
@@ -12,7 +12,7 @@ import "layout-style-css";
 
 ## First Automatic Layout
 
-The zero-configuration path needs only `.ly-root`, a recipe attribute, and semantic areas:
+The zero-configuration path uses normal density and needs only `.ly-root`, a recipe attribute, and semantic areas:
 
 ```html
 <body class="ly-root" data-ly-layout="minimal-saas">
@@ -39,7 +39,11 @@ Use wrappers when a composition needs a named measure or local responsive scope:
 </section>
 ```
 
-Available measures are `.ly-wrapper--compact`, `.ly-wrapper--prose`, `.ly-wrapper--content`, `.ly-wrapper--wide`, `.ly-wrapper--full`, and `.ly-wrapper--breakout`.
+Available measures are `.ly-wrapper--compact`, `.ly-wrapper--prose`, `.ly-wrapper--content`, `.ly-wrapper--workspace`, `.ly-wrapper--wide`, `.ly-wrapper--full`, and `.ly-wrapper--breakout`. Workspace is the `96rem` task-oriented application measure; content is the conventional `72rem` measure.
+
+## Optional Density
+
+Set `data-ly-density="compact"`, `data-ly-density="normal"`, or `data-ly-density="spacious"` on the root or a nested subtree. Nested contexts intentionally reset inherited spacing.
 
 ## Manual Topology
 
@@ -61,3 +65,4 @@ Keep mobile DOM order authoritative. The package never changes reading or focus 
 - [Layout Recipes](Layout-Recipes.md)
 - [Layout Styles](Layout-Styles.md)
 - [Migrating To 3.0](Migrating-To-3.0.md)
+- [Migrating To 3.1](Migrating-To-3.1.md)

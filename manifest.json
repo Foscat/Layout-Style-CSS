@@ -5,7 +5,7 @@
     "breakingChange": "increment-schemaVersion-before-removing-or-renaming-fields"
   },
   "name": "layout-style-css",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "entrypoints": {
     "default": "./dist/layout-style-css.css",
     "minified": "./dist/layout-style-css.min.css",
@@ -23,7 +23,7 @@
     "stable": [".ly-root", ".ly-wrapper"],
     "deprecated": []
   },
-  "wrappers": ["compact", "prose", "content", "wide", "full", "breakout"],
+  "wrappers": ["compact", "prose", "content", "workspace", "wide", "full", "breakout"],
   "primitives": ["page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster", "center", "cover", "switcher", "sidebar", "grid", "split", "panes", "media", "reel", "frame", "scroll"],
   "recipes": ["app-shell", "dashboard", "docs", "list-detail", "split-hero", "gallery", "card-grid"],
   "areas": ["header", "nav", "sidebar", "main", "aside", "footer", "content", "media", "actions", "primary", "secondary"],
@@ -66,19 +66,28 @@
   },
   "thresholds": {
     "containerMinWidths": ["42rem", "44rem", "48rem", "52rem", "72rem"],
-    "viewportMaxHeights": ["44rem", "30rem"]
+    "viewportMaxHeights": ["44rem", "30rem"],
+    "recipes": {
+      "splitHero": { "wide": "42rem" },
+      "listDetail": { "wide": "44rem" },
+      "docs": { "wide": "48rem" },
+      "appShell": { "medium": "52rem", "wide": "72rem" },
+      "dashboard": { "medium": "52rem", "wide": "72rem" }
+    }
   },
   "tokens": {
     "geometry": [
       "--ly-space-0", "--ly-space-1", "--ly-space-2", "--ly-space-3", "--ly-space-4",
       "--ly-space-5", "--ly-space-6", "--ly-space-7", "--ly-space-8", "--ly-space-9",
-      "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-wide",
+      "--ly-wrapper-compact", "--ly-wrapper-prose", "--ly-wrapper-content", "--ly-wrapper-workspace",
+      "--ly-wrapper-wide",
       "--ly-page-padding-inline", "--ly-safe-area-inline", "--ly-safe-area-block-start",
       "--ly-safe-area-block-end", "--ly-wrapper-gutter", "--ly-wrapper-max", "--ly-profile-gap",
       "--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap",
       "--ly-section-padding-block", "--ly-section-padding-block-compact", "--ly-header-height",
       "--ly-sticky-position", "--ly-cover-min",
-      "--ly-shell-min", "--ly-scroll-max", "--ly-switcher-threshold", "--ly-sidebar-size",
+      "--ly-shell-min", "--ly-scroll-max", "--ly-scroll-viewport-max", "--ly-switcher-threshold",
+      "--ly-sidebar-size",
       "--ly-sidebar-content-min", "--ly-grid-columns", "--ly-grid-min", "--ly-split-min",
       "--ly-pane-min", "--ly-pane-size", "--ly-media-min", "--ly-media-size", "--ly-reel-item-min",
       "--ly-reel-item-max", "--ly-frame-ratio", "--ly-split-primary", "--ly-split-secondary",
@@ -90,7 +99,8 @@
       "--ly-split-hero-wide-areas", "--ly-split-hero-wide-columns", "--ly-center-max",
       "--ly-cover-padding", "--ly-z-header", "--ly-split-align", "--ly-media-align",
       "--ly-split-hero-align"
-    ]
+    ],
+    "extensionOnly": []
   },
   "companions": {
     "ui-style-kit-css": ">=2.1.0 <3.0.0",

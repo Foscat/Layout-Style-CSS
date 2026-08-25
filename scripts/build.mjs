@@ -7,7 +7,7 @@ const sourceDir = join(root, "styles");
 const distDir = join(root, "dist");
 const manifest = JSON.parse(await readFile(join(root, "manifest.json"), "utf8"));
 const cascadeLayerPrelude =
-  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
+  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;";
 
 const coreModuleFiles = [
   "foundation.css",
@@ -16,6 +16,13 @@ const coreModuleFiles = [
   "recipes.css",
   "utilities.css"
 ];
+/**
+ * Builds generated personality metadata from the public package manifest.
+ *
+ * @param {Record<string, unknown>} sourceManifest Parsed public manifest.
+ * @returns {{schemaVersion: number, generatedFrom: string, selector: string, independentSelectors: string[], personalities: object[]}}
+ * @throws {Error} When personality records are incomplete or inconsistent.
+ */
 function buildPersonalityMetadata(sourceManifest) {
   const personalities = Array.isArray(sourceManifest.personalities)
     ? sourceManifest.personalities
@@ -36,7 +43,13 @@ function buildPersonalityMetadata(sourceManifest) {
     schemaVersion: 1,
     generatedFrom: "manifest.json",
     selector: "data-ly-layout",
-    independentSelectors: ["data-ly-layout", "data-ui", "data-theme", "data-mode"],
+    independentSelectors: [
+      "data-ly-layout",
+      "data-ly-density",
+      "data-ui",
+      "data-theme",
+      "data-mode"
+    ],
     personalities: pairings
   };
 }

@@ -1,4 +1,4 @@
-@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
 
 /* Wrappers provide fluid measures and become the nearest responsive scope. */
 
@@ -29,6 +29,10 @@
 
   .ly-wrapper--content {
     --ly-wrapper-max: var(--ly-wrapper-content);
+  }
+
+  .ly-wrapper--workspace {
+    --ly-wrapper-max: var(--ly-wrapper-workspace);
   }
 
   .ly-wrapper--wide {

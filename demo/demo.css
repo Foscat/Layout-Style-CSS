@@ -45,12 +45,12 @@ body[data-mode="contrast"] {
   color-scheme: dark;
 }
 
-body[data-density="compact"] {
+body[data-demo-density="compact"] {
   --demo-density-gap: 0.5rem;
   --demo-region-padding: 0.75rem;
 }
 
-body[data-density="spacious"] {
+body[data-demo-density="spacious"] {
   --demo-density-gap: 1.5rem;
   --demo-region-padding: 1.5rem;
 }
@@ -367,7 +367,7 @@ body[data-ecosystem="all-three"] .demo-status {
   --ly-grid-gap: var(--ly-gap);
   --ly-section-padding-block: clamp(1.5rem, 6%, 3rem);
   --ly-header-height: 3.5rem;
-  --ly-scroll-max: min(62%, 34rem);
+  --ly-scroll-viewport-max: min(62%, 34rem);
 }
 
 .demo-preview-root[data-demo-height-tier="shallow"] {
@@ -375,7 +375,7 @@ body[data-ecosystem="all-three"] .demo-status {
   --ly-shell-min: auto;
   --ly-sticky-position: static;
   --ly-section-padding-block: 1.5rem;
-  --ly-scroll-max: max(12rem, calc(100% - 8rem));
+  --ly-scroll-viewport-max: max(12rem, calc(100% - 8rem));
 }
 
 .demo-preview-root[data-demo-height-tier="shallow"] .demo-recipe {

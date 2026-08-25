@@ -11,7 +11,7 @@ const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"))
 const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
 
 const layerPrelude =
-  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities;";
+  "@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;";
 const focusedFiles = [
   "foundation.css",
   "wrappers.css",
@@ -106,7 +106,7 @@ function minifyCss(css) {
     .trim();
 }
 
-assert.equal(packageJson.version, "3.0.2", "The patch branch must expose version 3.0.2");
+assert.equal(packageJson.version, "3.1.0", "The minor branch must expose version 3.1.0");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(
@@ -143,6 +143,7 @@ const expectedTarballFiles = [
   "docs/wiki/Layout-Styles.md",
   "docs/wiki/Migrating-To-2.0.md",
   "docs/wiki/Migrating-To-3.0.md",
+  "docs/wiki/Migrating-To-3.1.md",
   "docs/wiki/Release-And-Publishing.md",
   "docs/wiki/Security-And-Support.md",
   "docs/wiki/UI-Style-Kit-Compatibility.md",
@@ -246,10 +247,31 @@ assert(
   "Foundation must expose short and shallow viewport tiers"
 );
 assert(!foundation.includes("(orientation:"), "v3 must respond to space rather than orientation labels");
+for (const density of ["compact", "normal", "spacious"]) {
+  assert(
+    foundation.includes(`[data-ly-density="${density}"]`),
+    `Foundation must implement the ${density} density context.`
+  );
+}
+assert(
+  foundation.includes("@layer ly.context"),
+  "Explicit density contexts must live after personality defaults."
+);
+assert(
+  /--ly-section-padding-block:\s*clamp\(2rem,\s*4vh,\s*4rem\)/.test(foundation),
+  "Normal 3.1 sections need the conservative default rhythm."
+);
 
-for (const variant of ["compact", "prose", "content", "wide", "full", "breakout"]) {
+for (const variant of ["compact", "prose", "content", "workspace", "wide", "full", "breakout"]) {
   assert(wrappers.includes(`.ly-wrapper--${variant}`), `Missing wrapper variant: ${variant}`);
 }
+assert(
+  /--ly-wrapper-workspace:\s*96rem/.test(foundation) &&
+    /\.ly-wrapper--workspace\s*\{[^}]*--ly-wrapper-max:\s*var\(--ly-wrapper-workspace\)/s.test(
+      wrappers
+    ),
+  "Workspace Wrapper must expose and consume the 96rem application measure."
+);
 assert(
   wrappers.includes("container-name: ly-scope;") &&
     wrappers.includes("container-type: inline-size;"),
@@ -300,11 +322,29 @@ assert(!primitives.includes("@container"), "Intrinsic primitives must not depend
 assert(
   /--ly-cover-min:\s*100vh/.test(foundation) &&
     /--ly-shell-min:\s*100vh/.test(foundation) &&
-    /--ly-scroll-max:\s*min\(70vh,\s*50rem\)/.test(foundation) &&
     /@supports\s*\(height:\s*100dvh\)[\s\S]*--ly-cover-min:\s*100dvh[\s\S]*--ly-shell-min:\s*100dvh/.test(
       foundation
     ),
   "Dynamic viewport tokens must enhance valid vh defaults through feature detection"
+);
+assert(
+  /--ly-scroll-max:\s*50rem/.test(foundation) &&
+    /--ly-scroll-viewport-max:\s*min\(70vh,\s*50rem\)/.test(foundation),
+  "Bounded and viewport-relative Scroll need separate public maxima."
+);
+assert(
+  /\.ly-scroll\s*\{[^}]*overflow-y:\s*auto/s.test(primitives) &&
+    !/\.ly-scroll\s*\{[^}]*max-block-size:/s.test(primitives),
+  "Base Scroll must not impose a height cap."
+);
+assert(
+  /\.ly-scroll--bounded\s*\{[^}]*max-block-size:\s*var\(--ly-scroll-max\)/s.test(
+    primitives
+  ) &&
+    /\.ly-scroll--viewport\s*\{[^}]*max-block-size:\s*var\(--ly-scroll-viewport-max\)/s.test(
+      primitives
+    ),
+  "Scroll modifiers must consume distinct maxima."
 );
 assert(
   /--ly-split-primary:\s*1fr/.test(foundation) &&
@@ -365,10 +405,22 @@ assert(!/\bly-(?:md|lg)-/.test(utilities), "Fixed responsive utility families mu
 assert(!/\bly-order-/.test(utilities), "Visual order utilities must be removed");
 assert(!utilities.includes(".ly-bleed"), "The scrollbar-unsafe viewport bleed utility must be removed");
 assert(!utilities.includes("100vw"), "Utilities must not use scrollbar-unsafe viewport widths");
-for (const gap of ["0", "2", "4", "6", "8"]) {
+for (let gap = 0; gap <= 9; gap += 1) {
   const rule = utilities.match(new RegExp(`\\.ly-gap-${gap}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
-  for (const token of ["--ly-gap", "--ly-grid-gap", "--ly-stack-gap", "--ly-cluster-gap"]) {
-    assert(rule.includes(`${token}:`), `.ly-gap-${gap} must set ${token}.`);
+  assert(
+    rule.includes(`gap: var(--ly-space-${gap})`),
+    `.ly-gap-${gap} must map directly to --ly-space-${gap}.`
+  );
+  for (const inheritedToken of [
+    "--ly-gap",
+    "--ly-grid-gap",
+    "--ly-stack-gap",
+    "--ly-cluster-gap"
+  ]) {
+    assert(
+      !rule.includes(`${inheritedToken}:`),
+      `.ly-gap-${gap} must not redefine ${inheritedToken}.`
+    );
   }
 }
 assert(!/(?:^|[;{}\n\r])\s*order\s*:/.test(authoredCss), "Layout source must never set visual order");

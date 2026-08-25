@@ -161,7 +161,16 @@ const ALLOWLISTS = Object.freeze({
     "desktop-landscape",
     "desktop-portrait"
   ]),
-  wrapper: Object.freeze(["default", "compact", "prose", "content", "wide", "full", "breakout"]),
+  wrapper: Object.freeze([
+    "default",
+    "compact",
+    "prose",
+    "content",
+    "workspace",
+    "wide",
+    "full",
+    "breakout"
+  ]),
   recipe: Object.freeze([
     "app-shell",
     "dashboard",
@@ -190,7 +199,7 @@ const ALLOWLISTS = Object.freeze({
   ]),
   height: Object.freeze(["auto", "29rem", "31rem", "43rem", "45rem", "50rem"]),
   responsive: Object.freeze(["auto", "manual"]),
-  density: Object.freeze(["compact", "comfortable", "spacious"]),
+  density: Object.freeze(["compact", "normal", "spacious"]),
   ui: Object.freeze(UI_STYLE_KIT_MANIFEST.presets.map((preset) => preset.id)),
   theme: Object.freeze(UI_STYLE_KIT_MANIFEST.themes),
   mode: Object.freeze(UI_STYLE_KIT_MANIFEST.modes),
@@ -205,7 +214,7 @@ const DEFAULT_STATE = Object.freeze({
   container: "auto",
   height: "auto",
   responsive: "auto",
-  density: "comfortable",
+  density: "normal",
   ui: "minimal-saas",
   theme: "arctic-indigo",
   mode: "light",
@@ -246,12 +255,6 @@ const DEVICE_PRESETS = Object.freeze({
   "tablet-landscape": Object.freeze({ width: 1024, height: 768 }),
   "desktop-landscape": Object.freeze({ width: 1440, height: 900 }),
   "desktop-portrait": Object.freeze({ width: 900, height: 1440 })
-});
-
-const DENSITY_GAPS = Object.freeze({
-  compact: "0.5rem",
-  comfortable: "1rem",
-  spacious: "1.5rem"
 });
 
 const UI_CLASS_PREFIXES = Object.freeze(
@@ -326,12 +329,28 @@ let querySyncTimer = null;
 let hasSynchronizedQuery = false;
 let readoutFrame = null;
 
+/**
+ * Maps durable demo query aliases to current allowlisted values.
+ *
+ * @param {string} key Query-state key.
+ * @param {string | null} value Raw query value.
+ * @returns {string | null} Current value or the unchanged input.
+ */
+function normalizeQueryValue(key, value) {
+  return key === "density" && value === "comfortable" ? "normal" : value;
+}
+
+/**
+ * Reads allowlisted demo state from the current query string.
+ *
+ * @returns {Record<string, string>} Normalized demo state.
+ */
 function readStateFromQuery() {
   const query = new URLSearchParams(window.location.search);
 
   return Object.fromEntries(
     Object.entries(ALLOWLISTS).map(([key, values]) => {
-      const candidate = query.get(key);
+      const candidate = normalizeQueryValue(key, query.get(key));
       return [key, candidate !== null && values.includes(candidate) ? candidate : DEFAULT_STATE[key]];
     })
   );
@@ -392,6 +411,12 @@ function createAction(sequence) {
   });
 }
 
+/**
+ * Creates one semantic recipe region and its representative preview content.
+ *
+ * @param {string} area Canonical recipe area name.
+ * @returns {HTMLElement} Populated preview region.
+ */
 function createRegion(area) {
   const semanticTags = {
     header: "header",
@@ -420,7 +445,7 @@ function createRegion(area) {
 
   if (area === "secondary") {
     const scroll = createElement("div", {
-      className: "ly-scroll demo-list-scroll",
+      className: "ly-scroll ly-scroll--bounded demo-list-scroll",
       attributes: { tabindex: "0", "aria-label": "Scrollable detail activity" }
     });
 
@@ -657,7 +682,15 @@ function updatePreviewReadout() {
   });
 }
 
-function applyState({ updateQuery = true } = {}) {
+/**
+ * Applies current demo state to controls, public layout attributes, preview
+ * allocation, rendered recipe content, snippets, and URL state.
+ *
+ * @param {{updateQuery?: boolean}} [options] State-application options.
+ * @returns {void}
+ */
+function applyState(options = {}) {
+  const { updateQuery = true } = options;
   for (const [key, control] of Object.entries(controls)) {
     control.value = state[key];
   }
@@ -666,11 +699,10 @@ function applyState({ updateQuery = true } = {}) {
   body.dataset.theme = state.theme;
   body.dataset.mode = state.mode;
   body.dataset.lyLayout = state.personality;
-  body.dataset.density = state.density;
+  body.dataset.demoDensity = state.density;
   body.dataset.ecosystem = state.ecosystem;
   previewRoot.dataset.lyLayout = state.personality;
-  previewRoot.style.setProperty("--ly-gap", DENSITY_GAPS[state.density]);
-  previewRoot.style.setProperty("--ly-grid-gap", DENSITY_GAPS[state.density]);
+  previewRoot.dataset.lyDensity = state.density;
 
   previewWrapper.className =
     state.wrapper === "default" ? "ly-wrapper" : `ly-wrapper ly-wrapper--${state.wrapper}`;
