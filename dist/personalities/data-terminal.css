@@ -1,0 +1,13 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
+
+@layer ly.personalities.data-terminal {
+  :where(.ly-root[data-ly-layout="data-terminal"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
+    --ly-grid-min: 10rem;
+    --ly-card-grid-min: 10rem;
+    --ly-gallery-min: 10rem;
+    --ly-recipe-rail: 12rem;
+    --ly-recipe-aside: 18rem;
+  }
+}

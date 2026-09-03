@@ -1,0 +1,14 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
+
+@layer ly.personalities.editorial {
+  :where(.ly-root[data-ly-layout="editorial"]) {
+    --ly-personality-wrapper-max: 108rem;
+    --ly-profile-gap: var(--ly-space-6);
+    --ly-grid-min: 16rem;
+    --ly-recipe-rail: 10rem;
+    --ly-recipe-aside: 18rem;
+    --ly-split-primary: 1.65fr;
+    --ly-split-secondary: 0.75fr;
+    --ly-frame-ratio: 4 / 5;
+  }
+}

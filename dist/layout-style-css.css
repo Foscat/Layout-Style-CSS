@@ -1381,3 +1381,54 @@
     --ly-reel-item-min: 20rem;
   }
 }
+
+/* personalities/technical-blueprint.css */
+@layer ly.personalities.technical-blueprint {
+  :where(.ly-root[data-ly-layout="technical-blueprint"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
+    --ly-grid-min: 10rem;
+    --ly-recipe-rail: 11rem;
+    --ly-recipe-aside: 26rem;
+    --ly-split-primary: 2.2fr;
+    --ly-split-secondary: 0.8fr;
+  }
+}
+
+/* personalities/data-terminal.css */
+@layer ly.personalities.data-terminal {
+  :where(.ly-root[data-ly-layout="data-terminal"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
+    --ly-grid-min: 10rem;
+    --ly-card-grid-min: 10rem;
+    --ly-gallery-min: 10rem;
+    --ly-recipe-rail: 12rem;
+    --ly-recipe-aside: 18rem;
+  }
+}
+
+/* personalities/industrial-hmi.css */
+@layer ly.personalities.industrial-hmi {
+  :where(.ly-root[data-ly-layout="industrial-hmi"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-2);
+    --ly-grid-min: 11rem;
+    --ly-recipe-rail: 7rem;
+    --ly-recipe-aside: 32rem;
+  }
+}
+
+/* personalities/editorial.css */
+@layer ly.personalities.editorial {
+  :where(.ly-root[data-ly-layout="editorial"]) {
+    --ly-personality-wrapper-max: 108rem;
+    --ly-profile-gap: var(--ly-space-6);
+    --ly-grid-min: 16rem;
+    --ly-recipe-rail: 10rem;
+    --ly-recipe-aside: 18rem;
+    --ly-split-primary: 1.65fr;
+    --ly-split-secondary: 0.75fr;
+    --ly-frame-ratio: 4 / 5;
+  }
+}

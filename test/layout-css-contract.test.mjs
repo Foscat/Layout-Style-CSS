@@ -21,6 +21,13 @@ const focusedFiles = [
   "personalities.css"
 ];
 const personalityNames = manifest.personalities;
+const specializedPersonalityNames = [
+  "technical-blueprint",
+  "data-terminal",
+  "industrial-hmi",
+  "editorial"
+];
+const authoredPersonalityNames = [...new Set([...personalityNames, ...specializedPersonalityNames])];
 const recipeNames = [
   "app-shell",
   "dashboard",
@@ -82,7 +89,7 @@ const flattenedSourceFiles = [
   "primitives.css",
   "recipes.css",
   "utilities.css",
-  ...personalityNames.map((name) => `personalities/${name}.css`)
+  ...authoredPersonalityNames.map((name) => `personalities/${name}.css`)
 ];
 
 function read(path) {
@@ -173,7 +180,7 @@ const expectedTarballFiles = [
   "dist/recipes.css",
   "dist/utilities.css",
   "dist/personalities.css",
-  ...personalityNames.map((name) => `dist/personalities/${name}.css`)
+  ...authoredPersonalityNames.map((name) => `dist/personalities/${name}.css`)
 ].sort();
 assert.deepEqual(
   packReport.files.map(({ path }) => path).sort(),
@@ -208,7 +215,7 @@ for (const name of personalityNames) {
   assert.equal(generatedCss, css, `${file} generated output drifted from its authored profile`);
 }
 
-const personalitySignatures = personalityNames.map((name) => {
+const personalitySignatures = authoredPersonalityNames.map((name) => {
   const css = readStyle(`personalities/${name}.css`);
   return [...css.matchAll(/(--ly-[a-z0-9-]+)\s*:\s*([^;]+);/g)]
     .map(([, property, value]) => `${property}:${value.replace(/\s+/g, " ").trim()}`)
@@ -217,7 +224,7 @@ const personalitySignatures = personalityNames.map((name) => {
 });
 assert.equal(
   new Set(personalitySignatures).size,
-  personalityNames.length,
+  authoredPersonalityNames.length,
   "Every personality must expose a unique spatial signature"
 );
 
@@ -246,7 +253,21 @@ const targetProperties = [
   "--ly-recipe-rail",
   "--ly-recipe-aside"
 ];
+const specializedPersonalityTargets = {
+  "technical-blueprint": ["100%", "var(--ly-space-1)", "10rem", "11rem", "26rem"],
+  "data-terminal": ["100%", "var(--ly-space-1)", "10rem", "12rem", "18rem"],
+  "industrial-hmi": ["100%", "var(--ly-space-2)", "11rem", "7rem", "32rem"],
+  editorial: ["108rem", "var(--ly-space-6)", "16rem", "10rem", "18rem"]
+};
 for (const [name, values] of Object.entries(personalityTargets)) {
+  const css = readStyle(`personalities/${name}.css`);
+  assert.deepEqual(
+    targetProperties.map((property) => customPropertyValue(css, property)),
+    values,
+    `${name} geometry drifted from the approved 3.2 target table.`
+  );
+}
+for (const [name, values] of Object.entries(specializedPersonalityTargets)) {
   const css = readStyle(`personalities/${name}.css`);
   assert.deepEqual(
     targetProperties.map((property) => customPropertyValue(css, property)),
@@ -273,6 +294,13 @@ assert.match(customPropertyValue(readStyle("personalities/neumorphism.css"), "--
 assert.match(customPropertyValue(readStyle("personalities/f-pattern.css"), "--ly-split-hero-wide-columns"), /1\.8fr[\s\S]*0\.8fr/);
 assert.match(customPropertyValue(readStyle("personalities/z-pattern.css"), "--ly-split-hero-wide-columns"), /1\.5fr[\s\S]*0\.5fr/);
 assert.equal(customPropertyValue(readStyle("personalities/synthwave.css"), "--ly-reel-item-min"), "20rem");
+assert.equal(customPropertyValue(readStyle("personalities/technical-blueprint.css"), "--ly-split-primary"), "2.2fr");
+assert.equal(customPropertyValue(readStyle("personalities/technical-blueprint.css"), "--ly-split-secondary"), "0.8fr");
+assert.equal(customPropertyValue(readStyle("personalities/data-terminal.css"), "--ly-card-grid-min"), "10rem");
+assert.equal(customPropertyValue(readStyle("personalities/data-terminal.css"), "--ly-gallery-min"), "10rem");
+assert.equal(customPropertyValue(readStyle("personalities/editorial.css"), "--ly-split-primary"), "1.65fr");
+assert.equal(customPropertyValue(readStyle("personalities/editorial.css"), "--ly-split-secondary"), "0.75fr");
+assert.equal(customPropertyValue(readStyle("personalities/editorial.css"), "--ly-frame-ratio"), "4 / 5");
 
 assert(!existsSync(join(styles, "legacy.css")), "v3 must remove the authored legacy bundle");
 assert(!existsSync(join(dist, "legacy.css")), "v3 must remove the generated legacy bundle");
@@ -299,7 +327,7 @@ const authoredCss = [
   recipes,
   utilities,
   aggregatePersonalities,
-  ...personalityNames.map((name) => readStyle(`personalities/${name}.css`))
+  ...authoredPersonalityNames.map((name) => readStyle(`personalities/${name}.css`))
 ].join("\n");
 
 assert(
@@ -479,7 +507,7 @@ assert(
   ),
   "Split Hero must guard both content tracks with --ly-split-min."
 );
-for (const name of personalityNames) {
+for (const name of authoredPersonalityNames) {
   const css = readStyle(`personalities/${name}.css`);
   const appShellColumns = css.match(/--ly-app-shell-wide-columns:\s*([^;]+);/s)?.[1];
   const listDetailColumns = css.match(/--ly-list-detail-wide-columns:\s*([^;]+);/s)?.[1];

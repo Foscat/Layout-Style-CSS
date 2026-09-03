@@ -1,0 +1,13 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
+
+@layer ly.personalities.technical-blueprint {
+  :where(.ly-root[data-ly-layout="technical-blueprint"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
+    --ly-grid-min: 10rem;
+    --ly-recipe-rail: 11rem;
+    --ly-recipe-aside: 26rem;
+    --ly-split-primary: 2.2fr;
+    --ly-split-secondary: 0.8fr;
+  }
+}

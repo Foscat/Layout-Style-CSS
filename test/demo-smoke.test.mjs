@@ -1647,6 +1647,73 @@ const verifyPersonalityGeometry = async (page, baseUrl) => {
   );
 };
 
+/**
+ * Verifies the defining computed and rendered signatures of the four new 3.2
+ * personality modules before they are added to the public manifest selector.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifySpecializedPersonalityGeometry = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=split-hero&container=73rem&height=50rem`,
+    { waitUntil: "domcontentloaded" }
+  );
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  /**
+   * Captures resolved layout tokens and split geometry for one staged profile.
+   *
+   * @param {string} personality Canonical layout personality identifier.
+   * @returns {Promise<Record<string, string | number>>} Resolved profile snapshot.
+   */
+  const snapshotProfile = async (personality) =>
+    page.evaluate(async (name) => {
+      const root = document.querySelector("#previewRoot");
+      root.dataset.lyLayout = name;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const rootStyle = getComputedStyle(root);
+      const recipe = document.querySelector('[data-ly-recipe="split-hero"]');
+      const content = recipe.querySelector('[data-ly-area="content"]').getBoundingClientRect();
+      const media = recipe.querySelector('[data-ly-area="media"]').getBoundingClientRect();
+      return {
+        wrapper: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim(),
+        gridMin: rootStyle.getPropertyValue("--ly-grid-min").trim(),
+        cardGridMin: rootStyle.getPropertyValue("--ly-card-grid-min").trim(),
+        galleryMin: rootStyle.getPropertyValue("--ly-gallery-min").trim(),
+        rail: rootStyle.getPropertyValue("--ly-recipe-rail").trim(),
+        aside: rootStyle.getPropertyValue("--ly-recipe-aside").trim(),
+        primary: rootStyle.getPropertyValue("--ly-split-primary").trim(),
+        secondary: rootStyle.getPropertyValue("--ly-split-secondary").trim(),
+        frameRatio: rootStyle.getPropertyValue("--ly-frame-ratio").trim(),
+        contentWidth: content.width,
+        mediaWidth: media.width
+      };
+    }, personality);
+
+  const blueprint = await snapshotProfile("technical-blueprint");
+  const terminal = await snapshotProfile("data-terminal");
+  const hmi = await snapshotProfile("industrial-hmi");
+  const editorial = await snapshotProfile("editorial");
+
+  assert.equal(blueprint.wrapper, "100%");
+  assert.equal(blueprint.primary, "2.2fr");
+  assert.equal(blueprint.secondary, "0.8fr");
+  assert(blueprint.contentWidth > blueprint.mediaWidth * 2, "Blueprint canvas must dominate its split.");
+  assert.equal(terminal.wrapper, "100%");
+  assert.equal(terminal.gridMin, "10rem");
+  assert.equal(terminal.cardGridMin, "10rem");
+  assert.equal(terminal.galleryMin, "10rem");
+  assert.equal(hmi.rail, "7rem");
+  assert.equal(hmi.aside, "32rem");
+  assert.equal(editorial.frameRatio, "4 / 5");
+  assert.equal(editorial.primary, "1.65fr");
+  assert.equal(editorial.secondary, "0.75fr");
+  assert(editorial.contentWidth > editorial.mediaWidth, "Editorial split must favor its content rail.");
+};
+
 const verifyMinimumWidth = async (page, baseUrl) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto(`${baseUrl}?ecosystem=layout-only&device=custom&container=auto`, {
@@ -2057,6 +2124,7 @@ try {
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
   await verifyPersonalityGeometry(page, server.baseUrl);
+  await verifySpecializedPersonalityGeometry(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
   await verifyWorkspaceMeasure(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);
