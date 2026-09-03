@@ -51,6 +51,8 @@
     --ly-sidebar-content-min: 50%;
     --ly-grid-columns: 12;
     --ly-grid-min: 16rem;
+    --ly-mosaic-medium-columns: 6;
+    --ly-mosaic-wide-columns: 12;
     --ly-split-min: 20rem;
     --ly-pane-min: 18rem;
     --ly-pane-size: 22rem;

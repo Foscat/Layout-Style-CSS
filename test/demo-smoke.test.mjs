@@ -531,6 +531,121 @@ const verifyContentResilience = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies Mosaic track tiers, span collapse, manual ownership, DOM order, and
+ * nearest-container behavior across every threshold-adjacent allocation.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyMosaicComposition = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  await setCustomAllocation(page, "80rem");
+  for (const scenario of [
+    { width: "32rem", tracks: 1, spansActive: false },
+    { width: "43rem", tracks: 6, spansActive: true },
+    { width: "71rem", tracks: 6, spansActive: true },
+    { width: "73rem", tracks: 12, spansActive: true }
+  ]) {
+    const snapshot = await page.evaluate((scopeWidth) => {
+      const wrapper = document.querySelector("#previewWrapper");
+      wrapper.style.setProperty("--ly-wrapper-local-gutter", "0px");
+      wrapper.style.inlineSize = scopeWidth;
+      const mosaic = document.createElement("section");
+      mosaic.className = "ly-mosaic";
+      const definitions = [
+        ["ly-span-2", "two"],
+        ["ly-span-4 ly-row-span-2", "four"],
+        ["ly-span-6 ly-row-span-3", "six"],
+        ["ly-span-full", "full"]
+      ];
+
+      for (const [className, label] of definitions) {
+        const item = document.createElement("article");
+        item.className = className;
+        const action = document.createElement("button");
+        action.type = "button";
+        action.dataset.mosaicFocus = label;
+        action.textContent = label;
+        item.append(action);
+        mosaic.append(item);
+      }
+
+      wrapper.replaceChildren(mosaic);
+      const items = [...mosaic.children];
+      const style = getComputedStyle(mosaic);
+      return {
+        scopeWidth: wrapper.getBoundingClientRect().width,
+        tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+        overflow: mosaic.scrollWidth - mosaic.clientWidth,
+        mosaicWidth: mosaic.getBoundingClientRect().width,
+        fullWidth: items.at(-1).getBoundingClientRect().width,
+        spanTwo: getComputedStyle(items[0]).gridColumn,
+        rowTwo: getComputedStyle(items[1]).gridRow,
+        rowThree: getComputedStyle(items[2]).gridRow,
+        domOrder: items.map((item) => item.querySelector("button").dataset.mosaicFocus),
+        focusOrder: [...mosaic.querySelectorAll("button")].map(
+          (button) => button.dataset.mosaicFocus
+        )
+      };
+    }, scenario.width);
+
+    assert.equal(
+      snapshot.tracks,
+      scenario.tracks,
+      `${scenario.width} Mosaic track count drifted at ${snapshot.scopeWidth}px.`
+    );
+    assert(snapshot.overflow <= 2, `${scenario.width} Mosaic overflowed by ${snapshot.overflow}px.`);
+    assert(
+      Math.abs(snapshot.fullWidth - snapshot.mosaicWidth) <= 2,
+      `${scenario.width} full-span item did not cover the Mosaic.`
+    );
+    assert.deepEqual(snapshot.focusOrder, snapshot.domOrder, "Mosaic focus order drifted from DOM order.");
+    if (scenario.spansActive) {
+      assert.match(snapshot.spanTwo, /span 2/);
+      assert.match(snapshot.rowTwo, /span 2/);
+      assert.match(snapshot.rowThree, /span 3/);
+    } else {
+      assert.match(snapshot.spanTwo, /1 \/ -1/);
+      assert(!/span 2/.test(snapshot.rowTwo));
+      assert(!/span 3/.test(snapshot.rowThree));
+    }
+  }
+
+  await setCustomAllocation(page, "73rem");
+  const ownership = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    const manual = document.createElement("section");
+    manual.className = "ly-mosaic";
+    manual.dataset.lyResponsive = "manual";
+    manual.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
+    manual.append(document.createElement("div"), document.createElement("div"));
+
+    const nestedScope = document.createElement("div");
+    nestedScope.className = "ly-root";
+    nestedScope.style.inlineSize = "32rem";
+    const nested = document.createElement("section");
+    nested.className = "ly-mosaic";
+    nested.append(document.createElement("div"), document.createElement("div"));
+    nestedScope.append(nested);
+    wrapper.replaceChildren(manual, nestedScope);
+
+    return {
+      manualTracks: getComputedStyle(manual).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+      nestedTracks: getComputedStyle(nested).gridTemplateColumns.split(/\s+/).filter(Boolean).length
+    };
+  });
+
+  assert.equal(ownership.manualTracks, 3, "Manual Mosaic must retain application-owned tracks.");
+  assert.equal(ownership.nestedTracks, 1, "Nested Mosaic must use its nearest layout scope.");
+};
+
 const installExternalFixtures = async (page) => {
   await page.route("https://unpkg.com/**", async (route) => {
     const url = route.request().url();
@@ -1663,6 +1778,7 @@ try {
   await verifyBreakoutGeometry(page, server.baseUrl);
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
   await verifyContentResilience(page, server.baseUrl);
+  await verifyMosaicComposition(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
   await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);

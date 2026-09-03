@@ -58,7 +58,8 @@ const geometryTokens = [
   "--ly-sticky-position", "--ly-cover-min",
   "--ly-shell-min", "--ly-scroll-max", "--ly-scroll-viewport-max", "--ly-switcher-threshold",
   "--ly-sidebar-size",
-  "--ly-sidebar-content-min", "--ly-grid-columns", "--ly-grid-min", "--ly-split-min",
+  "--ly-sidebar-content-min", "--ly-grid-columns", "--ly-grid-min", "--ly-mosaic-medium-columns",
+  "--ly-mosaic-wide-columns", "--ly-split-min",
   "--ly-pane-min", "--ly-pane-size", "--ly-media-min", "--ly-media-size", "--ly-reel-item-min",
   "--ly-reel-item-max", "--ly-frame-ratio", "--ly-split-primary", "--ly-split-secondary",
   "--ly-recipe-main-min", "--ly-recipe-rail", "--ly-recipe-aside", "--ly-gallery-min",
@@ -225,7 +226,8 @@ test("ecosystem manifest describes real structural selectors, thresholds, and to
   ]);
   assert.deepEqual(manifest.primitives, [
     "page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster",
-    "center", "cover", "switcher", "sidebar", "grid", "split", "panes", "media", "reel", "frame", "scroll"
+    "center", "cover", "switcher", "sidebar", "grid", "mosaic", "split", "panes", "media",
+    "reel", "frame", "scroll"
   ]);
   assert.deepEqual(manifest.recipes, [
     "app-shell", "dashboard", "docs", "list-detail", "split-hero", "gallery", "card-grid"
@@ -244,6 +246,9 @@ test("ecosystem manifest describes real structural selectors, thresholds, and to
       docs: { wide: "48rem" },
       appShell: { medium: "52rem", wide: "72rem" },
       dashboard: { medium: "52rem", wide: "72rem" }
+    },
+    compositions: {
+      mosaic: { medium: "42rem", wide: "72rem" }
     }
   });
   const recipesCss = readFileSync(join(root, "styles", "recipes.css"), "utf8");

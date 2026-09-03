@@ -115,6 +115,17 @@
     grid-template-columns: repeat(var(--ly-grid-columns), minmax(0, 1fr));
   }
 
+  .ly-mosaic {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-grid-gap);
+  }
+
+  .ly-mosaic > * {
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
   .ly-split {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-split-min)), 1fr));
@@ -185,5 +196,79 @@
 
   .ly-scroll--viewport {
     max-block-size: var(--ly-scroll-viewport-max);
+  }
+}
+
+/*
+  Mosaic span behavior lives in the final structural context layer so it can
+  deliberately override the general-purpose span utilities at automatic tiers.
+*/
+@layer ly.context {
+  .ly-mosaic:not([data-ly-responsive="manual"]) > :where(
+    .ly-span-1,
+    .ly-span-2,
+    .ly-span-3,
+    .ly-span-4,
+    .ly-span-6,
+    .ly-span-full
+  ) {
+    grid-column: 1 / -1;
+  }
+
+  .ly-mosaic:not([data-ly-responsive="manual"]) > :where(
+    .ly-row-span-2,
+    .ly-row-span-3
+  ) {
+    grid-row: auto;
+  }
+
+  @container ly-scope (min-width: 42rem) {
+    .ly-mosaic:not([data-ly-responsive="manual"]) {
+      grid-template-columns: repeat(
+        var(--ly-mosaic-medium-columns),
+        minmax(0, 1fr)
+      );
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-1 {
+      grid-column: span 1;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-2 {
+      grid-column: span 2;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-3 {
+      grid-column: span 3;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-4 {
+      grid-column: span 4;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-6 {
+      grid-column: span 6;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-full {
+      grid-column: 1 / -1;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-row-span-2 {
+      grid-row: span 2;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-row-span-3 {
+      grid-row: span 3;
+    }
+  }
+
+  @container ly-scope (min-width: 72rem) {
+    .ly-mosaic:not([data-ly-responsive="manual"]) {
+      grid-template-columns: repeat(
+        var(--ly-mosaic-wide-columns),
+        minmax(0, 1fr)
+      );
+    }
   }
 }

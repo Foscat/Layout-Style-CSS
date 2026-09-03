@@ -308,6 +308,7 @@ for (const primitive of [
   "switcher",
   "sidebar",
   "grid",
+  "mosaic",
   "split",
   "panes",
   "media",
@@ -318,7 +319,15 @@ for (const primitive of [
   assert(primitives.includes(`.ly-${primitive}`), `Missing composition primitive: ${primitive}`);
 }
 assert(primitives.includes("100dvh"), "Viewport-bound primitives must use dynamic viewport units");
-assert(!primitives.includes("@container"), "Intrinsic primitives must not depend on fixed width tiers");
+assert.deepEqual(
+  [...primitives.matchAll(/@container ly-scope \(min-width: ([^)]+)\)/g)].map(([, width]) => width),
+  ["42rem", "72rem"],
+  "Only Mosaic may use the approved shared primitive thresholds."
+);
+assert(
+  !/grid-auto-flow:\s*dense/.test(primitives),
+  "Mosaic must preserve DOM reading and focus order."
+);
 assert(
   /--ly-cover-min:\s*100vh/.test(foundation) &&
     /--ly-shell-min:\s*100vh/.test(foundation) &&
@@ -465,6 +474,9 @@ assert(!/\bly-(?:md|lg)-/.test(utilities), "Fixed responsive utility families mu
 assert(!/\bly-order-/.test(utilities), "Visual order utilities must be removed");
 assert(!utilities.includes(".ly-bleed"), "The scrollbar-unsafe viewport bleed utility must be removed");
 assert(!utilities.includes("100vw"), "Utilities must not use scrollbar-unsafe viewport widths");
+for (const utility of ["ly-span-6", "ly-row-span-2", "ly-row-span-3"]) {
+  assert(utilities.includes(`.${utility}`), `Missing Mosaic utility: ${utility}`);
+}
 for (let gap = 0; gap <= 9; gap += 1) {
   const rule = utilities.match(new RegExp(`\\.ly-gap-${gap}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert(
