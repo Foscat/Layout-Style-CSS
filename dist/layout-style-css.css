@@ -941,6 +941,89 @@
       grid-template-columns: var(--ly-dashboard-wide-columns);
     }
   }
+
+  /*
+    Feature-detected presence rules remove absent side tracks without changing
+    the canonical area vocabulary or personality-owned both-side topologies.
+  */
+  @supports selector(:has(*)) {
+    @container ly-scope (min-width: 52rem) {
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):has(
+        > [data-ly-area="sidebar"]
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "header header"
+          "sidebar main"
+          "footer footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-rail)), auto)
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):has(> [data-ly-area="aside"]) {
+        grid-template-areas:
+          "header header"
+          "main aside"
+          "footer footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+          minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "header"
+          "main"
+          "footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+    }
+
+    @container ly-scope (min-width: 72rem) {
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):has(
+        > [data-ly-area="sidebar"]
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "sidebar header"
+          "sidebar main"
+          "sidebar footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-rail)), auto)
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):has(> [data-ly-area="aside"]) {
+        grid-template-areas:
+          "header header"
+          "main aside"
+          "footer footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+          minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "header"
+          "main"
+          "footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+      }
+    }
+  }
 }
 
 /* utilities.css */

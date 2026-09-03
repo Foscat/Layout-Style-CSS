@@ -458,6 +458,26 @@ assert(
   "Automatic topology rules must exclude manual recipes"
 );
 assert(
+  recipes.includes("@supports selector(:has(*))"),
+  "Area-aware App Shell enhancement must be feature-detected."
+);
+for (const presenceSelector of [
+  ':has(> [data-ly-area="sidebar"]):not(:has(> [data-ly-area="aside"]))',
+  ':not(:has(> [data-ly-area="sidebar"])):has(> [data-ly-area="aside"])',
+  ':not(:has(> [data-ly-area="sidebar"])):not(:has(> [data-ly-area="aside"]))'
+]) {
+  assert(
+    recipes.replace(/\s+/g, "").includes(presenceSelector.replace(/\s+/g, "")),
+    `Missing App Shell presence selector: ${presenceSelector}`
+  );
+}
+for (const name of personalityNames) {
+  assert(
+    !readStyle(`personalities/${name}.css`).includes(":has("),
+    `${name} must rely on shared area-awareness.`
+  );
+}
+assert(
   /\[data-ly-recipe="gallery"\][\s\S]*\[data-ly-recipe="card-grid"\][\s\S]*\[data-ly-responsive="manual"\][\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(
     recipes
   ),

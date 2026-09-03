@@ -733,6 +733,134 @@ const verifyActionBarComposition = async (page, baseUrl) => {
   assert.equal(shallowPosition, "static", "Shallow-height Action Bar must disable stickiness.");
 };
 
+/**
+ * Verifies that automatic App Shells remove absent side tracks while preserving
+ * personality-owned both-side topology and the manual stacked fallback.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyAreaAwareAppShell = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const combinations = [
+    {
+      label: "both",
+      areas: ["header", "sidebar", "main", "aside", "footer"],
+      tracks: { "53rem": 2, "73rem": null },
+      areaFragment: { "53rem": "sidebar main", "73rem": null }
+    },
+    {
+      label: "sidebar-only",
+      areas: ["header", "sidebar", "main", "footer"],
+      tracks: { "53rem": 2, "73rem": 2 },
+      areaFragment: { "53rem": "sidebar main", "73rem": "sidebar main" }
+    },
+    {
+      label: "aside-only",
+      areas: ["header", "main", "aside", "footer"],
+      tracks: { "53rem": 2, "73rem": 2 },
+      areaFragment: { "53rem": "main aside", "73rem": "main aside" }
+    },
+    {
+      label: "neither",
+      areas: ["header", "main", "footer"],
+      tracks: { "53rem": 1, "73rem": 1 },
+      areaFragment: { "53rem": '"main"', "73rem": '"main"' }
+    }
+  ];
+
+  for (const personality of [
+    "minimal-saas",
+    "retrofuturism",
+    "cyberpunk",
+    "y2k",
+    "retro-glass",
+    "split-screen"
+  ]) {
+    await setControl(page, "personalitySelect", personality);
+    for (const width of ["53rem", "73rem"]) {
+      await setCustomAllocation(page, width);
+      for (const combination of combinations) {
+        const snapshot = await page.evaluate(({ areas }) => {
+          const wrapper = document.querySelector("#previewWrapper");
+          wrapper.style.setProperty("--ly-shell-min", "auto");
+          const recipe = document.createElement("section");
+          recipe.dataset.lyRecipe = "app-shell";
+          for (const areaName of areas) {
+            const region = document.createElement("article");
+            region.dataset.lyArea = areaName;
+            region.textContent = `${areaName} workspace`;
+            recipe.append(region);
+          }
+          wrapper.replaceChildren(recipe);
+          const style = getComputedStyle(recipe);
+          const rootStyle = getComputedStyle(wrapper);
+          const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+          return {
+            areas: style.gridTemplateAreas,
+            tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+            overflow: recipe.scrollWidth - recipe.clientWidth,
+            mainWidth: recipe.querySelector('[data-ly-area="main"]').getBoundingClientRect().width,
+            mainFloor:
+              Number.parseFloat(rootStyle.getPropertyValue("--ly-recipe-main-min")) * rootFontSize
+          };
+        }, combination);
+
+        const expectedTracks = combination.tracks[width];
+        if (expectedTracks !== null) {
+          assert.equal(
+            snapshot.tracks,
+            expectedTracks,
+            `${personality} ${width} ${combination.label} reserved an empty side track.`
+          );
+        }
+        const expectedFragment = combination.areaFragment[width];
+        if (expectedFragment !== null) {
+          assert(
+            snapshot.areas.includes(expectedFragment),
+            `${personality} ${width} ${combination.label} topology drifted: ${snapshot.areas}`
+          );
+        }
+        assert(
+          snapshot.mainWidth + 1 >= snapshot.mainFloor,
+          `${personality} ${width} ${combination.label} main fell below its usable floor.`
+        );
+        assert(
+          snapshot.overflow <= 2,
+          `${personality} ${width} ${combination.label} overflowed by ${snapshot.overflow}px.`
+        );
+      }
+    }
+  }
+
+  await setCustomAllocation(page, "73rem");
+  const manual = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    const recipe = document.createElement("section");
+    recipe.dataset.lyRecipe = "app-shell";
+    recipe.dataset.lyResponsive = "manual";
+    for (const areaName of ["header", "main", "footer"]) {
+      const region = document.createElement("article");
+      region.dataset.lyArea = areaName;
+      recipe.append(region);
+    }
+    wrapper.replaceChildren(recipe);
+    const style = getComputedStyle(recipe);
+    return {
+      areas: style.gridTemplateAreas,
+      tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length
+    };
+  });
+  assert.equal(manual.tracks, 1, "Manual App Shell must retain its stacked track.");
+  assert.match(manual.areas, /"header" "sidebar" "main" "aside" "footer"/);
+};
+
 const installExternalFixtures = async (page) => {
   await page.route("https://unpkg.com/**", async (route) => {
     const url = route.request().url();
@@ -1867,6 +1995,7 @@ try {
   await verifyContentResilience(page, server.baseUrl);
   await verifyMosaicComposition(page, server.baseUrl);
   await verifyActionBarComposition(page, server.baseUrl);
+  await verifyAreaAwareAppShell(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
   await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);
