@@ -2,18 +2,10 @@
 
 @layer ly.personalities.brutalism {
   :where(.ly-root[data-ly-layout="brutalism"]) {
-    --ly-personality-wrapper-max: 100rem;
-    --ly-profile-gap: var(--ly-space-3);
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
     --ly-grid-min: 14rem;
     --ly-recipe-rail: 16rem;
     --ly-recipe-aside: 18rem;
-    --ly-app-shell-wide-areas:
-      "header header sidebar"
-      "main aside sidebar"
-      "footer footer sidebar";
-    --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-main-min)), 1.3fr)
-      minmax(0, 0.7fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.34fr);
   }
 }

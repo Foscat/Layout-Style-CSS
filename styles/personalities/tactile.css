@@ -2,20 +2,11 @@
 
 @layer ly.personalities.tactile {
   :where(.ly-root[data-ly-layout="tactile"]) {
-    --ly-personality-wrapper-max: 82rem;
+    --ly-personality-wrapper-max: 96rem;
     --ly-profile-gap: var(--ly-space-4);
     --ly-grid-min: 15rem;
     --ly-recipe-rail: 17rem;
     --ly-recipe-aside: 20rem;
-    --ly-app-shell-wide-areas:
-      "header header"
-      "sidebar main"
-      "aside main"
-      "footer footer";
-    --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
-    --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-rail)), 0.28fr)
-      minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
     --ly-list-detail-wide-columns:
       minmax(min(100%, var(--ly-pane-min)), 0.5fr)
       minmax(min(100%, var(--ly-pane-min)), 0.9fr);

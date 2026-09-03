@@ -1122,9 +1122,7 @@ const verifyAppShellRowGeometry = async (page, baseUrl) => {
       label: `wide ${personality}`,
       width: "73rem",
       personality,
-      rows: ["bento", "neumorphism", "split-screen", "tactile"].includes(personality)
-        ? 4
-        : 3
+      rows: personality === "split-screen" ? 4 : 3
     }))
   ];
 
@@ -1579,6 +1577,76 @@ const verifyPersonalityMatrix = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies the defining rendered signatures for changed and deliberately
+ * preserved 3.2 personalities at a wide allocation.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyPersonalityGeometry = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem&height=50rem`,
+    { waitUntil: "domcontentloaded" }
+  );
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const snapshots = {};
+  for (const personality of [
+    "bento",
+    "maximalist",
+    "bauhaus",
+    "tactile",
+    "neumorphism",
+    "brutalism",
+    "y2k",
+    "retro-glass",
+    "retrofuturism",
+    "cyberpunk",
+    "split-screen"
+  ]) {
+    await setControl(page, "personalitySelect", personality);
+    snapshots[personality] = await page.evaluate(() => {
+      const root = document.querySelector("#previewRoot");
+      const recipe = document.querySelector('[data-ly-recipe="app-shell"]');
+      const style = getComputedStyle(recipe);
+      const rootStyle = getComputedStyle(root);
+      const sidebar = recipe.querySelector('[data-ly-area="sidebar"]').getBoundingClientRect();
+      const main = recipe.querySelector('[data-ly-area="main"]').getBoundingClientRect();
+      return {
+        areas: style.gridTemplateAreas,
+        tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).map(Number.parseFloat),
+        trackCount: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+        profileGap: rootStyle.getPropertyValue("--ly-profile-gap").trim(),
+        wrapper: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim(),
+        sidebarBeforeMain: sidebar.left < main.left
+      };
+    });
+  }
+
+  assert.equal(snapshots.bento.trackCount, 3, "Bento must remove its old four-track shell.");
+  assert.equal(snapshots.maximalist.profileGap, "0.75rem");
+  assert.equal(snapshots.bauhaus.profileGap, "0.5rem");
+  assert.equal(snapshots.tactile.wrapper, "96rem");
+  assert(snapshots.neumorphism.sidebarBeforeMain, "Neumorphism must not keep a right sidebar.");
+  assert.equal(snapshots.brutalism.wrapper, "100%");
+  assert.equal(snapshots.brutalism.profileGap, "0.25rem");
+  for (const personality of ["y2k", "retro-glass"]) {
+    assert.match(snapshots[personality].areas, /"header header header"/);
+    assert.match(snapshots[personality].areas, /"sidebar main aside"/);
+    assert.match(snapshots[personality].areas, /"footer footer footer"/);
+  }
+  assert.match(snapshots.retrofuturism.areas, /"sidebar header aside"/);
+  assert.match(snapshots.cyberpunk.areas, /"sidebar header header"/);
+  assert.equal(snapshots["split-screen"].trackCount, 2);
+  assert(
+    Math.abs(snapshots["split-screen"].tracks[0] - snapshots["split-screen"].tracks[1]) <= 2,
+    "Split Screen must preserve equal App Shell halves."
+  );
+};
+
 const verifyMinimumWidth = async (page, baseUrl) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto(`${baseUrl}?ecosystem=layout-only&device=custom&container=auto`, {
@@ -1705,7 +1773,7 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
   const result = await page.evaluate(() => {
     const innerRoot = document.createElement("section");
     innerRoot.className = "ly-root";
-    innerRoot.dataset.lyLayout = "bauhaus";
+    innerRoot.dataset.lyLayout = "bento";
     innerRoot.dataset.lyDensity = "normal";
     innerRoot.style.inlineSize = "50rem";
     innerRoot.style.maxInlineSize = "100%";
@@ -1988,6 +2056,7 @@ try {
   await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
+  await verifyPersonalityGeometry(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
   await verifyWorkspaceMeasure(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);

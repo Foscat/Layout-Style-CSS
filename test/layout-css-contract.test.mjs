@@ -106,6 +106,19 @@ function minifyCss(css) {
     .trim();
 }
 
+/**
+ * Returns one normalized custom-property value from authored CSS.
+ *
+ * @param {string} css Authored stylesheet source.
+ * @param {string} property Custom-property name.
+ * @returns {string} Whitespace-normalized custom-property value.
+ */
+function customPropertyValue(css, property) {
+  const value = css.match(new RegExp(`${property}\\s*:\\s*([^;]+);`, "s"))?.[1];
+  assert(value, `Missing required personality token ${property}.`);
+  return value.replace(/\s+/g, " ").trim();
+}
+
 assert.equal(packageJson.version, "3.1.0", "The minor branch must expose version 3.1.0");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
@@ -207,6 +220,59 @@ assert.equal(
   personalityNames.length,
   "Every personality must expose a unique spatial signature"
 );
+
+const personalityTargets = {
+  "minimal-saas": ["88rem", "var(--ly-space-5)", "16rem", "15rem", "16rem"],
+  bento: ["112rem", "var(--ly-space-4)", "12rem", "14rem", "18rem"],
+  maximalist: ["100%", "var(--ly-space-3)", "10rem", "15rem", "18rem"],
+  bauhaus: ["96rem", "var(--ly-space-2)", "13rem", "14rem", "18rem"],
+  tactile: ["96rem", "var(--ly-space-4)", "15rem", "17rem", "20rem"],
+  neumorphism: ["84rem", "var(--ly-space-6)", "17rem", "17rem", "22rem"],
+  retrofuturism: ["106rem", "var(--ly-space-5)", "14rem", "14rem", "17rem"],
+  brutalism: ["100%", "var(--ly-space-1)", "14rem", "16rem", "18rem"],
+  cyberpunk: ["112rem", "var(--ly-space-4)", "12rem", "13rem", "19rem"],
+  y2k: ["100%", "var(--ly-space-2)", "13rem", "18rem", "16rem"],
+  "retro-glass": ["100%", "var(--ly-space-2)", "15rem", "16rem", "17rem"],
+  "f-pattern": ["92rem", "var(--ly-space-4)", "14rem", "16rem", "18rem"],
+  "z-pattern": ["108rem", "var(--ly-space-5)", "14rem", "17rem", "19rem"],
+  "split-screen": ["100%", "var(--ly-space-4)", "20rem", "24rem", "24rem"],
+  mondrian: ["112rem", "var(--ly-space-3)", "11rem", "13rem", "18rem"],
+  synthwave: ["112rem", "var(--ly-space-6)", "14rem", "16rem", "20rem"]
+};
+const targetProperties = [
+  "--ly-personality-wrapper-max",
+  "--ly-profile-gap",
+  "--ly-grid-min",
+  "--ly-recipe-rail",
+  "--ly-recipe-aside"
+];
+for (const [name, values] of Object.entries(personalityTargets)) {
+  const css = readStyle(`personalities/${name}.css`);
+  assert.deepEqual(
+    targetProperties.map((property) => customPropertyValue(css, property)),
+    values,
+    `${name} geometry drifted from the approved 3.2 target table.`
+  );
+}
+for (const name of ["bento", "maximalist", "bauhaus", "tactile", "neumorphism", "brutalism"]) {
+  assert(
+    !readStyle(`personalities/${name}.css`).includes("--ly-app-shell-wide-areas:"),
+    `${name} must use the shared area-aware App Shell.`
+  );
+}
+assert.equal(customPropertyValue(readStyle("personalities/minimal-saas.css"), "--ly-split-primary"), "1.05fr");
+assert.equal(customPropertyValue(readStyle("personalities/minimal-saas.css"), "--ly-split-secondary"), "0.95fr");
+assert.equal(customPropertyValue(readStyle("personalities/bento.css"), "--ly-card-grid-min"), "14rem");
+assert.equal(customPropertyValue(readStyle("personalities/bento.css"), "--ly-gallery-min"), "11rem");
+assert.equal(customPropertyValue(readStyle("personalities/maximalist.css"), "--ly-card-grid-min"), "13rem");
+assert.equal(customPropertyValue(readStyle("personalities/maximalist.css"), "--ly-gallery-min"), "10rem");
+assert.equal(customPropertyValue(readStyle("personalities/bauhaus.css"), "--ly-split-primary"), "0.7fr");
+assert.equal(customPropertyValue(readStyle("personalities/bauhaus.css"), "--ly-split-secondary"), "1.3fr");
+assert.match(customPropertyValue(readStyle("personalities/tactile.css"), "--ly-list-detail-wide-columns"), /0\.5fr[\s\S]*0\.9fr/);
+assert.match(customPropertyValue(readStyle("personalities/neumorphism.css"), "--ly-list-detail-wide-columns"), /1\.1fr[\s\S]*0\.7fr/);
+assert.match(customPropertyValue(readStyle("personalities/f-pattern.css"), "--ly-split-hero-wide-columns"), /1\.8fr[\s\S]*0\.8fr/);
+assert.match(customPropertyValue(readStyle("personalities/z-pattern.css"), "--ly-split-hero-wide-columns"), /1\.5fr[\s\S]*0\.5fr/);
+assert.equal(customPropertyValue(readStyle("personalities/synthwave.css"), "--ly-reel-item-min"), "20rem");
 
 assert(!existsSync(join(styles, "legacy.css")), "v3 must remove the authored legacy bundle");
 assert(!existsSync(join(dist, "legacy.css")), "v3 must remove the generated legacy bundle");
@@ -498,7 +564,7 @@ for (const [topology, token] of Object.entries(appShellRowTokens)) {
     `App Shell ${topology} topology must consume ${token}.`
   );
 }
-for (const personality of ["bento", "neumorphism", "split-screen", "tactile"]) {
+for (const personality of ["split-screen"]) {
   assert(
     readStyle(`personalities/${personality}.css`).includes("--ly-app-shell-wide-rows:"),
     `${personality} must describe its four-row wide App Shell.`
