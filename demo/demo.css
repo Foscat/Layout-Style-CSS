@@ -201,6 +201,17 @@ h3 {
   font-size: 0.875rem;
 }
 
+.demo-pairing-guidance {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border: 1px solid var(--demo-line);
+  border-radius: calc(var(--demo-radius) * 0.6);
+  background: var(--demo-panel-strong);
+  color: var(--demo-muted);
+  font-size: 0.75rem;
+}
+
 .demo-readouts {
   display: grid;
   justify-items: end;
@@ -389,10 +400,70 @@ body[data-ecosystem="all-three"] .demo-status {
   min-inline-size: 0;
   gap: 0.75rem;
   padding: var(--demo-region-padding);
-  overflow: hidden;
   border: 1px solid var(--demo-line);
   border-radius: calc(var(--demo-radius) * 0.65);
   background: var(--demo-panel);
+}
+
+.demo-composition-fixtures {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--demo-density-gap);
+  margin-block-start: var(--demo-density-gap);
+}
+
+.demo-fixture {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.75rem;
+  padding: var(--demo-region-padding);
+  border: 1px solid var(--demo-line);
+  border-radius: calc(var(--demo-radius) * 0.65);
+  background: var(--demo-panel);
+}
+
+.demo-fixture-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: var(--demo-muted);
+  font-size: 0.8125rem;
+}
+
+.demo-mosaic {
+  min-inline-size: 0;
+}
+
+.demo-mosaic-item {
+  min-block-size: 4rem;
+  min-inline-size: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--demo-line);
+  border-radius: calc(var(--demo-radius) * 0.45);
+  background: var(--demo-panel-strong);
+}
+
+.demo-resilience-scroll {
+  --ly-scroll-max: 8rem;
+}
+
+.demo-resilience-scroll table {
+  min-inline-size: 50rem;
+  border-collapse: collapse;
+}
+
+.demo-resilience-scroll th,
+.demo-resilience-scroll td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--demo-line);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.demo-resilience-scroll th {
+  background: var(--demo-panel-strong);
 }
 
 .demo-region[data-ly-area="main"],

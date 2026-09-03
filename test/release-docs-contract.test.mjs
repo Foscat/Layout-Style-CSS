@@ -9,16 +9,22 @@ const read = (...parts) => normalizeLineEndings(readFileSync(join(root, ...parts
 const packageJson = JSON.parse(read("package.json"));
 const migrationPath = join(root, "docs", "wiki", "Migrating-To-3.0.md");
 const minorMigrationPath = join(root, "docs", "wiki", "Migrating-To-3.1.md");
+const nextMinorMigrationPath = join(root, "docs", "wiki", "Migrating-To-3.2.md");
+const personalityReferencePath = join(root, "docs", "wiki", "Layout-Personality-Reference.md");
 const v2SurfacePath = join(root, "test", "fixtures", "v2-public-selectors.json");
 
 assert(existsSync(migrationPath), "The v3 package must ship a complete v2-to-v3 migration guide.");
 assert(existsSync(minorMigrationPath), "The v3.1 package must ship its focused migration guide.");
+assert(existsSync(nextMinorMigrationPath), "The v3.2 package must ship its focused migration guide.");
+assert(existsSync(personalityReferencePath), "The package must ship its canonical personality reference.");
 assert(existsSync(v2SurfacePath), "Migration coverage requires a checked-in v2 public selector fixture.");
 
 const readme = read("README.md");
 const changelog = read("CHANGELOG.md");
 const migration = read("docs", "wiki", "Migrating-To-3.0.md");
 const minorMigration = read("docs", "wiki", "Migrating-To-3.1.md");
+const nextMinorMigration = read("docs", "wiki", "Migrating-To-3.2.md");
+const personalityReference = read("docs", "wiki", "Layout-Personality-Reference.md");
 const installation = read("docs", "wiki", "Installation-And-CDN.md");
 const compatibility = read("docs", "wiki", "UI-Style-Kit-Compatibility.md");
 const primitivesGuide = read("docs", "wiki", "Layout-Primitives.md");
@@ -54,6 +60,8 @@ const docsCorpus = [
   readme,
   migration,
   minorMigration,
+  nextMinorMigration,
+  personalityReference,
   installation,
   compatibility,
   primitivesGuide,
@@ -73,6 +81,8 @@ const currentGuidanceCorpus = [
     "Layout-Recipes.md",
     "Layout-Styles.md",
     "Migrating-To-3.1.md",
+    "Migrating-To-3.2.md",
+    "Layout-Personality-Reference.md",
     "Release-And-Publishing.md",
     "Security-And-Support.md",
     "UI-Style-Kit-Compatibility.md"
@@ -218,15 +228,40 @@ assert(
   "Recipe documentation must list every automatic topology threshold."
 );
 assert(
-  primitivesGuide.includes("only `.ly-reel`") &&
-    primitivesGuide.includes("only `.ly-scroll`"),
+  primitivesGuide.includes("only `.ly-reel` and `.ly-scroll`") &&
+    primitivesGuide.includes("only `.ly-scroll` and its modifiers"),
   "Primitive documentation must identify intentional internal scrolling."
 );
 assert(
-  stylesGuide.includes("sixteen") &&
+  stylesGuide.includes("twenty") &&
     stylesGuide.includes("token") &&
-    stylesGuide.includes("may not declare"),
+    stylesGuide.includes("may not declare") &&
+    stylesGuide.includes("Layout-Personality-Reference.md"),
   "Personality documentation must explain the shared-engine profile contract."
+);
+for (const contract of [
+  "ly-mosaic",
+  "ly-action-bar",
+  "area-aware App Shell",
+  "--ly-recipe-main-min",
+  "20rem",
+  "horizontal as well as vertical overflow",
+  "technical-blueprint",
+  "data-terminal",
+  "industrial-hmi",
+  "editorial",
+  "UI Style Kit 2.4"
+]) {
+  assert(nextMinorMigration.includes(contract), `The v3.2 migration guide must explain ${contract}.`);
+}
+const geometryReference = personalityReference.slice(
+  personalityReference.indexOf("## Geometry Targets"),
+  personalityReference.indexOf("## Purpose, Responsive Intent, and Pairing")
+);
+assert.equal(
+  (geometryReference.match(/^\| (?:Minimal SaaS|Bento|Maximalist|Bauhaus|Tactile|Neumorphism|Retrofuturism|Brutalism|Cyberpunk|Y2K|Retro Glass|F-pattern|Z-pattern|Split Screen|Mondrian|Synthwave|Technical Blueprint|Data Terminal|Industrial HMI|Editorial) \|/gm) ?? []).length,
+  20,
+  "The canonical personality reference must inventory all twenty layouts once."
 );
 assert(
   demoGuide.includes("360 × 800") &&
@@ -311,6 +346,8 @@ assert(
 assert(support.includes("`3.x` | Yes"), "Support table must identify the supported v3 line.");
 assert(sidebar.includes("Migrating To 3.0"), "Wiki navigation must link the v3 migration guide.");
 assert(sidebar.includes("Migrating To 3.1"), "Wiki navigation must link the v3.1 migration guide.");
+assert(sidebar.includes("Migrating To 3.2"), "Wiki navigation must link the v3.2 migration guide.");
+assert(sidebar.includes("Layout Personality Reference"), "Wiki navigation must link the canonical personality reference.");
 
 // The manifest contract rebuilds dist, so built-artifact ownership tests must not overlap it.
 assert(

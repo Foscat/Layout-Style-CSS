@@ -2,7 +2,7 @@
 
 Zero-configuration, dependency-free structural CSS that responds to the width and height a layout actually receives.
 
-`layout-style-css@3.1.0` is the current additive v3 release. It provides intrinsic wrappers, composition primitives, seven semantic recipes, explicit local density controls, and sixteen spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
+`layout-style-css@3.1.0` is the current published v3 release. This branch carries the v3.2 implementation preview: intrinsic wrappers, Mosaic and Action Bar compositions, seven semantic recipes, explicit local density controls, and twenty spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
 
 ## Requirements
 
@@ -87,11 +87,11 @@ All lanes clamp to the available inline size, including allocations from 320px t
 The core includes:
 
 - `.ly-stack`, `.ly-cluster`, `.ly-center`, and `.ly-cover`
-- `.ly-switcher`, `.ly-sidebar`, `.ly-grid`, and `.ly-split`
+- `.ly-switcher`, `.ly-sidebar`, `.ly-grid`, `.ly-mosaic`, and `.ly-split`
 - `.ly-panes` and `.ly-media`
-- `.ly-reel`, `.ly-frame`, and `.ly-scroll`
+- `.ly-action-bar`, `.ly-reel`, `.ly-frame`, and `.ly-scroll`
 
-Grid and flex primitives wrap intrinsically whenever track wrapping can replace a query. Base `.ly-scroll` owns overflow but no height cap. Add `.ly-scroll--bounded` for the stable `--ly-scroll-max` cap or `.ly-scroll--viewport` for height-aware `--ly-scroll-viewport-max` behavior. Only `.ly-reel` deliberately scrolls horizontally; only the Scroll family deliberately creates vertical scrolling.
+Grid and flex primitives wrap intrinsically whenever track wrapping can replace a query. Mosaic uses one, six, and twelve tracks at its base, `42rem`, and `72rem` tiers while keeping DOM order authoritative. Base `.ly-scroll` owns horizontal and vertical overflow but no height cap. Add `.ly-scroll--bounded` for the stable `--ly-scroll-max` cap or `.ly-scroll--viewport` for height-aware `--ly-scroll-viewport-max` behavior.
 
 Gap utilities `.ly-gap-0` through `.ly-gap-9` assign `gap` only on the element carrying the class. They do not alter inherited primitive gap variables. Override `--ly-gap`, `--ly-grid-gap`, `--ly-stack-gap`, or `--ly-cluster-gap` when a shared spacing context is intentional.
 
@@ -111,7 +111,7 @@ Recipes use attributes only. The stacked semantic source order is always safe, a
 
 The same ownership is available in `manifest.json` through `thresholds.recipes`, alongside the generic container-width and viewport-height arrays. Release checks verify every mapping against authored queries and require every public geometry token to reach a runtime CSS declaration.
 
-App Shell base, medium, and wide topologies own matching row definitions. This keeps the primary workspace flexible while header and footer tracks remain intrinsic, including personality-specific four-row topologies.
+App Shell base, medium, and wide topologies own matching row definitions. The automatic shell is area-aware: absent direct-child side regions do not reserve empty tracks, while full shells preserve personality-approved geometry. `--ly-recipe-main-min: 20rem` guards automatic primary tracks.
 
 Canonical regions use `data-ly-area`, including `header`, `sidebar`, `nav`, `main`, `aside`, `footer`, `content`, `media`, `actions`, `primary`, and `secondary`.
 
@@ -155,11 +155,13 @@ Use the public height, gap, measure, ratio, rail, media, card, and grid-minimum 
 
 ## Personalities
 
-Set one of sixteen canonical `data-ly-layout` values on `.ly-root`:
+Set one of twenty canonical `data-ly-layout` values on `.ly-root`:
 
-`minimal-saas`, `bauhaus`, `tactile`, `cyberpunk`, `f-pattern`, `brutalism`, `neumorphism`, `y2k`, `retro-glass`, `z-pattern`, `retrofuturism`, `mondrian`, `synthwave`, `bento`, `maximalist`, or `split-screen`.
+`minimal-saas`, `bento`, `maximalist`, `bauhaus`, `tactile`, `neumorphism`, `retrofuturism`, `brutalism`, `cyberpunk`, `y2k`, `retro-glass`, `f-pattern`, `z-pattern`, `split-screen`, `mondrian`, `synthwave`, `technical-blueprint`, `data-terminal`, `industrial-hmi`, or `editorial`.
 
 Each personality is a token/topology profile consumed by the shared recipe engine. A profile changes at least two spatial characteristics—such as measure, gap, rail, media size, card minimum, or ratio—but does not declare its own container or viewport breakpoint system.
+
+See the [Layout Personality Reference](docs/wiki/Layout-Personality-Reference.md) for canonical geometry, responsive intent, Mosaic usage, and recommended/compatible UI presets.
 
 ## Public Exports
 
@@ -173,7 +175,7 @@ Each personality is a token/topology profile consumed by the shared recipe engin
 | `layout-style-css/primitives.css` | Intrinsic composition primitives |
 | `layout-style-css/recipes.css` | Seven attribute-only recipes |
 | `layout-style-css/utilities.css` | Small structural utility set |
-| `layout-style-css/personalities.css` | All sixteen profiles |
+| `layout-style-css/personalities.css` | All twenty profiles |
 | `layout-style-css/personalities/minimal-saas.css` | One profile; substitute any public personality name |
 | `layout-style-css/personalities.json` | Public layout-to-visual pairing recommendations |
 | `layout-style-css/package.json` | Package metadata |
@@ -204,7 +206,7 @@ This order lets UI Style Kit establish paint and theme roles, Interactive Surfac
 
 ## Clean-Break Migration
 
-v3 has no compatibility bundle. It removes `legacy.css`, the deprecated UI Style Kit structural bridge, v1/v2 aliases, responsive `ly-md-*` and `ly-lg-*` utilities, and all visual-order utilities. See [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md) for the major-version mappings and [Migrating To 3.1](docs/wiki/Migrating-To-3.1.md) for density, local gap, and Scroll behavior changes.
+v3 has no compatibility bundle. It removes `legacy.css`, the deprecated UI Style Kit structural bridge, v1/v2 aliases, responsive `ly-md-*` and `ly-lg-*` utilities, and all visual-order utilities. See [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md) for the major-version mappings, [Migrating To 3.1](docs/wiki/Migrating-To-3.1.md) for density and local-gap changes, and [Migrating To 3.2](docs/wiki/Migrating-To-3.2.md) for Mosaic, Action Bar, area-aware shells, and content resilience.
 
 ## Demo And Verification
 
@@ -229,8 +231,10 @@ npm run release:verify
 - [Layout Primitives](docs/wiki/Layout-Primitives.md)
 - [Layout Recipes](docs/wiki/Layout-Recipes.md)
 - [Layout Styles](docs/wiki/Layout-Styles.md)
+- [Layout Personality Reference](docs/wiki/Layout-Personality-Reference.md)
 - [Migrating To 3.0](docs/wiki/Migrating-To-3.0.md)
 - [Migrating To 3.1](docs/wiki/Migrating-To-3.1.md)
+- [Migrating To 3.2](docs/wiki/Migrating-To-3.2.md)
 - [Demo And GitHub Pages](docs/wiki/Demo-And-GitHub-Pages.md)
 - [Release And Publishing](docs/wiki/Release-And-Publishing.md)
 - [Security And Support](docs/wiki/Security-And-Support.md)

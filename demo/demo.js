@@ -1,4 +1,4 @@
-const UI_STYLE_KIT_VERSION = "2.1.0";
+const UI_STYLE_KIT_VERSION = "2.3.0";
 const UI_STYLE_KIT_MANIFEST_URL = `https://unpkg.com/ui-style-kit-css@${UI_STYLE_KIT_VERSION}/manifest.json`;
 const PERSONALITY_METADATA_URL = document.querySelector("script[data-personalities-url]")?.dataset.personalitiesUrl;
 const UI_STYLE_KIT_MANIFEST_FALLBACK = Object.freeze({
@@ -14,7 +14,16 @@ const UI_STYLE_KIT_MANIFEST_FALLBACK = Object.freeze({
     Object.freeze({ id: "brutalism", label: "Brutalism", prefix: "brutal" }),
     Object.freeze({ id: "cyberpunk", label: "Cyberpunk", prefix: "cyber" }),
     Object.freeze({ id: "y2k", label: "Y2K", prefix: "y2k" }),
-    Object.freeze({ id: "retro-glass", label: "Retro Glass", prefix: "rg" })
+    Object.freeze({ id: "retro-glass", label: "Retro Glass", prefix: "rg" }),
+    Object.freeze({ id: "editorial-luxe", label: "Editorial Luxe", prefix: "luxe" }),
+    Object.freeze({ id: "organic-modern", label: "Organic Modern", prefix: "organic" }),
+    Object.freeze({ id: "industrial-utility", label: "Industrial Utility", prefix: "utility" }),
+    Object.freeze({ id: "technical-blueprint", label: "Technical Blueprint", prefix: "blueprint" }),
+    Object.freeze({ id: "art-deco", label: "Art Deco", prefix: "deco" }),
+    Object.freeze({ id: "clay", label: "Clay", prefix: "clay" }),
+    Object.freeze({ id: "data-terminal", label: "Data Terminal", prefix: "terminal" }),
+    Object.freeze({ id: "paper-editorial", label: "Paper Editorial", prefix: "paper" }),
+    Object.freeze({ id: "neo-noir", label: "Neo Noir", prefix: "noir" })
   ]),
   themes: Object.freeze([
     "midnight-gold",
@@ -70,9 +79,9 @@ async function loadUiStyleKitManifest() {
   } catch (error) {
     /*
       The published demo can render before the companion UI release reaches every CDN edge.
-      The fallback mirrors the 2.1 manifest contract so layout behavior stays testable.
+      The fallback mirrors the 2.3 manifest contract so layout behavior stays testable.
     */
-    console.warn("UI Style Kit 2.1 manifest unavailable; using the packaged fallback.", error);
+    console.warn("UI Style Kit 2.3 manifest unavailable; using the packaged fallback.", error);
     return UI_STYLE_KIT_MANIFEST_FALLBACK;
   }
 }
@@ -87,6 +96,9 @@ function normalizePersonalityMetadata(metadata) {
     visualCompatibility: String(personality?.visualCompatibility ?? ""),
     recommendedVisualPresets: Array.isArray(personality?.recommendedVisualPresets)
       ? personality.recommendedVisualPresets.map(String)
+      : [],
+    compatibleVisualPresets: Array.isArray(personality?.compatibleVisualPresets)
+      ? personality.compatibleVisualPresets.map(String)
       : []
   }));
 
@@ -114,7 +126,8 @@ function minimalPersonalityFallback() {
         id: "minimal-saas",
         label: "Minimal SaaS",
         visualCompatibility: "any",
-        recommendedVisualPresets: []
+        recommendedVisualPresets: [],
+        compatibleVisualPresets: []
       })
     ])
   });
@@ -301,6 +314,8 @@ const importsSnippet = document.querySelector("#importsSnippet");
 const markupSnippet = document.querySelector("#markupSnippet");
 const copyStatus = document.querySelector("#copyStatus");
 const personalityMetadataStatus = document.querySelector("#personalityMetadataStatus");
+const recommendedUiGuidance = document.querySelector("#recommendedUiGuidance");
+const compatibleUiGuidance = document.querySelector("#compatibleUiGuidance");
 const ecosystemStatus = document.querySelector("#ecosystemStatus");
 const containerReadout = document.querySelector("#containerReadout");
 const topologyReadout = document.querySelector("#topologyReadout");
@@ -313,6 +328,8 @@ const drawer = document.querySelector("#demoControlsDrawer");
 const drawerClose = document.querySelector("#demoControlsClose");
 const drawerBackdrop = document.querySelector("#demoControlsBackdrop");
 const stateToggle = document.querySelector("#stateToggle");
+const actionBarStickyToggle = document.querySelector("#actionBarStickyToggle");
+const fixtureActionBar = document.querySelector("#fixtureActionBar");
 const mobileControlsQuery = window.matchMedia("(max-width: 63.999rem)");
 
 body.dataset.uiManifestVersion = UI_STYLE_KIT_MANIFEST.version;
@@ -546,6 +563,34 @@ function syncPersonalityMetadataSelectOptions() {
   select.setAttribute("aria-busy", "false");
 }
 
+/**
+ * Renders advisory visual-preset pairings for the selected layout without
+ * mutating the independently selected UI preset.
+ *
+ * @returns {void}
+ */
+function syncPairingGuidance() {
+  const pairing = PERSONALITY_METADATA.personalities.find(({ id }) => id === state.personality);
+  /**
+   * Formats visual-preset identifiers for human-readable guidance.
+   *
+   * @param {string[]} presets Visual-preset identifiers.
+   * @param {string} fallback Text shown when no presets are listed.
+   * @returns {string} Display-ready visual-preset guidance.
+   */
+  const describePresets = (presets, fallback) =>
+    presets.length > 0 ? presets.map(formatLabel).join(", ") : fallback;
+
+  recommendedUiGuidance.textContent = `Recommended UI: ${describePresets(
+    pairing?.recommendedVisualPresets ?? [],
+    pairing?.visualCompatibility === "any" ? "Any visual preset" : "None listed"
+  )}`;
+  compatibleUiGuidance.textContent = `Compatible UI: ${describePresets(
+    pairing?.compatibleVisualPresets ?? [],
+    "None listed"
+  )}`;
+}
+
 function syncUiKitClasses() {
   const prefix = UI_CLASS_PREFIXES[state.ui];
 
@@ -715,6 +760,7 @@ function applyState(options = {}) {
   syncHeightTier(allocation);
 
   renderRecipe();
+  syncPairingGuidance();
   syncUiKitClasses();
   syncEcosystem();
   syncSnippets();
@@ -850,6 +896,13 @@ stateToggle.addEventListener("click", () => {
   const pressed = stateToggle.getAttribute("aria-pressed") !== "true";
   stateToggle.setAttribute("aria-pressed", String(pressed));
   stateToggle.textContent = pressed ? "Active state on" : "Toggle active state";
+});
+
+actionBarStickyToggle.addEventListener("click", () => {
+  const pressed = actionBarStickyToggle.getAttribute("aria-pressed") !== "true";
+  actionBarStickyToggle.setAttribute("aria-pressed", String(pressed));
+  actionBarStickyToggle.textContent = pressed ? "Disable sticky mode" : "Enable sticky mode";
+  fixtureActionBar.classList.toggle("ly-action-bar--sticky", pressed);
 });
 
 document.querySelectorAll("[data-copy-target]").forEach((button) => {

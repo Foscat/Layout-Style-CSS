@@ -46,6 +46,15 @@ const recipes = [
   "card-grid"
 ];
 const personalities = personalityMetadata.personalities.map(({ id }) => id);
+const expectedUiPresetPairs = [
+  ["minimal-saas", "saas"], ["bento", "bento"], ["maximalist", "max"],
+  ["bauhaus", "bau"], ["tactile", "tactile"], ["neumorphism", "neo"],
+  ["retrofuturism", "retro"], ["brutalism", "brutal"], ["cyberpunk", "cyber"],
+  ["y2k", "y2k"], ["retro-glass", "rg"], ["editorial-luxe", "luxe"],
+  ["organic-modern", "organic"], ["industrial-utility", "utility"],
+  ["technical-blueprint", "blueprint"], ["art-deco", "deco"], ["clay", "clay"],
+  ["data-terminal", "terminal"], ["paper-editorial", "paper"], ["neo-noir", "noir"]
+];
 const wrappers = [
   "default",
   "compact",
@@ -138,8 +147,8 @@ const topologyEdges = [
 ];
 
 const assertStaticDemoContract = () => {
-  assert.match(demoHtml, /Layout Style CSS v3/);
-  assert.match(demoHtml, /content="3\.1\.0"/);
+  assert.match(demoHtml, /Layout Style CSS v3\.2 Preview/);
+  assert.match(demoHtml, /content="3\.2\.0"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -147,21 +156,29 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.1\.0"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.2\.0"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.1\.0"/,
+    /href="\.\/demo\.css\?v=3\.2\.0"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.1\.0"/,
+    /src="\.\/demo\.js\?v=3\.2\.0"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
   assert.doesNotMatch(demoHtml, /class="ly-(?:app-shell|dashboard|docs|list-detail|split-hero|gallery|card-grid)/);
+  for (const fixtureId of ["pairingGuidance", "mosaicFixture", "actionBarFixture", "resilienceFixture"]) {
+    assert.match(demoHtml, new RegExp(`id="${fixtureId}"`), `Missing visible ${fixtureId} fixture.`);
+  }
+  assert.match(demoHtml, /class="ly-mosaic/);
+  assert.match(demoHtml, /class="ly-action-bar/);
+  assert.match(demoHtml, /data-ly-actions="start"/);
+  assert.match(demoHtml, /data-ly-actions="end"/);
+  assert.match(demoHtml, /class="ly-scroll/);
 
   assert.match(demoJs, /phone-portrait/);
   assert.match(demoJs, /desktop-portrait/);
@@ -170,10 +187,32 @@ const assertStaticDemoContract = () => {
   assert.match(demoJs, /URLSearchParams/);
   assert.doesNotMatch(demoJs, /RECIPE_CLASSES/);
   assert.doesNotMatch(demoJs, /layoutIntegrationStylesheet/);
+  for (const uiPreset of [
+    "editorial-luxe", "organic-modern", "industrial-utility", "technical-blueprint",
+    "art-deco", "clay", "data-terminal", "paper-editorial", "neo-noir"
+  ]) {
+    assert.match(demoJs, new RegExp(`id: "${uiPreset}"`));
+  }
+  const fallbackPresetSource = demoJs.slice(
+    demoJs.indexOf("presets: Object.freeze(["),
+    demoJs.indexOf("themes: Object.freeze([")
+  );
+  assert.deepEqual(
+    [...fallbackPresetSource.matchAll(/id: "([a-z0-9-]+)"[^}]+prefix: "([a-z0-9-]+)"/g)]
+      .map(([, id, prefix]) => [id, prefix]),
+    expectedUiPresetPairs,
+    "The packaged UI manifest fallback must mirror the approved twenty-preset inventory."
+  );
 
   assert.match(demoCss, /--demo-container-block-size/);
   assert.match(demoCss, /data-demo-height-tier="short"/);
   assert.match(demoCss, /data-demo-height-tier="shallow"/);
+  const regionDeclarations = demoCss.match(/\.demo-region\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.doesNotMatch(
+    regionDeclarations,
+    /overflow:\s*hidden/,
+    "Demo regions must not mask required content overflow."
+  );
   assert.equal(
     (
       demoCss.match(
@@ -360,6 +399,13 @@ const layoutSnapshot = async (page) =>
       trackCount: computedRecipe.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
       areas: computedRecipe.gridTemplateAreas,
       overlaps,
+      regionRectangles: regionRectangles.map(({ area, rectangle }) => ({
+        area,
+        top: rectangle.top,
+        right: rectangle.right,
+        bottom: rectangle.bottom,
+        left: rectangle.left
+      })),
       clippedRegions: regions
         .filter(
           (region) =>
@@ -387,7 +433,11 @@ const assertNoHorizontalFailures = (snapshot, label) => {
     snapshot.regionWidths.every((width) => width > 0),
     `${label}: a rendered region collapsed to zero width.`
   );
-  assert.deepEqual(snapshot.overlaps, [], `${label}: regions overlapped.`);
+  assert.deepEqual(
+    snapshot.overlaps,
+    [],
+    `${label}: regions overlapped. ${JSON.stringify(snapshot.regionRectangles)}`
+  );
   assert.deepEqual(snapshot.clippedRegions, [], `${label}: required region content was clipped.`);
 };
 
@@ -893,7 +943,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
   await page.waitForFunction(() => /\d+\s*×\s*\d+/.test(document.querySelector("#containerReadout")?.textContent));
 
-  assert.equal(await page.title(), "Layout Style CSS v3 — Intrinsic Responsive Demo");
+  assert.equal(await page.title(), "Layout Style CSS v3.2 Preview — Intrinsic Responsive Demo");
   await page.locator("main").waitFor();
   await page.locator("[data-ly-recipe]").waitFor();
   await page.locator("#topologyReadout").waitFor();
@@ -938,8 +988,51 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   assert.equal(await page.locator("#previewRoot").getAttribute("data-ly-density"), "normal");
 };
 
+/**
+ * Verifies the public 3.2 composition fixtures at threshold-adjacent widths,
+ * including sticky interaction and deliberate two-axis content overflow.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyCompositionFixtures = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  assert.equal(await page.locator("#personalitySelect option").count(), 20);
+  const mosaicTracks = {};
+  for (const width of ["32rem", "43rem", "71rem", "73rem"]) {
+    await setCustomAllocation(page, width);
+    mosaicTracks[width] = await page.locator("#mosaicFixture .ly-mosaic").evaluate((mosaic) =>
+      getComputedStyle(mosaic).gridTemplateColumns.split(/\s+/).filter(Boolean).length
+    );
+  }
+  assert.deepEqual(mosaicTracks, { "32rem": 1, "43rem": 6, "71rem": 6, "73rem": 12 });
+
+  const stickyToggle = page.locator("#actionBarStickyToggle");
+  await stickyToggle.click();
+  assert.equal(await stickyToggle.getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator("#fixtureActionBar").getAttribute("class"), "ly-action-bar ly-action-bar--sticky");
+
+  await setCustomAllocation(page, "32rem");
+  const resilience = await page.locator("#resilienceScroll").evaluate((scroll) => ({
+    inlineOverflow: scroll.scrollWidth - scroll.clientWidth,
+    blockOverflow: scroll.scrollHeight - scroll.clientHeight,
+    tabIndex: scroll.tabIndex,
+    documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+  }));
+  assert(resilience.inlineOverflow > 0, "The fixture must expose legitimate inline overflow.");
+  assert(resilience.blockOverflow > 0, "The fixture must expose legitimate block overflow.");
+  assert.equal(resilience.tabIndex, 0);
+  assert(resilience.documentOverflow <= 2, "The content fixture must not overflow the document.");
+};
+
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.1.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.2.0", baseUrl).toString();
   const pairingFixture = {
     schemaVersion: 1,
     personalities: [
@@ -947,13 +1040,15 @@ const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
         id: "minimal-saas",
         label: "Minimal SaaS",
         visualCompatibility: "native",
-        recommendedVisualPresets: ["minimal-saas"]
+        recommendedVisualPresets: ["minimal-saas"],
+        compatibleVisualPresets: ["organic-modern"]
       },
       {
         id: "synthwave",
         label: "Synthwave",
         visualCompatibility: "recommended",
-        recommendedVisualPresets: ["cyberpunk", "retrofuturism"]
+        recommendedVisualPresets: ["cyberpunk", "retrofuturism"],
+        compatibleVisualPresets: []
       }
     ]
   };
@@ -982,6 +1077,13 @@ const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
     ],
     "The personality switcher must render the layout pairing metadata it loads."
   );
+  assert.match(await page.locator("#recommendedUiGuidance").textContent(), /Minimal SaaS/i);
+  assert.match(await page.locator("#compatibleUiGuidance").textContent(), /Organic Modern/i);
+
+  const selectedUi = await page.locator("#uiSelect").inputValue();
+  await setControl(page, "personalitySelect", "synthwave");
+  assert.equal(await page.locator("#uiSelect").inputValue(), selectedUi);
+  assert.match(await page.locator("#recommendedUiGuidance").textContent(), /Cyberpunk.*Retrofuturism/i);
 
   await page.unroute(metadataUrl);
 };
@@ -1039,7 +1141,7 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
  * @returns {Promise<void>}
  */
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.1.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.2.0", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
   try {
     const recoveryPage = await recoveryContext.newPage();
@@ -2114,6 +2216,7 @@ try {
   await verifyPersonalityMetadataFailureRecovery(page, server.baseUrl);
   await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
+  await verifyCompositionFixtures(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
   await verifyAppShellRowGeometry(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);
