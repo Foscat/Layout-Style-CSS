@@ -13,10 +13,10 @@
       "sidebar footer footer";
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.26fr)
-      minmax(0, 1.35fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1.35fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.65fr);
     --ly-split-hero-wide-columns:
-      minmax(0, 1.8fr)
-      minmax(0, 0.8fr);
+      minmax(min(100%, var(--ly-split-min)), 1.8fr)
+      minmax(min(100%, var(--ly-split-min)), 0.8fr);
   }
 }

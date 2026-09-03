@@ -391,6 +391,146 @@ const assertNoHorizontalFailures = (snapshot, label) => {
   assert.deepEqual(snapshot.clippedRegions, [], `${label}: required region content was clipped.`);
 };
 
+/**
+ * Verifies usable automatic recipe floors and accessible two-axis Scroll
+ * behavior in both the standalone and complete ecosystem modes.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyContentResilience = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  for (const ecosystem of ["layout-only", "all-three"]) {
+    await page.goto(`${baseUrl}?ecosystem=${ecosystem}&wrapper=full`, {
+      waitUntil: "domcontentloaded"
+    });
+    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+    await setCustomAllocation(page, "73rem");
+
+    const result = await page.evaluate(() => {
+      const wrapper = document.querySelector("#previewWrapper");
+      wrapper.style.setProperty("--ly-shell-min", "auto");
+      const recipeAreas = {
+        "app-shell": ["header", "sidebar", "main", "aside", "footer"],
+        dashboard: ["header", "nav", "main", "aside", "footer"],
+        docs: ["header", "nav", "main", "aside", "footer"],
+        "list-detail": ["primary", "secondary", "actions"],
+        "split-hero": ["content", "media", "actions"]
+      };
+      const measurements = {};
+      let scrollMetrics;
+
+      /**
+       * Converts a public rem-valued geometry token to rendered pixels.
+       *
+       * @param {CSSStyleDeclaration} style Computed layout-root styles.
+       * @param {string} property Public custom-property name.
+       * @returns {number} Token value in CSS pixels.
+       */
+      const tokenPixels = (style, property) =>
+        Number.parseFloat(style.getPropertyValue(property)) *
+        Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+      for (const [recipeName, areas] of Object.entries(recipeAreas)) {
+        const recipe = document.createElement("section");
+        recipe.dataset.lyRecipe = recipeName;
+
+        for (const areaName of areas) {
+          const region = document.createElement("article");
+          region.dataset.lyArea = areaName;
+          const label = document.createElement("strong");
+          label.textContent = `${areaName} operational workspace`;
+          const copy = document.createElement("p");
+          copy.textContent =
+            "Ordinary multi-word content must retain a practical reading and interaction width.";
+          region.append(label, copy);
+          recipe.append(region);
+        }
+
+        wrapper.replaceChildren(recipe);
+        const rootStyle = getComputedStyle(wrapper);
+        const areaWidths = Object.fromEntries(
+          areas.map((areaName) => [
+            areaName,
+            recipe.querySelector(`[data-ly-area="${areaName}"]`).getBoundingClientRect().width
+          ])
+        );
+        measurements[recipeName] = {
+          areaWidths,
+          mainFloor: tokenPixels(rootStyle, "--ly-recipe-main-min"),
+          paneFloor: tokenPixels(rootStyle, "--ly-pane-min"),
+          splitFloor: tokenPixels(rootStyle, "--ly-split-min")
+        };
+
+        if (recipeName === "app-shell") {
+          const scroll = document.createElement("div");
+          scroll.className = "ly-scroll";
+          scroll.style.inlineSize = "18rem";
+          scroll.style.blockSize = "8rem";
+          const oversizedContent = document.createElement("div");
+          oversizedContent.style.inlineSize = "64rem";
+          oversizedContent.style.blockSize = "24rem";
+          oversizedContent.textContent =
+            "https://example.test/a-legitimate-wide-technical-resource-that-must-remain-accessible";
+          scroll.append(oversizedContent);
+          recipe.querySelector('[data-ly-area="main"]').append(scroll);
+          scroll.scrollLeft = 80;
+          scroll.scrollTop = 80;
+          scrollMetrics = {
+            horizontalOverflow: scroll.scrollWidth - scroll.clientWidth,
+            verticalOverflow: scroll.scrollHeight - scroll.clientHeight,
+            scrollLeft: scroll.scrollLeft,
+            scrollTop: scroll.scrollTop,
+            overflowX: getComputedStyle(scroll).overflowX,
+            overflowY: getComputedStyle(scroll).overflowY
+          };
+        }
+      }
+
+      return { measurements, scrollMetrics };
+    });
+
+    for (const recipeName of ["app-shell", "dashboard", "docs"]) {
+      const measurement = result.measurements[recipeName];
+      assert(
+        measurement.areaWidths.main + 1 >= measurement.mainFloor,
+        `${ecosystem} ${recipeName} main width ${measurement.areaWidths.main}px did not meet ${measurement.mainFloor}px.`
+      );
+    }
+    for (const areaName of ["primary", "secondary"]) {
+      const measurement = result.measurements["list-detail"];
+      assert(
+        measurement.areaWidths[areaName] + 1 >= measurement.paneFloor,
+        `${ecosystem} List Detail ${areaName} did not meet its pane floor.`
+      );
+    }
+    for (const areaName of ["content", "media"]) {
+      const measurement = result.measurements["split-hero"];
+      assert(
+        measurement.areaWidths[areaName] + 1 >= measurement.splitFloor,
+        `${ecosystem} Split Hero ${areaName} did not meet its split floor.`
+      );
+    }
+    assert(
+      result.scrollMetrics.horizontalOverflow > 0,
+      `${ecosystem} Scroll lacked inline overflow.`
+    );
+    assert(
+      result.scrollMetrics.verticalOverflow > 0,
+      `${ecosystem} Scroll lacked block overflow.`
+    );
+    assert(result.scrollMetrics.scrollLeft > 0, `${ecosystem} Scroll could not move inline.`);
+    assert(
+      result.scrollMetrics.scrollTop > 0,
+      `${ecosystem} Scroll could not move in block flow.`
+    );
+    assert.equal(result.scrollMetrics.overflowX, "auto");
+    assert.equal(result.scrollMetrics.overflowY, "auto");
+  }
+};
+
 const installExternalFixtures = async (page) => {
   await page.route("https://unpkg.com/**", async (route) => {
     const url = route.request().url();
@@ -1404,6 +1544,9 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
             primitiveName === "scroll"
               ? `Bounded vertical item ${index + 1}`
               : `Shrink-safe item ${index + 1}`;
+          if (primitiveName === "scroll" && index === 0) {
+            item.style.inlineSize = "120rem";
+          }
           if (primitiveName === "sidebar") {
             item.dataset.lySidebar = index === 0 ? "side" : "content";
           }
@@ -1414,12 +1557,18 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
         }
 
         wrapper.replaceChildren(fixture);
+        if (primitiveName === "scroll") {
+          fixture.scrollLeft = 80;
+          fixture.scrollTop = 80;
+        }
         const style = getComputedStyle(fixture);
         return {
           documentOverflow:
             document.documentElement.scrollWidth - document.documentElement.clientWidth,
           horizontal: fixture.scrollWidth - fixture.clientWidth,
           vertical: fixture.scrollHeight - fixture.clientHeight,
+          scrollLeft: fixture.scrollLeft,
+          scrollTop: fixture.scrollTop,
           overflowX: style.overflowX,
           overflowY: style.overflowY
         };
@@ -1428,16 +1577,17 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
       assert(result.documentOverflow <= 2, `${primitive} overflowed the ${width}px document.`);
       if (primitive === "reel") {
         assert(result.horizontal > 2 && result.overflowX === "auto", "Reel must scroll internally.");
+      } else if (primitive === "scroll") {
+        assert(result.horizontal > 2, "Scroll must retain legitimate inline overflow.");
       } else {
         assert(result.horizontal <= 2, `${primitive} introduced horizontal scrolling.`);
       }
 
       if (primitive === "scroll") {
         assert(result.vertical > 2 && result.overflowY === "auto", "Scroll must be vertically bounded.");
-        assert(
-          !["auto", "scroll", "visible"].includes(result.overflowX),
-          `The bounded vertical scroll primitive exposed inline overflow as ${result.overflowX}.`
-        );
+        assert.equal(result.overflowX, "auto", "Scroll must expose inline overflow.");
+        assert(result.scrollLeft > 0, "Scroll must permit inline movement.");
+        assert(result.scrollTop > 0, "Scroll must permit block movement.");
       } else {
         assert(
           !(result.vertical > 2 && ["auto", "scroll"].includes(result.overflowY)),
@@ -1512,6 +1662,7 @@ try {
   await verifyWorkspaceMeasure(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
+  await verifyContentResilience(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
   await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);

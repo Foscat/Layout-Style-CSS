@@ -12,7 +12,7 @@
       "main main sidebar"
       "aside footer footer";
     --ly-app-shell-wide-columns:
-      minmax(0, 1.25fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1.25fr)
       minmax(0, 0.75fr)
       minmax(min(100%, var(--ly-recipe-rail)), 0.32fr);
   }

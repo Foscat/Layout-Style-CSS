@@ -175,8 +175,7 @@
 
   .ly-scroll {
     min-block-size: 0;
-    overflow-x: clip;
-    overflow-y: auto;
+    overflow: auto;
     overscroll-behavior-block: contain;
   }
 

@@ -333,9 +333,13 @@ assert(
   "Bounded and viewport-relative Scroll need separate public maxima."
 );
 assert(
-  /\.ly-scroll\s*\{[^}]*overflow-y:\s*auto/s.test(primitives) &&
+  /\.ly-scroll\s*\{[^}]*overflow:\s*auto/s.test(primitives) &&
     !/\.ly-scroll\s*\{[^}]*max-block-size:/s.test(primitives),
-  "Base Scroll must not impose a height cap."
+  "Base Scroll must expose legitimate overflow on both axes without imposing a height cap."
+);
+assert(
+  !/\.ly-scroll\s*\{[^}]*overflow-x:\s*clip/s.test(primitives),
+  "Base Scroll must not silently clip inline overflow."
 );
 assert(
   /\.ly-scroll--bounded\s*\{[^}]*max-block-size:\s*var\(--ly-scroll-max\)/s.test(
@@ -351,6 +355,62 @@ assert(
     /--ly-split-secondary:\s*1fr/.test(foundation),
   "Every nested layout root must reset optional personality split ratios"
 );
+assert(
+  /--ly-recipe-main-min:\s*20rem/.test(foundation),
+  "Automatic application recipes need a public 20rem usable main-track floor."
+);
+for (const property of [
+  "--ly-app-shell-medium-columns",
+  "--ly-app-shell-wide-columns",
+  "--ly-dashboard-medium-columns",
+  "--ly-dashboard-wide-columns",
+  "--ly-docs-wide-columns"
+]) {
+  assert(
+    new RegExp(
+      `${property}:\\s*[\\s\\S]*?minmax\\(min\\(100%,\\s*var\\(--ly-recipe-main-min\\)\\)`
+    ).test(foundation),
+    `${property} must guard primary content with --ly-recipe-main-min.`
+  );
+}
+assert(
+  /--ly-list-detail-wide-columns:\s*[\s\S]*?var\(--ly-pane-min\)[\s\S]*?var\(--ly-pane-min\)/.test(
+    foundation
+  ),
+  "List Detail must guard both content tracks with --ly-pane-min."
+);
+assert(
+  /--ly-split-hero-wide-columns:\s*[\s\S]*?var\(--ly-split-min\)[\s\S]*?var\(--ly-split-min\)/.test(
+    foundation
+  ),
+  "Split Hero must guard both content tracks with --ly-split-min."
+);
+for (const name of personalityNames) {
+  const css = readStyle(`personalities/${name}.css`);
+  const appShellColumns = css.match(/--ly-app-shell-wide-columns:\s*([^;]+);/s)?.[1];
+  const listDetailColumns = css.match(/--ly-list-detail-wide-columns:\s*([^;]+);/s)?.[1];
+  const splitHeroColumns = css.match(/--ly-split-hero-wide-columns:\s*([^;]+);/s)?.[1];
+  if (appShellColumns) {
+    assert(
+      appShellColumns.includes("var(--ly-recipe-main-min)"),
+      `${name} App Shell must guard its primary application track.`
+    );
+  }
+  if (listDetailColumns) {
+    assert.equal(
+      (listDetailColumns.match(/var\(--ly-pane-min\)/g) ?? []).length,
+      2,
+      `${name} List Detail must guard both pane tracks.`
+    );
+  }
+  if (splitHeroColumns) {
+    assert.equal(
+      (splitHeroColumns.match(/var\(--ly-split-min\)/g) ?? []).length,
+      2,
+      `${name} Split Hero must guard both content tracks.`
+    );
+  }
+}
 
 for (const recipe of recipeNames) {
   assert(
