@@ -126,6 +126,33 @@
     min-block-size: 0;
   }
 
+  .ly-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+    min-inline-size: 0;
+    padding-block-end: var(--ly-safe-area-block-end);
+  }
+
+  .ly-action-bar > :where([data-ly-actions="start"], [data-ly-actions="end"]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+    min-inline-size: 0;
+  }
+
+  .ly-action-bar > [data-ly-actions="end"] {
+    margin-inline-start: auto;
+  }
+
+  .ly-action-bar--sticky {
+    position: var(--ly-sticky-position, sticky);
+    inset-block-end: 0;
+    z-index: var(--ly-z-header, 20);
+  }
+
   .ly-split {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-split-min)), 1fr));

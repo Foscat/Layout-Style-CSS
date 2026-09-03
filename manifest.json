@@ -24,7 +24,7 @@
     "deprecated": []
   },
   "wrappers": ["compact", "prose", "content", "workspace", "wide", "full", "breakout"],
-  "primitives": ["page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster", "center", "cover", "switcher", "sidebar", "grid", "mosaic", "split", "panes", "media", "reel", "frame", "scroll"],
+  "primitives": ["page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster", "center", "cover", "switcher", "sidebar", "grid", "mosaic", "action-bar", "split", "panes", "media", "reel", "frame", "scroll"],
   "recipes": ["app-shell", "dashboard", "docs", "list-detail", "split-hero", "gallery", "card-grid"],
   "areas": ["header", "nav", "sidebar", "main", "aside", "footer", "content", "media", "actions", "primary", "secondary"],
   "personalities": ["minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism", "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass", "f-pattern", "z-pattern", "split-screen", "mondrian", "synthwave"],

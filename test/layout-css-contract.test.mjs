@@ -309,6 +309,7 @@ for (const primitive of [
   "sidebar",
   "grid",
   "mosaic",
+  "action-bar",
   "split",
   "panes",
   "media",
@@ -327,6 +328,24 @@ assert.deepEqual(
 assert(
   !/grid-auto-flow:\s*dense/.test(primitives),
   "Mosaic must preserve DOM reading and focus order."
+);
+assert(
+  /\.ly-action-bar\s*\{[^}]*display:\s*flex[^}]*flex-wrap:\s*wrap[^}]*gap:\s*var\(--ly-cluster-gap\)[^}]*padding-block-end:\s*var\(--ly-safe-area-block-end\)/s.test(
+    primitives
+  ),
+  "Action Bar must be a wrapping, safe-area-aware structural cluster."
+);
+assert(
+  /\.ly-action-bar\s*>\s*\[data-ly-actions="end"\]\s*\{[^}]*margin-inline-start:\s*auto/s.test(
+    primitives
+  ),
+  "Action Bar end actions must align through logical margin."
+);
+assert(
+  /\.ly-action-bar--sticky\s*\{[^}]*position:\s*var\(--ly-sticky-position,\s*sticky\)/s.test(
+    primitives
+  ),
+  "Sticky Action Bar must honor the shallow-height position token."
 );
 assert(
   /--ly-cover-min:\s*100vh/.test(foundation) &&

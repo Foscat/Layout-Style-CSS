@@ -646,6 +646,93 @@ const verifyMosaicComposition = async (page, baseUrl) => {
   assert.equal(ownership.nestedTracks, 1, "Nested Mosaic must use its nearest layout scope.");
 };
 
+/**
+ * Verifies Action Bar alignment, intrinsic wrapping, focus order, safe-area
+ * padding, and shallow-height sticky fallback.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyActionBarComposition = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  await setCustomAllocation(page, "53rem");
+
+  const wide = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    wrapper.style.setProperty("--ly-safe-area-block-end", "12px");
+    const actionBar = document.createElement("div");
+    actionBar.className = "ly-action-bar ly-action-bar--sticky";
+
+    for (const groupName of ["start", "end"]) {
+      const group = document.createElement("div");
+      group.dataset.lyActions = groupName;
+      const action = document.createElement("button");
+      action.type = "button";
+      action.dataset.actionFocus = groupName;
+      action.textContent = groupName === "start" ? "Cancel workflow" : "Publish changes";
+      group.append(action);
+      actionBar.append(group);
+    }
+
+    wrapper.replaceChildren(actionBar);
+    const [start, end] = actionBar.children;
+    const barRect = actionBar.getBoundingClientRect();
+    const startRect = start.getBoundingClientRect();
+    const endRect = end.getBoundingClientRect();
+    const style = getComputedStyle(actionBar);
+    return {
+      sameRow: Math.abs(startRect.top - endRect.top) <= 1,
+      logicalEndGap: Math.abs(barRect.right - endRect.right),
+      paddingBlockEnd: style.paddingBlockEnd,
+      position: style.position,
+      domOrder: [...actionBar.querySelectorAll("button")].map(
+        (button) => button.dataset.actionFocus
+      )
+    };
+  });
+
+  assert(wide.sameRow, "Action groups must share a row when allocation permits.");
+  assert(wide.logicalEndGap <= 1, "End actions must reach logical inline-end.");
+  assert.equal(wide.paddingBlockEnd, "12px", "Action Bar must honor safe-area padding.");
+  assert.equal(wide.position, "sticky", "Regular-height Action Bar must remain sticky.");
+  assert.deepEqual(wide.domOrder, ["start", "end"]);
+
+  const narrow = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    const actionBar = wrapper.querySelector(".ly-action-bar");
+    wrapper.style.inlineSize = "20rem";
+    for (const group of actionBar.children) group.style.inlineSize = "12rem";
+    const [start, end] = actionBar.children;
+    return {
+      wrapped: end.getBoundingClientRect().top > start.getBoundingClientRect().top + 1,
+      domOrder: [...actionBar.querySelectorAll("button")].map(
+        (button) => button.dataset.actionFocus
+      ),
+      orderValues: [...actionBar.children].map((group) => getComputedStyle(group).order)
+    };
+  });
+
+  assert(narrow.wrapped, "Action groups must wrap when their intrinsic widths no longer fit.");
+  assert.deepEqual(narrow.domOrder, ["start", "end"], "Action Bar must retain DOM focus order.");
+  assert.deepEqual(narrow.orderValues, ["0", "0"], "Action Bar must not visually reorder groups.");
+
+  await page.setViewportSize({ width: 800, height: 464 });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  const shallowPosition = await page.locator("#previewWrapper").evaluate((wrapper) => {
+    const actionBar = document.createElement("div");
+    actionBar.className = "ly-action-bar ly-action-bar--sticky";
+    wrapper.replaceChildren(actionBar);
+    return getComputedStyle(actionBar).position;
+  });
+  assert.equal(shallowPosition, "static", "Shallow-height Action Bar must disable stickiness.");
+};
+
 const installExternalFixtures = async (page) => {
   await page.route("https://unpkg.com/**", async (route) => {
     const url = route.request().url();
@@ -1779,6 +1866,7 @@ try {
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
   await verifyContentResilience(page, server.baseUrl);
   await verifyMosaicComposition(page, server.baseUrl);
+  await verifyActionBarComposition(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
   await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);

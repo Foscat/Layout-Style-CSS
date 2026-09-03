@@ -226,8 +226,8 @@ test("ecosystem manifest describes real structural selectors, thresholds, and to
   ]);
   assert.deepEqual(manifest.primitives, [
     "page", "header", "footer", "main", "section", "surface", "readable", "stack", "cluster",
-    "center", "cover", "switcher", "sidebar", "grid", "mosaic", "split", "panes", "media",
-    "reel", "frame", "scroll"
+    "center", "cover", "switcher", "sidebar", "grid", "mosaic", "action-bar", "split",
+    "panes", "media", "reel", "frame", "scroll"
   ]);
   assert.deepEqual(manifest.recipes, [
     "app-shell", "dashboard", "docs", "list-detail", "split-hero", "gallery", "card-grid"
