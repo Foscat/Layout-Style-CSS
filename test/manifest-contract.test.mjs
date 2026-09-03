@@ -45,6 +45,40 @@ const entrypointExports = {
   personalityMetadata: "./personalities.json"
 };
 const personalities = manifest.personalities;
+const expectedPersonalities = [
+  "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
+  "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass", "f-pattern",
+  "z-pattern", "split-screen", "mondrian", "synthwave", "technical-blueprint",
+  "data-terminal", "industrial-hmi", "editorial"
+];
+const expectedVisualPresets = [
+  "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
+  "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass", "editorial-luxe",
+  "organic-modern", "industrial-utility", "technical-blueprint", "art-deco", "clay",
+  "data-terminal", "paper-editorial", "neo-noir"
+];
+const expectedPairingContract = [
+  ["minimal-saas", "native", ["minimal-saas"], ["organic-modern"]],
+  ["bento", "native", ["bento"], []],
+  ["maximalist", "native", ["maximalist"], []],
+  ["bauhaus", "native", ["bauhaus"], ["art-deco"]],
+  ["tactile", "native", ["tactile"], ["clay"]],
+  ["neumorphism", "native", ["neumorphism"], []],
+  ["retrofuturism", "native", ["retrofuturism"], []],
+  ["brutalism", "native", ["brutalism"], []],
+  ["cyberpunk", "native", ["cyberpunk"], []],
+  ["y2k", "native", ["y2k"], []],
+  ["retro-glass", "native", ["retro-glass"], []],
+  ["f-pattern", "any", [], []],
+  ["z-pattern", "any", [], []],
+  ["split-screen", "any", [], []],
+  ["mondrian", "any", [], []],
+  ["synthwave", "recommended", ["cyberpunk", "retrofuturism"], []],
+  ["technical-blueprint", "native", ["technical-blueprint"], []],
+  ["data-terminal", "native", ["data-terminal"], ["neo-noir"]],
+  ["industrial-hmi", "recommended", ["industrial-utility"], []],
+  ["editorial", "recommended", ["editorial-luxe", "paper-editorial"], []]
+];
 // These are stable consumer overrides; wrapper calculation variables remain implementation details below.
 const geometryTokens = [
   "--ly-space-0", "--ly-space-1", "--ly-space-2", "--ly-space-3", "--ly-space-4",
@@ -169,11 +203,30 @@ test("public personality pairings inventory every exported layout profile withou
   );
   assert.deepEqual(personalityMetadata.personalities, manifest.personalityPairings);
   assert.deepEqual(personalityMetadata.personalities.map(({ id }) => id), personalities);
+  assert.deepEqual(personalities, expectedPersonalities);
+  assert(
+    personalityMetadata.personalities.every(({ compatibleVisualPresets }) =>
+      Array.isArray(compatibleVisualPresets)
+    ),
+    "Every personality pairing must expose additive compatibleVisualPresets metadata."
+  );
+  assert.deepEqual(
+    personalityMetadata.personalities.map(
+      ({ id, visualCompatibility, recommendedVisualPresets, compatibleVisualPresets }) => [
+        id,
+        visualCompatibility,
+        recommendedVisualPresets,
+        compatibleVisualPresets
+      ]
+    ),
+    expectedPairingContract
+  );
 
   const pairings = new Map(personalityMetadata.personalities.map((pairing) => [pairing.id, pairing]));
   for (const id of [
     "minimal-saas", "bento", "maximalist", "bauhaus", "tactile", "neumorphism",
-    "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass"
+    "retrofuturism", "brutalism", "cyberpunk", "y2k", "retro-glass",
+    "technical-blueprint", "data-terminal"
   ]) {
     assert.equal(pairings.get(id)?.visualCompatibility, "native", `${id} needs its verified native visual match.`);
     assert.deepEqual(pairings.get(id)?.recommendedVisualPresets, [id]);
@@ -189,6 +242,33 @@ test("public personality pairings inventory every exported layout profile withou
     cyberpunk: { boxShadow: "0px 0px 18px" },
     retrofuturism: { boxShadow: "0px 10px 30px" }
   });
+  assert.deepEqual(pairings.get("minimal-saas")?.compatibleVisualPresets, ["organic-modern"]);
+  assert.deepEqual(pairings.get("bauhaus")?.compatibleVisualPresets, ["art-deco"]);
+  assert.deepEqual(pairings.get("tactile")?.compatibleVisualPresets, ["clay"]);
+  assert.deepEqual(pairings.get("data-terminal")?.compatibleVisualPresets, ["neo-noir"]);
+  assert.equal(pairings.get("industrial-hmi")?.visualCompatibility, "recommended");
+  assert.deepEqual(pairings.get("industrial-hmi")?.recommendedVisualPresets, ["industrial-utility"]);
+  assert.equal(pairings.get("editorial")?.visualCompatibility, "recommended");
+  assert.deepEqual(pairings.get("editorial")?.recommendedVisualPresets, ["editorial-luxe", "paper-editorial"]);
+
+  const coveredVisualPresets = new Set(
+    personalityMetadata.personalities.flatMap(
+      ({ recommendedVisualPresets, compatibleVisualPresets }) => [
+        ...recommendedVisualPresets,
+        ...compatibleVisualPresets
+      ]
+    )
+  );
+  assert.deepEqual([...coveredVisualPresets].sort(), [...expectedVisualPresets].sort());
+});
+
+test("authored personality imports match the canonical manifest inventory exactly", () => {
+  const personalitiesCss = readFileSync(join(root, "styles", "personalities.css"), "utf8");
+  const importedPersonalities = [
+    ...personalitiesCss.matchAll(/@import\s+url\(["']\.\/personalities\/([a-z0-9-]+)\.css["']\);/g)
+  ].map(([, id]) => id);
+
+  assert.deepEqual(importedPersonalities, expectedPersonalities);
 });
 
 test("build regenerates public pairing metadata from manifest records", () => {
@@ -208,6 +288,10 @@ test("build regenerates public pairing metadata from manifest records", () => {
 
     assert.equal(rebuiltMetadata.generatedFrom, "manifest.json");
     assert.deepEqual(rebuiltMetadata.personalities, manifest.personalityPairings);
+    assert.deepEqual(
+      rebuiltMetadata.personalities.map(({ compatibleVisualPresets }) => compatibleVisualPresets),
+      manifest.personalityPairings.map(({ compatibleVisualPresets }) => compatibleVisualPresets)
+    );
     assert.match(fallbackScript, /Generated from manifest\.json by scripts\/build\.mjs/);
     assert.ok(fallbackMatch, "The generated demo fallback must embed public pairing metadata.");
     assert.deepEqual(JSON.parse(fallbackMatch[1]), rebuiltMetadata);

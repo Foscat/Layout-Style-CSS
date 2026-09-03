@@ -79,10 +79,9 @@ const personalityNames = personalityMetadata.personalities.map(({ id }) => id);
 const manifestPersonalityFiles = personalityNames.map((name) => `personalities/${name}.css`);
 const personalitiesEntry = await readFile(join(sourceDir, "personalities.css"), "utf8");
 const personalityFiles = readPersonalityImports(personalitiesEntry);
-const missingManifestModules = manifestPersonalityFiles.filter((file) => !personalityFiles.includes(file));
 
-if (missingManifestModules.length > 0) {
-  throw new Error(`styles/personalities.css is missing manifest modules: ${missingManifestModules.join(", ")}`);
+if (JSON.stringify(personalityFiles) !== JSON.stringify(manifestPersonalityFiles)) {
+  throw new Error("styles/personalities.css imports must match manifest personality order exactly.");
 }
 const authoredEntryFiles = [
   "core.css",
