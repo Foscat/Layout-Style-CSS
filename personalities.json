@@ -157,10 +157,10 @@
         "test": "test/demo-smoke.test.mjs",
         "computedProperties": {
           "cyberpunk": {
-            "boxShadow": "0px 0px 18px"
+            "boxShadow": "0px 0px 12px"
           },
           "retrofuturism": {
-            "boxShadow": "0px 10px 30px"
+            "boxShadow": "0px 2.88px 6.72px"
           }
         },
         "assertion": "A visible browser contract fixture renders each preset's distinct article box-shadow while data-ly-layout remains synthwave."

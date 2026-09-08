@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,6 +9,7 @@ const rootDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
 );
+const stagedFixturePrefix = "layout-release-fixture-stage-";
 
 export function readFixtureDescriptor(repositoryRoot) {
   const descriptor = JSON.parse(
@@ -126,6 +128,137 @@ export function validateRepositoryWorkflows(repositoryRoot) {
 }
 
 /**
+ * Stages an immutable UI fixture with only the active candidate version updated.
+ *
+ * The reviewed UI checkout remains untouched. The copied fixture lets an
+ * unpublished Layout release candidate become the documented current package for
+ * the isolated ecosystem preflight run while preserving the fixture scripts and
+ * installed tooling needed by that run.
+ *
+ * @param {string} fixtureRoot Absolute or relative UI fixture checkout path.
+ * @param {object} options Candidate release information.
+ * @param {string} options.candidatePackage Package name under verification.
+ * @param {string} options.candidateVersion Candidate package version.
+ * @returns {{ fixtureRoot: string, cleanup: () => void }} Staged fixture root and cleanup callback.
+ */
+export function stageFixtureForCandidate(
+  fixtureRoot,
+  { candidatePackage, candidateVersion },
+) {
+  assert.ok(candidatePackage, "Candidate package is required.");
+  assert.ok(candidateVersion, "Candidate version is required.");
+
+  const resolvedFixtureRoot = path.resolve(fixtureRoot);
+  const sourceContract = JSON.parse(
+    fs.readFileSync(
+      path.join(resolvedFixtureRoot, "ecosystem-compatibility.json"),
+      "utf8",
+    ),
+  );
+  const currentCombinations = sourceContract.supportedCombinations?.current;
+  assert.ok(
+    currentCombinations &&
+      Object.hasOwn(currentCombinations, candidatePackage),
+    `Compatibility contract must define a current ${candidatePackage} version.`,
+  );
+
+  if (currentCombinations[candidatePackage] === candidateVersion) {
+    return {
+      fixtureRoot: resolvedFixtureRoot,
+      cleanup() {},
+    };
+  }
+
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), stagedFixturePrefix));
+  const stagedRoot = path.join(tempRoot, path.basename(resolvedFixtureRoot));
+  try {
+    fs.cpSync(resolvedFixtureRoot, stagedRoot, {
+      recursive: true,
+      filter: (source) =>
+        shouldCopyFixturePath(resolvedFixtureRoot, source),
+    });
+    currentCombinations[candidatePackage] = candidateVersion;
+    fs.writeFileSync(
+      path.join(stagedRoot, "ecosystem-compatibility.json"),
+      `${JSON.stringify(sourceContract, null, 2)}\n`,
+    );
+  } catch (error) {
+    removeStagedFixtureRoot(tempRoot);
+    throw error;
+  }
+
+  return {
+    fixtureRoot: stagedRoot,
+    cleanup() {
+      removeStagedFixtureRoot(tempRoot);
+    },
+  };
+}
+
+/**
+ * Resolves the exact published package spec documented by a fixture contract.
+ *
+ * @param {string} fixtureRoot Absolute or relative UI fixture root.
+ * @param {string} packageName Ecosystem package name.
+ * @returns {string} Exact npm package specifier, such as `ui-style-kit-css@2.4.0`.
+ */
+export function resolveFixturePackageSpec(fixtureRoot, packageName) {
+  assert.ok(packageName, "Package name is required.");
+
+  const contract = JSON.parse(
+    fs.readFileSync(
+      path.join(path.resolve(fixtureRoot), "ecosystem-compatibility.json"),
+      "utf8",
+    ),
+  );
+  const version = contract.supportedCombinations?.current?.[packageName];
+  assert.ok(
+    version,
+    `Compatibility contract must define a current ${packageName} version.`,
+  );
+  return `${packageName}@${version}`;
+}
+
+/**
+ * Forces the staged UI checker to consume the published UI package for current checks.
+ *
+ * This avoids running the UI package's own release tests against the temporary
+ * Layout candidate contract while leaving the minimum matrix under the fixture's
+ * normal published-minimum package selection.
+ *
+ * @param {string} fixtureRoot Staged UI fixture root.
+ * @param {string} uiPackageSpec Exact UI package specifier.
+ * @returns {void}
+ */
+export function applyCurrentMatrixUiSpec(fixtureRoot, uiPackageSpec) {
+  assert.match(
+    uiPackageSpec,
+    /^@?[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)?@[0-9A-Za-z_.-]+$/,
+    "UI package spec must be an exact npm specifier.",
+  );
+
+  const preflightPath = path.join(
+    path.resolve(fixtureRoot),
+    "scripts",
+    "release-preflight.mjs",
+  );
+  const source = fs.readFileSync(preflightPath, "utf8");
+  const currentMatrixDeclaration =
+    "const currentArgs = [checkerPath, '--matrix', 'current', `--${candidateKey}-spec`, tarball];";
+  assert.ok(
+    source.includes(currentMatrixDeclaration),
+    "Staged UI preflight must expose the reviewed current matrix declaration.",
+  );
+  fs.writeFileSync(
+    preflightPath,
+    source.replace(
+      currentMatrixDeclaration,
+      `const currentArgs = [checkerPath, '--matrix', 'current', '--ui-spec', '${uiPackageSpec}', \`--\${candidateKey}-spec\`, tarball];`,
+    ),
+  );
+}
+
+/**
  * Resolves the reviewed Interactive Surface checkout used by local ecosystem
  * verification while retaining the sibling-repository default used in CI.
  *
@@ -167,27 +300,51 @@ async function runCli(args) {
   );
   assertReviewedRevision(resolvedFixtureRoot, descriptor.revision);
 
-  const packageName = JSON.parse(
+  const packageManifest = JSON.parse(
     fs.readFileSync(path.join(rootDir, "package.json"), "utf8"),
-  ).name;
+  );
+  const packageName = packageManifest.name;
+  const stagedFixture = stageFixtureForCandidate(resolvedFixtureRoot, {
+    candidatePackage: packageName,
+    candidateVersion: packageManifest.version,
+  });
+  if (stagedFixture.fixtureRoot !== resolvedFixtureRoot) {
+    applyCurrentMatrixUiSpec(
+      stagedFixture.fixtureRoot,
+      resolveFixturePackageSpec(stagedFixture.fixtureRoot, "ui-style-kit-css"),
+    );
+  }
   const siblingInteractive = resolveInteractiveRoot(rootDir);
-  const commandArgs = [
-    preflightModule,
-    "--fixture-root",
-    resolvedFixtureRoot,
-    "--candidate-root",
-    rootDir,
-    "--candidate-package",
-    packageName,
-    "--interactive-repo",
-    siblingInteractive,
-    "--interactive-docs-repo",
-    siblingInteractive,
-    "--layout-docs-repo",
-    rootDir,
-    ...forwardedArgs,
-  ];
-  run(process.execPath, commandArgs, { cwd: rootDir });
+  try {
+    const stagedPreflightModule = path.join(
+      stagedFixture.fixtureRoot,
+      "scripts",
+      "release-preflight.mjs",
+    );
+    assert.ok(
+      fs.existsSync(stagedPreflightModule),
+      `Staged UI release fixture is missing ${stagedPreflightModule}.`,
+    );
+    const commandArgs = [
+      stagedPreflightModule,
+      "--fixture-root",
+      stagedFixture.fixtureRoot,
+      "--candidate-root",
+      rootDir,
+      "--candidate-package",
+      packageName,
+      "--interactive-repo",
+      siblingInteractive,
+      "--interactive-docs-repo",
+      siblingInteractive,
+      "--layout-docs-repo",
+      rootDir,
+      ...forwardedArgs,
+    ];
+    run(process.execPath, commandArgs, { cwd: rootDir });
+  } finally {
+    stagedFixture.cleanup();
+  }
 }
 
 function parseFixtureRoot(args) {
@@ -217,6 +374,35 @@ function assertReviewedRevision(fixtureRoot, revision) {
     0,
     `UI fixture checkout must contain reviewed revision ${revision}; got ${result.stderr || result.stdout || "unknown git error"}.`,
   );
+}
+
+function shouldCopyFixturePath(fixtureRoot, source) {
+  const relativePath = path.relative(fixtureRoot, source);
+  if (!relativePath) return true;
+
+  const firstSegment = relativePath.split(path.sep)[0];
+  if (
+    new Set([".git", ".tmp", "output", "test-results"]).has(firstSegment) ||
+    path.basename(source).toLowerCase() === "desktop.ini" ||
+    path.extname(source).toLowerCase() === ".tgz"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function removeStagedFixtureRoot(tempRoot) {
+  if (!fs.existsSync(tempRoot)) return;
+
+  const tempDirectory = fs.realpathSync(os.tmpdir());
+  const target = fs.realpathSync(tempRoot);
+  assert.ok(
+    target.startsWith(`${tempDirectory}${path.sep}`) &&
+      path.basename(target).startsWith(stagedFixturePrefix),
+    `Refusing to remove unexpected staged fixture directory: ${target}`,
+  );
+  fs.rmSync(target, { recursive: true, force: true });
 }
 
 function run(command, args, { cwd }) {

@@ -147,7 +147,7 @@ const topologyEdges = [
 ];
 
 const assertStaticDemoContract = () => {
-  assert.match(demoHtml, /Layout Style CSS v3\.2 Preview/);
+  assert.match(demoHtml, /Layout Style CSS v3\.2/);
   assert.match(demoHtml, /content="3\.2\.0"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
@@ -943,7 +943,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
   await page.waitForFunction(() => /\d+\s*×\s*\d+/.test(document.querySelector("#containerReadout")?.textContent));
 
-  assert.equal(await page.title(), "Layout Style CSS v3.2 Preview — Intrinsic Responsive Demo");
+  assert.equal(await page.title(), "Layout Style CSS v3.2 — Intrinsic Responsive Demo");
   await page.locator("main").waitFor();
   await page.locator("[data-ly-recipe]").waitFor();
   await page.locator("#topologyReadout").waitFor();
@@ -1093,8 +1093,8 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
 
   assert.deepEqual(synthwave?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
   assert.deepEqual(synthwave?.visualVerification?.computedProperties, {
-    cyberpunk: { boxShadow: "0px 0px 18px" },
-    retrofuturism: { boxShadow: "0px 10px 30px" }
+    cyberpunk: { boxShadow: "0px 0px 12px" },
+    retrofuturism: { boxShadow: "0px 2.88px 6.72px" }
   });
   for (const ui of synthwave.recommendedVisualPresets) {
     await page.goto(

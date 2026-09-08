@@ -4,7 +4,7 @@
 
 Approved architecture: additive `layout-style-css@3.2.0` release on top of v3.1.0. No v4 rewrite.
 
-This design consolidates the September 2026 layout-personality review against the current Layout Style CSS v3.1 engine and the published `ui-style-kit-css@2.3.0` preset inventory and the in-progress `ui-style-kit-css@2.4.0` correctness work.
+This design consolidates the September 2026 layout-personality review against the current Layout Style CSS v3.1 engine and the published `ui-style-kit-css@2.4.0` preset inventory.
 
 ## Goal
 
@@ -63,7 +63,7 @@ Personality geometry changes listed in this specification are intentional minor-
 - Runtime dependencies: zero
 - Companion range for UI Style Kit: keep `>=2.1.0 <3.0.0`
 - Companion range for Interactive Surface CSS: keep `>=1.5.0 <2.0.0`
-- Development may use published `ui-style-kit-css@2.3.0` for layout-only work; final all-three-library verification targets `ui-style-kit-css@2.4.0` after the registry confirms that version is published
+- Development used published `ui-style-kit-css@2.3.0` for layout-only work; final all-three-library verification targets the published `ui-style-kit-css@2.4.0` registry artifact.
 - Existing container thresholds remain valid: `42rem`, `44rem`, `48rem`, `52rem`, `72rem`
 - Existing viewport-height thresholds remain valid: `44rem`, `30rem`
 
@@ -381,7 +381,7 @@ The test must prove:
 
 ### Companion-library boundary
 
-The Layout Style CSS patch does not modify UI Style Kit source. Before final v3.2 ecosystem verification, the in-progress UI Style Kit 2.4.0 release must separately correct its broad `overflow-wrap: anywhere` policy and audit preset-specific `overflow: hidden` on general page/surface containers. Layout Style CSS must remain robust even when paired with older compatible UI Style Kit versions that still carry aggressive text wrapping.
+The Layout Style CSS patch does not modify UI Style Kit source. Final v3.2 ecosystem verification must use the published UI Style Kit 2.4.0 release that corrects its broad `overflow-wrap: anywhere` policy and audits preset-specific `overflow: hidden` on general page/surface containers. Layout Style CSS must remain robust even when paired with older compatible UI Style Kit versions that still carry aggressive text wrapping.
 
 ---
 
@@ -501,7 +501,7 @@ Generated `personalities.json` and the demo fallback must preserve the new field
 | industrial-hmi | recommended | `industrial-utility` | none |
 | editorial | recommended | `editorial-luxe`, `paper-editorial` | none |
 
-This mapping covers every preset published by `ui-style-kit-css@2.3.0` and carried into the in-progress 2.4.0 line without creating redundant layout IDs.
+This mapping covers every preset published by `ui-style-kit-css@2.4.0` without creating redundant layout IDs.
 
 The Layout Style CSS demo must display pairing guidance but must not force the UI selector to follow the selected layout. Layout, density, UI preset, theme, and mode remain independently selectable.
 
@@ -514,7 +514,7 @@ The existing Interactive Layout Lab remains the verification surface.
 Required v3.2 updates:
 
 1. Version all layout assets and metadata as `3.2.0`.
-2. Use published `ui-style-kit-css@2.3.0` during independent layout development; switch the final ecosystem fixture to `ui-style-kit-css@2.4.0` after registry publication is confirmed.
+2. Use published `ui-style-kit-css@2.3.0` during independent layout development; switch the final ecosystem fixture to published `ui-style-kit-css@2.4.0` for release verification.
 3. Update the packaged UI manifest fallback to the 20-preset UI Style Kit 2.3 inventory.
 4. Populate all 20 layout personalities from generated layout metadata.
 5. Display recommended and compatible UI pairing guidance for the selected personality.
@@ -781,7 +781,7 @@ Release flow:
 1. Start the implementation branch from protected `main` at the verified v3.1.0 release.
 2. Implement with focused TDD slices.
 3. Do not publish or tag from a partial implementation.
-4. Confirm `ui-style-kit-css@2.4.0` exists in the npm registry before final all-three-library ecosystem/demo verification; until then, run layout-only and published-2.3 compatibility checks without treating them as the final ecosystem gate.
+4. Confirm `ui-style-kit-css@2.4.0` exists in the npm registry before final all-three-library ecosystem/demo verification.
 5. Run the full repository check chain and three-browser rendered matrix.
 6. Run dependency audit, pack dry-run, publish dry-run, and existing release preflight.
 7. Verify exact staged scope and `git diff --check`.

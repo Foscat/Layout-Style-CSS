@@ -1,4 +1,4 @@
-const UI_STYLE_KIT_VERSION = "2.3.0";
+const UI_STYLE_KIT_VERSION = "2.4.0";
 const UI_STYLE_KIT_MANIFEST_URL = `https://unpkg.com/ui-style-kit-css@${UI_STYLE_KIT_VERSION}/manifest.json`;
 const PERSONALITY_METADATA_URL = document.querySelector("script[data-personalities-url]")?.dataset.personalitiesUrl;
 const UI_STYLE_KIT_MANIFEST_FALLBACK = Object.freeze({

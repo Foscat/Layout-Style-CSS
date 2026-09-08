@@ -2,6 +2,28 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [3.2.0] - 2026-09-08
+
+### Added
+
+- Added Mosaic and Action Bar compositions for responsive dashboards, task bars, and workflow surfaces that need stable DOM order and wrapping actions.
+- Added four specialized layout personalities: Technical Blueprint, Data Terminal, Industrial HMI, and Editorial.
+- Added the Layout Personality Reference and the 3.2 migration guide covering Mosaic, Action Bar, area-aware App Shell behavior, Scroll, and content resilience.
+
+### Changed
+
+- Made App Shell area-aware so absent direct-child side regions do not reserve empty tracks while complete shells preserve their approved topology.
+- Hardened layout content tracks and Scroll behavior so long labels, technical content, tables, and all-three-library fixtures remain usable with UI Style Kit 2.4.0.
+- Expanded personality pairing metadata with recommended and compatible visual presets for the complete 20-layout inventory.
+
+### Security
+
+- Updated the audited `fast-uri` override to the fixed 3.1.7 line while keeping runtime and peer dependencies empty.
+
+### Tests
+
+- Added focused and rendered coverage for Mosaic, Action Bar, area-aware shells, pairing metadata, generated artifacts, release documentation, Pages output, and the final UI Style Kit 2.4.0 ecosystem fixture.
+
 ## [3.1.0] - 2026-08-25
 
 ### Added

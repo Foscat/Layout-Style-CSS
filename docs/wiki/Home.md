@@ -1,6 +1,6 @@
 # Layout Style CSS v3
 
-`layout-style-css@3.1.0` is the current published package. The v3.2 implementation preview remains a dependency-free, CSS-only structural system for layouts that adapt to available width and height.
+`layout-style-css@3.2.0` is the current release candidate. It remains a dependency-free, CSS-only structural system for layouts that adapt to available width and height.
 
 ## Contract
 

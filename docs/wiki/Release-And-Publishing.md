@@ -1,6 +1,6 @@
 # Release And Publishing
 
-This guide describes the release gate for `layout-style-css@3.1.0`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
+This guide describes the release gate for `layout-style-css@3.2.0`. Running verification does not publish, tag, push, create a GitHub Release, or change the npm registry.
 
 ## Local Candidate Gate
 
@@ -23,20 +23,20 @@ The package's `prepublishOnly` script runs `npm run release:verify`, so a direct
 
 The immutable cross-repository pins require this exact remote sequence:
 
-1. Push a stable UI bootstrap ref containing `a44dd41bf3611aba0a20bddfd00eb37938ca884f`.
+1. Use the published UI Style Kit 2.4.0 fixture ref containing `835aa4474c49b7b766d3f5a923f023725bc14331`.
 2. Push and merge Interactive Surface CSS and Layout Style CSS with merge commits so their reviewed commit SHAs remain reachable.
 3. Update and verify the final UI companion pins against those merged companion commits.
 4. Push the final UI branch, rerun its ecosystem preflight, and merge UI with a merge commit.
 5. Do not squash, rebase, or delete the only remote refs until every pinned commit is reachable through merged ancestry.
 
-The bootstrap SHA is deliberately stable: companion workflows use it to load the reviewed preflight implementation before the final UI commit can reference the companion heads.
+The UI fixture SHA is deliberately stable: companion workflows use it to load the reviewed preflight implementation and final 2.4.0 package contract before Layout Style CSS is published.
 
 ## Candidate Inspection
 
 Confirm:
 
-- package version is `3.1.0`
-- intended tag would be `v3.1.0`
+- package version is `3.2.0`
+- intended tag would be `v3.2.0`
 - runtime and peer dependencies are empty
 - exact exports and tarball files match the v3 contract
 - generated CSS matches authored sources
@@ -50,7 +50,7 @@ Only after explicit approval:
 1. Commit the verified candidate.
 2. Push the intended branch.
 3. Merge through the repository's normal review policy.
-4. Create the exact `v3.1.0` tag from the protected release commit.
+4. Create the exact `v3.2.0` tag from the protected release commit.
 5. Publish the GitHub Release.
 6. Let the protected npm workflow verify the tag and publish with provenance.
 7. Confirm the GitHub Release, tag, and npm registry state independently.

@@ -171,7 +171,7 @@ function runtimeConsumedCustomProperties(css) {
 test("ecosystem manifest publishes the structural API and package export", () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.name, packageJson.name);
-  assert.equal(manifest.version, "3.1.0");
+  assert.equal(manifest.version, "3.2.0");
   assert.equal(manifest.version, packageJson.version);
   assert.equal(manifest.schemaPolicy.compatibility, "additive-within-major");
   assert.equal(
@@ -239,8 +239,8 @@ test("public personality pairings inventory every exported layout profile withou
   assert.equal(pairings.get("synthwave")?.visualCompatibility, "recommended");
   assert.equal(pairings.get("synthwave")?.visualVerification?.method, "rendered-computed-style");
   assert.deepEqual(pairings.get("synthwave")?.visualVerification?.computedProperties, {
-    cyberpunk: { boxShadow: "0px 0px 18px" },
-    retrofuturism: { boxShadow: "0px 10px 30px" }
+    cyberpunk: { boxShadow: "0px 0px 12px" },
+    retrofuturism: { boxShadow: "0px 2.88px 6.72px" }
   });
   assert.deepEqual(pairings.get("minimal-saas")?.compatibleVisualPresets, ["organic-modern"]);
   assert.deepEqual(pairings.get("bauhaus")?.compatibleVisualPresets, ["art-deco"]);
