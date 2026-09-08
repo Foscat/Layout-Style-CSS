@@ -51,6 +51,8 @@
     --ly-sidebar-content-min: 50%;
     --ly-grid-columns: 12;
     --ly-grid-min: 16rem;
+    --ly-mosaic-medium-columns: 6;
+    --ly-mosaic-wide-columns: 12;
     --ly-split-min: 20rem;
     --ly-pane-min: 18rem;
     --ly-pane-size: 22rem;
@@ -62,6 +64,7 @@
     --ly-split-primary: 1fr;
     --ly-split-secondary: 1fr;
 
+    --ly-recipe-main-min: 20rem;
     --ly-recipe-rail: 18rem;
     --ly-recipe-aside: 22rem;
     --ly-gallery-min: 12rem;
@@ -76,7 +79,7 @@
     --ly-app-shell-medium-rows: auto auto minmax(0, 1fr) auto;
     --ly-app-shell-medium-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr);
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
     --ly-app-shell-wide-areas:
       "sidebar header header"
       "sidebar main aside"
@@ -84,7 +87,7 @@
     --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto;
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
 
     --ly-dashboard-medium-areas:
@@ -93,7 +96,7 @@
       "main aside"
       "footer footer";
     --ly-dashboard-medium-columns:
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
     --ly-dashboard-wide-areas:
       "nav header header"
@@ -101,7 +104,7 @@
       "nav footer footer";
     --ly-dashboard-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
 
     --ly-docs-wide-areas:
@@ -111,19 +114,19 @@
       "footer footer";
     --ly-docs-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr);
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
     --ly-list-detail-wide-areas:
       "primary secondary"
       "actions actions";
     --ly-list-detail-wide-columns:
-      minmax(min(100%, var(--ly-pane-size)), 0.7fr)
-      minmax(0, 1fr);
+      minmax(min(100%, max(var(--ly-pane-min), var(--ly-pane-size))), 0.7fr)
+      minmax(min(100%, var(--ly-pane-min)), 1fr);
     --ly-split-hero-wide-areas:
       "content media"
       "actions media";
     --ly-split-hero-wide-columns:
-      minmax(0, var(--ly-split-primary, 1fr))
-      minmax(0, var(--ly-split-secondary, 1fr));
+      minmax(min(100%, var(--ly-split-min)), var(--ly-split-primary, 1fr))
+      minmax(min(100%, var(--ly-split-min)), var(--ly-split-secondary, 1fr));
 
     container-name: ly-scope;
     container-type: inline-size;

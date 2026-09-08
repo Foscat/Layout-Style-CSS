@@ -54,6 +54,8 @@
     --ly-sidebar-content-min: 50%;
     --ly-grid-columns: 12;
     --ly-grid-min: 16rem;
+    --ly-mosaic-medium-columns: 6;
+    --ly-mosaic-wide-columns: 12;
     --ly-split-min: 20rem;
     --ly-pane-min: 18rem;
     --ly-pane-size: 22rem;
@@ -65,6 +67,7 @@
     --ly-split-primary: 1fr;
     --ly-split-secondary: 1fr;
 
+    --ly-recipe-main-min: 20rem;
     --ly-recipe-rail: 18rem;
     --ly-recipe-aside: 22rem;
     --ly-gallery-min: 12rem;
@@ -79,7 +82,7 @@
     --ly-app-shell-medium-rows: auto auto minmax(0, 1fr) auto;
     --ly-app-shell-medium-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr);
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
     --ly-app-shell-wide-areas:
       "sidebar header header"
       "sidebar main aside"
@@ -87,7 +90,7 @@
     --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto;
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
 
     --ly-dashboard-medium-areas:
@@ -96,7 +99,7 @@
       "main aside"
       "footer footer";
     --ly-dashboard-medium-columns:
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
     --ly-dashboard-wide-areas:
       "nav header header"
@@ -104,7 +107,7 @@
       "nav footer footer";
     --ly-dashboard-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
 
     --ly-docs-wide-areas:
@@ -114,19 +117,19 @@
       "footer footer";
     --ly-docs-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), auto)
-      minmax(0, 1fr);
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
     --ly-list-detail-wide-areas:
       "primary secondary"
       "actions actions";
     --ly-list-detail-wide-columns:
-      minmax(min(100%, var(--ly-pane-size)), 0.7fr)
-      minmax(0, 1fr);
+      minmax(min(100%, max(var(--ly-pane-min), var(--ly-pane-size))), 0.7fr)
+      minmax(min(100%, var(--ly-pane-min)), 1fr);
     --ly-split-hero-wide-areas:
       "content media"
       "actions media";
     --ly-split-hero-wide-columns:
-      minmax(0, var(--ly-split-primary, 1fr))
-      minmax(0, var(--ly-split-secondary, 1fr));
+      minmax(min(100%, var(--ly-split-min)), var(--ly-split-primary, 1fr))
+      minmax(min(100%, var(--ly-split-min)), var(--ly-split-secondary, 1fr));
 
     container-name: ly-scope;
     container-type: inline-size;
@@ -558,6 +561,44 @@
     grid-template-columns: repeat(var(--ly-grid-columns), minmax(0, 1fr));
   }
 
+  .ly-mosaic {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ly-grid-gap);
+  }
+
+  .ly-mosaic > * {
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
+  .ly-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+    min-inline-size: 0;
+    padding-block-end: var(--ly-safe-area-block-end);
+  }
+
+  .ly-action-bar > :where([data-ly-actions="start"], [data-ly-actions="end"]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ly-cluster-gap);
+    min-inline-size: 0;
+  }
+
+  .ly-action-bar > [data-ly-actions="end"] {
+    margin-inline-start: auto;
+  }
+
+  .ly-action-bar--sticky {
+    position: var(--ly-sticky-position, sticky);
+    inset-block-end: 0;
+    z-index: var(--ly-z-header, 20);
+  }
+
   .ly-split {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ly-split-min)), 1fr));
@@ -618,8 +659,7 @@
 
   .ly-scroll {
     min-block-size: 0;
-    overflow-x: clip;
-    overflow-y: auto;
+    overflow: auto;
     overscroll-behavior-block: contain;
   }
 
@@ -629,6 +669,80 @@
 
   .ly-scroll--viewport {
     max-block-size: var(--ly-scroll-viewport-max);
+  }
+}
+
+/*
+  Mosaic span behavior lives in the final structural context layer so it can
+  deliberately override the general-purpose span utilities at automatic tiers.
+*/
+@layer ly.context {
+  .ly-mosaic:not([data-ly-responsive="manual"]) > :where(
+    .ly-span-1,
+    .ly-span-2,
+    .ly-span-3,
+    .ly-span-4,
+    .ly-span-6,
+    .ly-span-full
+  ) {
+    grid-column: 1 / -1;
+  }
+
+  .ly-mosaic:not([data-ly-responsive="manual"]) > :where(
+    .ly-row-span-2,
+    .ly-row-span-3
+  ) {
+    grid-row: auto;
+  }
+
+  @container ly-scope (min-width: 42rem) {
+    .ly-mosaic:not([data-ly-responsive="manual"]) {
+      grid-template-columns: repeat(
+        var(--ly-mosaic-medium-columns),
+        minmax(0, 1fr)
+      );
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-1 {
+      grid-column: span 1;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-2 {
+      grid-column: span 2;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-3 {
+      grid-column: span 3;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-4 {
+      grid-column: span 4;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-6 {
+      grid-column: span 6;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-span-full {
+      grid-column: 1 / -1;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-row-span-2 {
+      grid-row: span 2;
+    }
+
+    .ly-mosaic:not([data-ly-responsive="manual"]) > .ly-row-span-3 {
+      grid-row: span 3;
+    }
+  }
+
+  @container ly-scope (min-width: 72rem) {
+    .ly-mosaic:not([data-ly-responsive="manual"]) {
+      grid-template-columns: repeat(
+        var(--ly-mosaic-wide-columns),
+        minmax(0, 1fr)
+      );
+    }
   }
 }
 
@@ -827,6 +941,89 @@
       grid-template-columns: var(--ly-dashboard-wide-columns);
     }
   }
+
+  /*
+    Feature-detected presence rules remove absent side tracks without changing
+    the canonical area vocabulary or personality-owned both-side topologies.
+  */
+  @supports selector(:has(*)) {
+    @container ly-scope (min-width: 52rem) {
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):has(
+        > [data-ly-area="sidebar"]
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "header header"
+          "sidebar main"
+          "footer footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-rail)), auto)
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):has(> [data-ly-area="aside"]) {
+        grid-template-areas:
+          "header header"
+          "main aside"
+          "footer footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+          minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "header"
+          "main"
+          "footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto;
+      }
+    }
+
+    @container ly-scope (min-width: 72rem) {
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):has(
+        > [data-ly-area="sidebar"]
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "sidebar header"
+          "sidebar main"
+          "sidebar footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-rail)), auto)
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):has(> [data-ly-area="aside"]) {
+        grid-template-areas:
+          "header header"
+          "main aside"
+          "footer footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+          minmax(min(100%, var(--ly-recipe-aside)), 0.35fr);
+      }
+
+      [data-ly-recipe="app-shell"]:not([data-ly-responsive="manual"]):not(
+        :has(> [data-ly-area="sidebar"])
+      ):not(:has(> [data-ly-area="aside"])) {
+        grid-template-areas:
+          "header"
+          "main"
+          "footer";
+        grid-template-columns:
+          minmax(min(100%, var(--ly-recipe-main-min)), 1fr);
+      }
+    }
+  }
 }
 
 /* utilities.css */
@@ -844,7 +1041,10 @@
   .ly-span-2 { grid-column: span 2; }
   .ly-span-3 { grid-column: span 3; }
   .ly-span-4 { grid-column: span 4; }
+  .ly-span-6 { grid-column: span 6; }
   .ly-span-full { grid-column: 1 / -1; }
+  .ly-row-span-2 { grid-row: span 2; }
+  .ly-row-span-3 { grid-row: span 3; }
 
   .ly-gap-0 { gap: var(--ly-space-0); }
   .ly-gap-1 { gap: var(--ly-space-1); }
@@ -925,16 +1125,6 @@
     --ly-gallery-min: 11rem;
     --ly-recipe-rail: 14rem;
     --ly-recipe-aside: 18rem;
-    --ly-app-shell-wide-areas:
-      "header header header"
-      "sidebar main main"
-      "aside main main"
-      "footer footer footer";
-    --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
-    --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-rail)), 0.3fr)
-      minmax(0, 1fr)
-      minmax(0, 1fr);
   }
 }
 
@@ -942,21 +1132,12 @@
 @layer ly.personalities.maximalist {
   :where(.ly-root[data-ly-layout="maximalist"]) {
     --ly-personality-wrapper-max: 100%;
-    --ly-profile-gap: var(--ly-space-7);
+    --ly-profile-gap: var(--ly-space-3);
     --ly-grid-min: 10rem;
     --ly-card-grid-min: 13rem;
     --ly-gallery-min: 10rem;
     --ly-recipe-rail: 15rem;
     --ly-recipe-aside: 18rem;
-    --ly-app-shell-wide-areas:
-      "header header header header"
-      "main main sidebar aside"
-      "main main footer footer";
-    --ly-app-shell-wide-columns:
-      minmax(0, 1.4fr)
-      minmax(0, 0.6fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.32fr)
-      minmax(min(100%, var(--ly-recipe-aside)), 0.38fr);
   }
 }
 
@@ -964,42 +1145,26 @@
 @layer ly.personalities.bauhaus {
   :where(.ly-root[data-ly-layout="bauhaus"]) {
     --ly-personality-wrapper-max: 96rem;
-    --ly-profile-gap: var(--ly-space-6);
+    --ly-profile-gap: var(--ly-space-2);
     --ly-grid-min: 13rem;
     --ly-recipe-rail: 14rem;
     --ly-recipe-aside: 18rem;
-    --ly-app-shell-wide-areas:
-      "header header header header"
-      "sidebar main main aside"
-      "sidebar footer footer aside";
-    --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-rail)), 0.24fr)
-      minmax(0, 0.7fr)
-      minmax(0, 1.3fr)
-      minmax(min(100%, var(--ly-recipe-aside)), 0.3fr);
+    --ly-split-primary: 0.7fr;
+    --ly-split-secondary: 1.3fr;
   }
 }
 
 /* personalities/tactile.css */
 @layer ly.personalities.tactile {
   :where(.ly-root[data-ly-layout="tactile"]) {
-    --ly-personality-wrapper-max: 82rem;
+    --ly-personality-wrapper-max: 96rem;
     --ly-profile-gap: var(--ly-space-4);
     --ly-grid-min: 15rem;
     --ly-recipe-rail: 17rem;
     --ly-recipe-aside: 20rem;
-    --ly-app-shell-wide-areas:
-      "header header"
-      "sidebar main"
-      "aside main"
-      "footer footer";
-    --ly-app-shell-wide-rows: auto auto minmax(0, 1fr) auto;
-    --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-rail)), 0.28fr)
-      minmax(0, 1fr);
     --ly-list-detail-wide-columns:
-      minmax(min(100%, var(--ly-pane-size)), 0.5fr)
-      minmax(0, 0.9fr);
+      minmax(min(100%, var(--ly-pane-min)), 0.5fr)
+      minmax(min(100%, var(--ly-pane-min)), 0.9fr);
   }
 }
 
@@ -1010,19 +1175,10 @@
     --ly-profile-gap: var(--ly-space-6);
     --ly-grid-min: 17rem;
     --ly-recipe-rail: 17rem;
-    --ly-recipe-aside: 19rem;
-    --ly-app-shell-wide-areas:
-      "header sidebar"
-      "main sidebar"
-      "aside sidebar"
-      "footer sidebar";
-    --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto auto;
-    --ly-app-shell-wide-columns:
-      minmax(0, 1fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.3fr);
+    --ly-recipe-aside: 22rem;
     --ly-list-detail-wide-columns:
-      minmax(0, 1.1fr)
-      minmax(min(100%, var(--ly-pane-size)), 0.7fr);
+      minmax(min(100%, var(--ly-pane-min)), 1.1fr)
+      minmax(min(100%, var(--ly-pane-min)), 0.7fr);
   }
 }
 
@@ -1040,7 +1196,7 @@
       "sidebar footer aside";
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.24fr)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.3fr);
   }
 }
@@ -1048,19 +1204,11 @@
 /* personalities/brutalism.css */
 @layer ly.personalities.brutalism {
   :where(.ly-root[data-ly-layout="brutalism"]) {
-    --ly-personality-wrapper-max: 100rem;
-    --ly-profile-gap: var(--ly-space-3);
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
     --ly-grid-min: 14rem;
     --ly-recipe-rail: 16rem;
     --ly-recipe-aside: 18rem;
-    --ly-app-shell-wide-areas:
-      "header header sidebar"
-      "main aside sidebar"
-      "footer footer sidebar";
-    --ly-app-shell-wide-columns:
-      minmax(0, 1.3fr)
-      minmax(0, 0.7fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.34fr);
   }
 }
 
@@ -1078,7 +1226,7 @@
       "sidebar footer footer";
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.2fr)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.32fr);
   }
 }
@@ -1086,38 +1234,38 @@
 /* personalities/y2k.css */
 @layer ly.personalities.y2k {
   :where(.ly-root[data-ly-layout="y2k"]) {
-    --ly-personality-wrapper-max: 90rem;
-    --ly-profile-gap: var(--ly-space-6);
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-2);
     --ly-grid-min: 13rem;
     --ly-recipe-rail: 18rem;
     --ly-recipe-aside: 16rem;
     --ly-app-shell-wide-areas:
-      "header header sidebar"
-      "aside main sidebar"
-      "footer footer sidebar";
+      "header header header"
+      "sidebar main aside"
+      "footer footer footer";
     --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-aside)), 0.34fr)
-      minmax(0, 1fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.28fr);
+      minmax(min(100%, var(--ly-recipe-rail)), 0.28fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+      minmax(min(100%, var(--ly-recipe-aside)), 0.26fr);
   }
 }
 
 /* personalities/retro-glass.css */
 @layer ly.personalities.retro-glass {
   :where(.ly-root[data-ly-layout="retro-glass"]) {
-    --ly-personality-wrapper-max: 104rem;
-    --ly-profile-gap: var(--ly-space-5);
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-2);
     --ly-grid-min: 15rem;
-    --ly-recipe-rail: 18rem;
-    --ly-recipe-aside: 18rem;
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 17rem;
     --ly-app-shell-wide-areas:
-      "header header sidebar"
-      "main main sidebar"
-      "aside footer footer";
+      "header header header"
+      "sidebar main aside"
+      "footer footer footer";
     --ly-app-shell-wide-columns:
-      minmax(0, 1.25fr)
-      minmax(0, 0.75fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.32fr);
+      minmax(min(100%, var(--ly-recipe-rail)), 0.3fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+      minmax(min(100%, var(--ly-recipe-aside)), 0.28fr);
   }
 }
 
@@ -1135,11 +1283,11 @@
       "sidebar footer footer";
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.26fr)
-      minmax(0, 1.35fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1.35fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.65fr);
     --ly-split-hero-wide-columns:
-      minmax(0, 1.8fr)
-      minmax(0, 0.8fr);
+      minmax(min(100%, var(--ly-split-min)), 1.8fr)
+      minmax(min(100%, var(--ly-split-min)), 0.8fr);
   }
 }
 
@@ -1156,12 +1304,12 @@
       "main aside sidebar"
       "footer aside sidebar";
     --ly-app-shell-wide-columns:
-      minmax(0, 1.45fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1.45fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.55fr)
       minmax(min(100%, var(--ly-recipe-rail)), 0.3fr);
     --ly-split-hero-wide-columns:
-      minmax(0, 1.5fr)
-      minmax(0, 0.5fr);
+      minmax(min(100%, var(--ly-split-min)), 1.5fr)
+      minmax(min(100%, var(--ly-split-min)), 0.5fr);
   }
 }
 
@@ -1184,14 +1332,14 @@
       "footer footer";
     --ly-app-shell-wide-rows: auto minmax(0, 1fr) auto auto;
     --ly-app-shell-wide-columns:
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(0, 1fr);
     --ly-split-hero-wide-columns:
-      minmax(0, 1fr)
-      minmax(0, 1fr);
+      minmax(min(100%, var(--ly-split-min)), 1fr)
+      minmax(min(100%, var(--ly-split-min)), 1fr);
     --ly-list-detail-wide-columns:
-      minmax(0, 1fr)
-      minmax(0, 1fr);
+      minmax(min(100%, var(--ly-pane-min)), 1fr)
+      minmax(min(100%, var(--ly-pane-min)), 1fr);
   }
 }
 
@@ -1209,7 +1357,7 @@
       "footer footer aside";
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.22fr)
-      minmax(0, 1.45fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1.45fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.55fr);
   }
 }
@@ -1228,8 +1376,59 @@
       "footer footer footer";
     --ly-app-shell-wide-columns:
       minmax(min(100%, var(--ly-recipe-rail)), 0.28fr)
-      minmax(0, 1fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
       minmax(min(100%, var(--ly-recipe-aside)), 0.34fr);
     --ly-reel-item-min: 20rem;
+  }
+}
+
+/* personalities/technical-blueprint.css */
+@layer ly.personalities.technical-blueprint {
+  :where(.ly-root[data-ly-layout="technical-blueprint"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
+    --ly-grid-min: 10rem;
+    --ly-recipe-rail: 11rem;
+    --ly-recipe-aside: 26rem;
+    --ly-split-primary: 2.2fr;
+    --ly-split-secondary: 0.8fr;
+  }
+}
+
+/* personalities/data-terminal.css */
+@layer ly.personalities.data-terminal {
+  :where(.ly-root[data-ly-layout="data-terminal"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-1);
+    --ly-grid-min: 10rem;
+    --ly-card-grid-min: 10rem;
+    --ly-gallery-min: 10rem;
+    --ly-recipe-rail: 12rem;
+    --ly-recipe-aside: 18rem;
+  }
+}
+
+/* personalities/industrial-hmi.css */
+@layer ly.personalities.industrial-hmi {
+  :where(.ly-root[data-ly-layout="industrial-hmi"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-2);
+    --ly-grid-min: 11rem;
+    --ly-recipe-rail: 7rem;
+    --ly-recipe-aside: 32rem;
+  }
+}
+
+/* personalities/editorial.css */
+@layer ly.personalities.editorial {
+  :where(.ly-root[data-ly-layout="editorial"]) {
+    --ly-personality-wrapper-max: 108rem;
+    --ly-profile-gap: var(--ly-space-6);
+    --ly-grid-min: 16rem;
+    --ly-recipe-rail: 10rem;
+    --ly-recipe-aside: 18rem;
+    --ly-split-primary: 1.65fr;
+    --ly-split-secondary: 0.75fr;
+    --ly-frame-ratio: 4 / 5;
   }
 }

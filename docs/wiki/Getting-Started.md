@@ -1,9 +1,9 @@
 # Getting Started
 
-Install `layout-style-css@3.1.0` and import the root bundle:
+Install `layout-style-css@3.2.0` and import the root bundle:
 
 ```bash
-npm install layout-style-css@3.1.0
+npm install layout-style-css@3.2.0
 ```
 
 ```js
@@ -64,5 +64,7 @@ Keep mobile DOM order authoritative. The package never changes reading or focus 
 - [Layout Primitives](Layout-Primitives.md)
 - [Layout Recipes](Layout-Recipes.md)
 - [Layout Styles](Layout-Styles.md)
+- [Layout Personality Reference](Layout-Personality-Reference.md)
 - [Migrating To 3.0](Migrating-To-3.0.md)
 - [Migrating To 3.1](Migrating-To-3.1.md)
+- [Migrating To 3.2](Migrating-To-3.2.md)

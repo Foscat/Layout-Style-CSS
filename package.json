@@ -1,6 +1,6 @@
 {
   "name": "layout-style-css",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Dependency-free structural CSS for responsive wrappers, composition primitives, recipes, utilities, and layout personalities.",
   "type": "module",
   "license": "MIT",
@@ -59,10 +59,10 @@
     "css-tree": "3.2.1",
     "interactive-surface-css": "1.5.0",
     "stylelint": "17.14.0",
-    "ui-style-kit-css": "2.1.0"
+    "ui-style-kit-css": "2.4.0"
   },
   "overrides": {
-    "fast-uri": "3.1.5",
+    "fast-uri": "3.1.7",
     "js-yaml": "4.3.1",
     "nanoid": "3.3.18",
     "postcss": "8.5.23"

@@ -54,10 +54,35 @@ function buildPersonalityMetadata(sourceManifest) {
   };
 }
 
+/**
+ * Reads the ordered personality module inventory from the authored aggregate
+ * entry so newly staged modules can be built before their manifest publication.
+ *
+ * @param {string} css Authored `styles/personalities.css` source.
+ * @returns {string[]} Ordered paths relative to the styles directory.
+ * @throws {Error} When the entry contains no personality imports or duplicates.
+ */
+function readPersonalityImports(css) {
+  const files = [...css.matchAll(/@import\s+url\(["']\.\/(personalities\/[a-z0-9-]+\.css)["']\);/g)]
+    .map(([, file]) => file);
+
+  if (files.length === 0 || new Set(files).size !== files.length) {
+    throw new Error("styles/personalities.css must provide unique ordered personality imports.");
+  }
+
+  return files;
+}
+
 /* Manifest pairing records drive profile assets and generated demo fallbacks. */
 const personalityMetadata = buildPersonalityMetadata(manifest);
 const personalityNames = personalityMetadata.personalities.map(({ id }) => id);
-const personalityFiles = personalityNames.map((name) => `personalities/${name}.css`);
+const manifestPersonalityFiles = personalityNames.map((name) => `personalities/${name}.css`);
+const personalitiesEntry = await readFile(join(sourceDir, "personalities.css"), "utf8");
+const personalityFiles = readPersonalityImports(personalitiesEntry);
+
+if (JSON.stringify(personalityFiles) !== JSON.stringify(manifestPersonalityFiles)) {
+  throw new Error("styles/personalities.css imports must match manifest personality order exactly.");
+}
 const authoredEntryFiles = [
   "core.css",
   ...coreModuleFiles,

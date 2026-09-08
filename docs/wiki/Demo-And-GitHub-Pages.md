@@ -6,7 +6,9 @@ The v3 demo is an intrinsic responsive workbench, not a fixed-device screenshot 
 
 - Independent preview width and height
 - Automatic and manual recipe responsiveness
-- Wrapper, recipe, and all sixteen personality profiles
+- Wrapper, recipe, and all twenty personality profiles sourced from generated metadata
+- Independent recommended and compatible UI-pairing guidance
+- Visible Mosaic, Action Bar, and content-resilience fixtures within the selected preview allocation
 - Layout-only, Layout plus UI, and all-three ecosystem modes
 - Live rendered dimensions and active topology
 - Copy-ready canonical attribute markup
@@ -30,7 +32,7 @@ npm run test:demo:quick
 npm run test:demo:all
 ```
 
-The full matrix runs in Chromium, Firefox, and WebKit. It checks meaningful DOM, unchanged source/focus order, automatic and manual topologies, nearest-container behavior, short-height escape hatches, zero-width tracks, overlap, and unintended overflow.
+The full matrix runs in Chromium, Firefox, and WebKit. It checks meaningful DOM, unchanged source/focus order, automatic and manual topologies, nearest-container behavior, short-height escape hatches, Mosaic thresholds, Action Bar wrapping/stickiness, reachable two-axis Scroll overflow, zero-width tracks, overlap, and unintended document overflow.
 
 ## GitHub Pages
 

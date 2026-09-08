@@ -1,0 +1,11 @@
+@layer ly.reset, ly.tokens, ly.wrappers, ly.primitives, ly.recipes, ly.utilities, ly.personalities, ly.context;
+
+@layer ly.personalities.industrial-hmi {
+  :where(.ly-root[data-ly-layout="industrial-hmi"]) {
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-2);
+    --ly-grid-min: 11rem;
+    --ly-recipe-rail: 7rem;
+    --ly-recipe-aside: 32rem;
+  }
+}

@@ -11,7 +11,7 @@ const rootDir = path.resolve(
   "..",
 );
 const reviewedUiFixtureRevision =
-  "a44dd41bf3611aba0a20bddfd00eb37938ca884f";
+  "835aa4474c49b7b766d3f5a923f023725bc14331";
 let releaseContract;
 try {
   releaseContract = await import("../scripts/release-fixture-contract.mjs");
@@ -57,6 +57,121 @@ test("local release verification accepts an explicit reviewed Interactive fixtur
     releaseContract.resolveInteractiveRoot("C:/workspace/Layout-Style-CSS", {}),
     path.resolve("C:/workspace/Interactive-Surface-CSS")
   );
+});
+
+test("stages active candidate version without mutating the reviewed UI fixture", () => {
+  assert.ok(
+    releaseContract,
+    "scripts/release-fixture-contract.mjs must implement the fixture contract",
+  );
+
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "layout-release-fixture-"),
+  );
+  const sourceRoot = path.join(tempRoot, "source");
+  fs.mkdirSync(path.join(sourceRoot, "scripts"), { recursive: true });
+  fs.mkdirSync(path.join(sourceRoot, "node_modules", "example"), {
+    recursive: true,
+  });
+  fs.mkdirSync(path.join(sourceRoot, ".git"), { recursive: true });
+  fs.writeFileSync(path.join(sourceRoot, "scripts", "release-preflight.mjs"), "\n");
+  fs.writeFileSync(path.join(sourceRoot, "node_modules", "example", "index.js"), "\n");
+  fs.writeFileSync(path.join(sourceRoot, ".git", "HEAD"), "ref: refs/heads/main\n");
+  fs.writeFileSync(
+    path.join(sourceRoot, "ecosystem-compatibility.json"),
+    `${JSON.stringify(
+      {
+        supportedCombinations: {
+          current: {
+            "ui-style-kit-css": "2.4.0",
+            "interactive-surface-css": "1.7.0",
+            "layout-style-css": "3.1.0",
+          },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  const staged = releaseContract.stageFixtureForCandidate(sourceRoot, {
+    candidatePackage: "layout-style-css",
+    candidateVersion: "3.2.0",
+  });
+  try {
+    assert.notEqual(staged.fixtureRoot, sourceRoot);
+    assert.equal(
+      releaseContract.resolveFixturePackageSpec(staged.fixtureRoot, "ui-style-kit-css"),
+      "ui-style-kit-css@2.4.0",
+    );
+    assert.equal(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(staged.fixtureRoot, "ecosystem-compatibility.json"),
+          "utf8",
+        ),
+      ).supportedCombinations.current["layout-style-css"],
+      "3.2.0",
+    );
+    assert.equal(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(sourceRoot, "ecosystem-compatibility.json"),
+          "utf8",
+        ),
+      ).supportedCombinations.current["layout-style-css"],
+      "3.1.0",
+    );
+    assert.ok(
+      fs.existsSync(path.join(staged.fixtureRoot, "node_modules", "example", "index.js")),
+      "The staged fixture must keep installed tooling needed by fixture scripts.",
+    );
+    assert.equal(
+      fs.existsSync(path.join(staged.fixtureRoot, ".git")),
+      false,
+      "The staged fixture must not copy Git internals.",
+    );
+  } finally {
+    staged.cleanup();
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("staged preflight uses published UI only for the current matrix", () => {
+  assert.ok(
+    releaseContract,
+    "scripts/release-fixture-contract.mjs must implement the fixture contract",
+  );
+
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "layout-release-fixture-"),
+  );
+  const scriptPath = path.join(tempRoot, "scripts", "release-preflight.mjs");
+  fs.mkdirSync(path.dirname(scriptPath), { recursive: true });
+  fs.writeFileSync(
+    scriptPath,
+    "const currentArgs = [checkerPath, '--matrix', 'current', `--${candidateKey}-spec`, tarball];\n" +
+      "console.log(run(process.execPath, [checkerPath, '--matrix', 'minimum', '--skip-docs'], { cwd: fixtureRoot }));\n",
+  );
+
+  try {
+    releaseContract.applyCurrentMatrixUiSpec(
+      tempRoot,
+      "ui-style-kit-css@2.4.0",
+    );
+    const patchedScript = fs.readFileSync(scriptPath, "utf8");
+    assert.match(
+      patchedScript,
+      /'--ui-spec', 'ui-style-kit-css@2\.4\.0', `--\$\{candidateKey\}-spec`, tarball/,
+    );
+    assert.match(
+      patchedScript,
+      /\[checkerPath, '--matrix', 'minimum', '--skip-docs'\]/,
+      "The minimum matrix must keep using the fixture's published minimum packages.",
+    );
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 test("pull requests execute read-only preflight and npm publish stays downstream", () => {
@@ -168,7 +283,7 @@ test("publish workflow stages safe local checks and fixtures before one explicit
   assertPublishIgnoreScriptsSkipsLifecycle();
 });
 
-test("publishing guide records the immutable bootstrap and merge sequence", () => {
+test("publishing guide records the immutable 2.4.0 UI fixture and merge sequence", () => {
   const guide = fs.readFileSync(
     path.join(rootDir, "docs", "wiki", "Release-And-Publishing.md"),
     "utf8",
@@ -186,7 +301,7 @@ test("publishing guide records the immutable bootstrap and merge sequence", () =
   assert.match(guide, new RegExp(reviewedUiFixtureRevision, "i"));
 
   for (const phrase of [
-    "Push a stable UI bootstrap ref",
+    "Use the published UI Style Kit 2.4.0 fixture",
     "merge commits",
     "Update and verify the final UI companion pins",
     "Do not squash, rebase, or delete the only remote refs",

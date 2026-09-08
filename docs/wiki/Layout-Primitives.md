@@ -36,19 +36,23 @@ Use content for conventional page content and workspace for task-oriented applic
 - `.ly-switcher` wraps when its intrinsic threshold is no longer feasible.
 - `.ly-sidebar` keeps a preferred rail while the content can meet its minimum.
 - `.ly-grid` uses auto-fit tracks and `--ly-grid-min`.
+- `.ly-mosaic` uses one column by default, six columns at `42rem`, and twelve columns at `72rem`; span and row-span utilities activate only at supported tiers.
 - `.ly-split` creates balanced intrinsic regions.
 - `.ly-panes` creates a preferred workspace rail and flexible pane.
 - `.ly-media` wraps media and content without a viewport breakpoint.
+- `.ly-action-bar` wraps start/end workflow groups in DOM order; `.ly-action-bar--sticky` uses height-aware sticky behavior and safe-area padding.
 
 ## Frame And Overflow
 
 - `.ly-frame` keeps a configurable aspect ratio.
 - `.ly-reel` is the deliberate horizontal-flow primitive.
-- `.ly-scroll` owns vertical overflow without imposing a height cap.
+- `.ly-scroll` owns horizontal and vertical overflow without imposing a height cap.
 - `.ly-scroll--bounded` applies the stable `--ly-scroll-max` cap.
 - `.ly-scroll--viewport` applies the height-aware `--ly-scroll-viewport-max` cap.
 
-In normal use, only `.ly-reel` introduces intentional horizontal scrolling, and only `.ly-scroll` and its modifiers introduce intentional vertical scrolling. Other wrappers, primitives, and recipes clamp to their available inline size.
+In normal use, only `.ly-reel` and `.ly-scroll` introduce intentional horizontal scrolling, and only `.ly-scroll` and its modifiers introduce intentional vertical scrolling. Other wrappers, primitives, and recipes clamp to their available inline size.
+
+Mosaic never uses `grid-auto-flow: dense`; visual spans do not change reading or focus order. Action Bar groups also wrap without visual reordering.
 
 ## Height Behavior
 

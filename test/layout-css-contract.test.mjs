@@ -21,6 +21,13 @@ const focusedFiles = [
   "personalities.css"
 ];
 const personalityNames = manifest.personalities;
+const specializedPersonalityNames = [
+  "technical-blueprint",
+  "data-terminal",
+  "industrial-hmi",
+  "editorial"
+];
+const authoredPersonalityNames = [...new Set([...personalityNames, ...specializedPersonalityNames])];
 const recipeNames = [
   "app-shell",
   "dashboard",
@@ -82,7 +89,7 @@ const flattenedSourceFiles = [
   "primitives.css",
   "recipes.css",
   "utilities.css",
-  ...personalityNames.map((name) => `personalities/${name}.css`)
+  ...authoredPersonalityNames.map((name) => `personalities/${name}.css`)
 ];
 
 function read(path) {
@@ -106,7 +113,20 @@ function minifyCss(css) {
     .trim();
 }
 
-assert.equal(packageJson.version, "3.1.0", "The minor branch must expose version 3.1.0");
+/**
+ * Returns one normalized custom-property value from authored CSS.
+ *
+ * @param {string} css Authored stylesheet source.
+ * @param {string} property Custom-property name.
+ * @returns {string} Whitespace-normalized custom-property value.
+ */
+function customPropertyValue(css, property) {
+  const value = css.match(new RegExp(`${property}\\s*:\\s*([^;]+);`, "s"))?.[1];
+  assert(value, `Missing required personality token ${property}.`);
+  return value.replace(/\s+/g, " ").trim();
+}
+
+assert.equal(packageJson.version, "3.2.0", "The minor branch must expose version 3.2.0");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(
@@ -139,11 +159,13 @@ const expectedTarballFiles = [
   "docs/wiki/Home.md",
   "docs/wiki/Installation-And-CDN.md",
   "docs/wiki/Layout-Primitives.md",
+  "docs/wiki/Layout-Personality-Reference.md",
   "docs/wiki/Layout-Recipes.md",
   "docs/wiki/Layout-Styles.md",
   "docs/wiki/Migrating-To-2.0.md",
   "docs/wiki/Migrating-To-3.0.md",
   "docs/wiki/Migrating-To-3.1.md",
+  "docs/wiki/Migrating-To-3.2.md",
   "docs/wiki/Release-And-Publishing.md",
   "docs/wiki/Security-And-Support.md",
   "docs/wiki/UI-Style-Kit-Compatibility.md",
@@ -160,7 +182,7 @@ const expectedTarballFiles = [
   "dist/recipes.css",
   "dist/utilities.css",
   "dist/personalities.css",
-  ...personalityNames.map((name) => `dist/personalities/${name}.css`)
+  ...authoredPersonalityNames.map((name) => `dist/personalities/${name}.css`)
 ].sort();
 assert.deepEqual(
   packReport.files.map(({ path }) => path).sort(),
@@ -195,7 +217,7 @@ for (const name of personalityNames) {
   assert.equal(generatedCss, css, `${file} generated output drifted from its authored profile`);
 }
 
-const personalitySignatures = personalityNames.map((name) => {
+const personalitySignatures = authoredPersonalityNames.map((name) => {
   const css = readStyle(`personalities/${name}.css`);
   return [...css.matchAll(/(--ly-[a-z0-9-]+)\s*:\s*([^;]+);/g)]
     .map(([, property, value]) => `${property}:${value.replace(/\s+/g, " ").trim()}`)
@@ -204,9 +226,83 @@ const personalitySignatures = personalityNames.map((name) => {
 });
 assert.equal(
   new Set(personalitySignatures).size,
-  personalityNames.length,
+  authoredPersonalityNames.length,
   "Every personality must expose a unique spatial signature"
 );
+
+const personalityTargets = {
+  "minimal-saas": ["88rem", "var(--ly-space-5)", "16rem", "15rem", "16rem"],
+  bento: ["112rem", "var(--ly-space-4)", "12rem", "14rem", "18rem"],
+  maximalist: ["100%", "var(--ly-space-3)", "10rem", "15rem", "18rem"],
+  bauhaus: ["96rem", "var(--ly-space-2)", "13rem", "14rem", "18rem"],
+  tactile: ["96rem", "var(--ly-space-4)", "15rem", "17rem", "20rem"],
+  neumorphism: ["84rem", "var(--ly-space-6)", "17rem", "17rem", "22rem"],
+  retrofuturism: ["106rem", "var(--ly-space-5)", "14rem", "14rem", "17rem"],
+  brutalism: ["100%", "var(--ly-space-1)", "14rem", "16rem", "18rem"],
+  cyberpunk: ["112rem", "var(--ly-space-4)", "12rem", "13rem", "19rem"],
+  y2k: ["100%", "var(--ly-space-2)", "13rem", "18rem", "16rem"],
+  "retro-glass": ["100%", "var(--ly-space-2)", "15rem", "16rem", "17rem"],
+  "f-pattern": ["92rem", "var(--ly-space-4)", "14rem", "16rem", "18rem"],
+  "z-pattern": ["108rem", "var(--ly-space-5)", "14rem", "17rem", "19rem"],
+  "split-screen": ["100%", "var(--ly-space-4)", "20rem", "24rem", "24rem"],
+  mondrian: ["112rem", "var(--ly-space-3)", "11rem", "13rem", "18rem"],
+  synthwave: ["112rem", "var(--ly-space-6)", "14rem", "16rem", "20rem"]
+};
+const targetProperties = [
+  "--ly-personality-wrapper-max",
+  "--ly-profile-gap",
+  "--ly-grid-min",
+  "--ly-recipe-rail",
+  "--ly-recipe-aside"
+];
+const specializedPersonalityTargets = {
+  "technical-blueprint": ["100%", "var(--ly-space-1)", "10rem", "11rem", "26rem"],
+  "data-terminal": ["100%", "var(--ly-space-1)", "10rem", "12rem", "18rem"],
+  "industrial-hmi": ["100%", "var(--ly-space-2)", "11rem", "7rem", "32rem"],
+  editorial: ["108rem", "var(--ly-space-6)", "16rem", "10rem", "18rem"]
+};
+for (const [name, values] of Object.entries(personalityTargets)) {
+  const css = readStyle(`personalities/${name}.css`);
+  assert.deepEqual(
+    targetProperties.map((property) => customPropertyValue(css, property)),
+    values,
+    `${name} geometry drifted from the approved 3.2 target table.`
+  );
+}
+for (const [name, values] of Object.entries(specializedPersonalityTargets)) {
+  const css = readStyle(`personalities/${name}.css`);
+  assert.deepEqual(
+    targetProperties.map((property) => customPropertyValue(css, property)),
+    values,
+    `${name} geometry drifted from the approved 3.2 target table.`
+  );
+}
+for (const name of ["bento", "maximalist", "bauhaus", "tactile", "neumorphism", "brutalism"]) {
+  assert(
+    !readStyle(`personalities/${name}.css`).includes("--ly-app-shell-wide-areas:"),
+    `${name} must use the shared area-aware App Shell.`
+  );
+}
+assert.equal(customPropertyValue(readStyle("personalities/minimal-saas.css"), "--ly-split-primary"), "1.05fr");
+assert.equal(customPropertyValue(readStyle("personalities/minimal-saas.css"), "--ly-split-secondary"), "0.95fr");
+assert.equal(customPropertyValue(readStyle("personalities/bento.css"), "--ly-card-grid-min"), "14rem");
+assert.equal(customPropertyValue(readStyle("personalities/bento.css"), "--ly-gallery-min"), "11rem");
+assert.equal(customPropertyValue(readStyle("personalities/maximalist.css"), "--ly-card-grid-min"), "13rem");
+assert.equal(customPropertyValue(readStyle("personalities/maximalist.css"), "--ly-gallery-min"), "10rem");
+assert.equal(customPropertyValue(readStyle("personalities/bauhaus.css"), "--ly-split-primary"), "0.7fr");
+assert.equal(customPropertyValue(readStyle("personalities/bauhaus.css"), "--ly-split-secondary"), "1.3fr");
+assert.match(customPropertyValue(readStyle("personalities/tactile.css"), "--ly-list-detail-wide-columns"), /0\.5fr[\s\S]*0\.9fr/);
+assert.match(customPropertyValue(readStyle("personalities/neumorphism.css"), "--ly-list-detail-wide-columns"), /1\.1fr[\s\S]*0\.7fr/);
+assert.match(customPropertyValue(readStyle("personalities/f-pattern.css"), "--ly-split-hero-wide-columns"), /1\.8fr[\s\S]*0\.8fr/);
+assert.match(customPropertyValue(readStyle("personalities/z-pattern.css"), "--ly-split-hero-wide-columns"), /1\.5fr[\s\S]*0\.5fr/);
+assert.equal(customPropertyValue(readStyle("personalities/synthwave.css"), "--ly-reel-item-min"), "20rem");
+assert.equal(customPropertyValue(readStyle("personalities/technical-blueprint.css"), "--ly-split-primary"), "2.2fr");
+assert.equal(customPropertyValue(readStyle("personalities/technical-blueprint.css"), "--ly-split-secondary"), "0.8fr");
+assert.equal(customPropertyValue(readStyle("personalities/data-terminal.css"), "--ly-card-grid-min"), "10rem");
+assert.equal(customPropertyValue(readStyle("personalities/data-terminal.css"), "--ly-gallery-min"), "10rem");
+assert.equal(customPropertyValue(readStyle("personalities/editorial.css"), "--ly-split-primary"), "1.65fr");
+assert.equal(customPropertyValue(readStyle("personalities/editorial.css"), "--ly-split-secondary"), "0.75fr");
+assert.equal(customPropertyValue(readStyle("personalities/editorial.css"), "--ly-frame-ratio"), "4 / 5");
 
 assert(!existsSync(join(styles, "legacy.css")), "v3 must remove the authored legacy bundle");
 assert(!existsSync(join(dist, "legacy.css")), "v3 must remove the generated legacy bundle");
@@ -233,7 +329,7 @@ const authoredCss = [
   recipes,
   utilities,
   aggregatePersonalities,
-  ...personalityNames.map((name) => readStyle(`personalities/${name}.css`))
+  ...authoredPersonalityNames.map((name) => readStyle(`personalities/${name}.css`))
 ].join("\n");
 
 assert(
@@ -308,6 +404,8 @@ for (const primitive of [
   "switcher",
   "sidebar",
   "grid",
+  "mosaic",
+  "action-bar",
   "split",
   "panes",
   "media",
@@ -318,7 +416,33 @@ for (const primitive of [
   assert(primitives.includes(`.ly-${primitive}`), `Missing composition primitive: ${primitive}`);
 }
 assert(primitives.includes("100dvh"), "Viewport-bound primitives must use dynamic viewport units");
-assert(!primitives.includes("@container"), "Intrinsic primitives must not depend on fixed width tiers");
+assert.deepEqual(
+  [...primitives.matchAll(/@container ly-scope \(min-width: ([^)]+)\)/g)].map(([, width]) => width),
+  ["42rem", "72rem"],
+  "Only Mosaic may use the approved shared primitive thresholds."
+);
+assert(
+  !/grid-auto-flow:\s*dense/.test(primitives),
+  "Mosaic must preserve DOM reading and focus order."
+);
+assert(
+  /\.ly-action-bar\s*\{[^}]*display:\s*flex[^}]*flex-wrap:\s*wrap[^}]*gap:\s*var\(--ly-cluster-gap\)[^}]*padding-block-end:\s*var\(--ly-safe-area-block-end\)/s.test(
+    primitives
+  ),
+  "Action Bar must be a wrapping, safe-area-aware structural cluster."
+);
+assert(
+  /\.ly-action-bar\s*>\s*\[data-ly-actions="end"\]\s*\{[^}]*margin-inline-start:\s*auto/s.test(
+    primitives
+  ),
+  "Action Bar end actions must align through logical margin."
+);
+assert(
+  /\.ly-action-bar--sticky\s*\{[^}]*position:\s*var\(--ly-sticky-position,\s*sticky\)/s.test(
+    primitives
+  ),
+  "Sticky Action Bar must honor the shallow-height position token."
+);
 assert(
   /--ly-cover-min:\s*100vh/.test(foundation) &&
     /--ly-shell-min:\s*100vh/.test(foundation) &&
@@ -333,9 +457,13 @@ assert(
   "Bounded and viewport-relative Scroll need separate public maxima."
 );
 assert(
-  /\.ly-scroll\s*\{[^}]*overflow-y:\s*auto/s.test(primitives) &&
+  /\.ly-scroll\s*\{[^}]*overflow:\s*auto/s.test(primitives) &&
     !/\.ly-scroll\s*\{[^}]*max-block-size:/s.test(primitives),
-  "Base Scroll must not impose a height cap."
+  "Base Scroll must expose legitimate overflow on both axes without imposing a height cap."
+);
+assert(
+  !/\.ly-scroll\s*\{[^}]*overflow-x:\s*clip/s.test(primitives),
+  "Base Scroll must not silently clip inline overflow."
 );
 assert(
   /\.ly-scroll--bounded\s*\{[^}]*max-block-size:\s*var\(--ly-scroll-max\)/s.test(
@@ -351,6 +479,62 @@ assert(
     /--ly-split-secondary:\s*1fr/.test(foundation),
   "Every nested layout root must reset optional personality split ratios"
 );
+assert(
+  /--ly-recipe-main-min:\s*20rem/.test(foundation),
+  "Automatic application recipes need a public 20rem usable main-track floor."
+);
+for (const property of [
+  "--ly-app-shell-medium-columns",
+  "--ly-app-shell-wide-columns",
+  "--ly-dashboard-medium-columns",
+  "--ly-dashboard-wide-columns",
+  "--ly-docs-wide-columns"
+]) {
+  assert(
+    new RegExp(
+      `${property}:\\s*[\\s\\S]*?minmax\\(min\\(100%,\\s*var\\(--ly-recipe-main-min\\)\\)`
+    ).test(foundation),
+    `${property} must guard primary content with --ly-recipe-main-min.`
+  );
+}
+assert(
+  /--ly-list-detail-wide-columns:\s*[\s\S]*?var\(--ly-pane-min\)[\s\S]*?var\(--ly-pane-min\)/.test(
+    foundation
+  ),
+  "List Detail must guard both content tracks with --ly-pane-min."
+);
+assert(
+  /--ly-split-hero-wide-columns:\s*[\s\S]*?var\(--ly-split-min\)[\s\S]*?var\(--ly-split-min\)/.test(
+    foundation
+  ),
+  "Split Hero must guard both content tracks with --ly-split-min."
+);
+for (const name of authoredPersonalityNames) {
+  const css = readStyle(`personalities/${name}.css`);
+  const appShellColumns = css.match(/--ly-app-shell-wide-columns:\s*([^;]+);/s)?.[1];
+  const listDetailColumns = css.match(/--ly-list-detail-wide-columns:\s*([^;]+);/s)?.[1];
+  const splitHeroColumns = css.match(/--ly-split-hero-wide-columns:\s*([^;]+);/s)?.[1];
+  if (appShellColumns) {
+    assert(
+      appShellColumns.includes("var(--ly-recipe-main-min)"),
+      `${name} App Shell must guard its primary application track.`
+    );
+  }
+  if (listDetailColumns) {
+    assert.equal(
+      (listDetailColumns.match(/var\(--ly-pane-min\)/g) ?? []).length,
+      2,
+      `${name} List Detail must guard both pane tracks.`
+    );
+  }
+  if (splitHeroColumns) {
+    assert.equal(
+      (splitHeroColumns.match(/var\(--ly-split-min\)/g) ?? []).length,
+      2,
+      `${name} Split Hero must guard both content tracks.`
+    );
+  }
+}
 
 for (const recipe of recipeNames) {
   assert(
@@ -369,6 +553,26 @@ assert(
   recipes.includes(':not([data-ly-responsive="manual"])'),
   "Automatic topology rules must exclude manual recipes"
 );
+assert(
+  recipes.includes("@supports selector(:has(*))"),
+  "Area-aware App Shell enhancement must be feature-detected."
+);
+for (const presenceSelector of [
+  ':has(> [data-ly-area="sidebar"]):not(:has(> [data-ly-area="aside"]))',
+  ':not(:has(> [data-ly-area="sidebar"])):has(> [data-ly-area="aside"])',
+  ':not(:has(> [data-ly-area="sidebar"])):not(:has(> [data-ly-area="aside"]))'
+]) {
+  assert(
+    recipes.replace(/\s+/g, "").includes(presenceSelector.replace(/\s+/g, "")),
+    `Missing App Shell presence selector: ${presenceSelector}`
+  );
+}
+for (const name of personalityNames) {
+  assert(
+    !readStyle(`personalities/${name}.css`).includes(":has("),
+    `${name} must rely on shared area-awareness.`
+  );
+}
 assert(
   /\[data-ly-recipe="gallery"\][\s\S]*\[data-ly-recipe="card-grid"\][\s\S]*\[data-ly-responsive="manual"\][\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(
     recipes
@@ -390,7 +594,7 @@ for (const [topology, token] of Object.entries(appShellRowTokens)) {
     `App Shell ${topology} topology must consume ${token}.`
   );
 }
-for (const personality of ["bento", "neumorphism", "split-screen", "tactile"]) {
+for (const personality of ["split-screen"]) {
   assert(
     readStyle(`personalities/${personality}.css`).includes("--ly-app-shell-wide-rows:"),
     `${personality} must describe its four-row wide App Shell.`
@@ -405,6 +609,9 @@ assert(!/\bly-(?:md|lg)-/.test(utilities), "Fixed responsive utility families mu
 assert(!/\bly-order-/.test(utilities), "Visual order utilities must be removed");
 assert(!utilities.includes(".ly-bleed"), "The scrollbar-unsafe viewport bleed utility must be removed");
 assert(!utilities.includes("100vw"), "Utilities must not use scrollbar-unsafe viewport widths");
+for (const utility of ["ly-span-6", "ly-row-span-2", "ly-row-span-3"]) {
+  assert(utilities.includes(`.${utility}`), `Missing Mosaic utility: ${utility}`);
+}
 for (let gap = 0; gap <= 9; gap += 1) {
   const rule = utilities.match(new RegExp(`\\.ly-gap-${gap}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert(

@@ -18,7 +18,7 @@ Recipe roots also establish `ly-scope`, so child compositions can respond withou
 
 `manifest.json` publishes the same ownership under `thresholds.recipes`, in addition to the generic `containerMinWidths` and `viewportMaxHeights` arrays. The release gate checks those mappings against authored queries and verifies public-token liveness.
 
-App Shell base, medium, and wide topologies own matching row definitions. Header and footer tracks remain intrinsic while the main workspace receives the flexible row, including personality-specific four-row topologies.
+App Shell base, medium, and wide topologies own matching row definitions. Automatic enhancement is area-aware: a missing direct-child sidebar, aside, or both removes the corresponding empty track. Full-area personality shells keep their approved topology, and manual responsiveness remains stacked. Header and footer tracks remain intrinsic while the guarded main workspace consumes `--ly-recipe-main-min: 20rem`.
 
 ## Areas
 

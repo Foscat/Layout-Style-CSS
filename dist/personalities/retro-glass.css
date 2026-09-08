@@ -2,18 +2,18 @@
 
 @layer ly.personalities.retro-glass {
   :where(.ly-root[data-ly-layout="retro-glass"]) {
-    --ly-personality-wrapper-max: 104rem;
-    --ly-profile-gap: var(--ly-space-5);
+    --ly-personality-wrapper-max: 100%;
+    --ly-profile-gap: var(--ly-space-2);
     --ly-grid-min: 15rem;
-    --ly-recipe-rail: 18rem;
-    --ly-recipe-aside: 18rem;
+    --ly-recipe-rail: 16rem;
+    --ly-recipe-aside: 17rem;
     --ly-app-shell-wide-areas:
-      "header header sidebar"
-      "main main sidebar"
-      "aside footer footer";
+      "header header header"
+      "sidebar main aside"
+      "footer footer footer";
     --ly-app-shell-wide-columns:
-      minmax(0, 1.25fr)
-      minmax(0, 0.75fr)
-      minmax(min(100%, var(--ly-recipe-rail)), 0.32fr);
+      minmax(min(100%, var(--ly-recipe-rail)), 0.3fr)
+      minmax(min(100%, var(--ly-recipe-main-min)), 1fr)
+      minmax(min(100%, var(--ly-recipe-aside)), 0.28fr);
   }
 }

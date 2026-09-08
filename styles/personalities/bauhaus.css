@@ -3,18 +3,11 @@
 @layer ly.personalities.bauhaus {
   :where(.ly-root[data-ly-layout="bauhaus"]) {
     --ly-personality-wrapper-max: 96rem;
-    --ly-profile-gap: var(--ly-space-6);
+    --ly-profile-gap: var(--ly-space-2);
     --ly-grid-min: 13rem;
     --ly-recipe-rail: 14rem;
     --ly-recipe-aside: 18rem;
-    --ly-app-shell-wide-areas:
-      "header header header header"
-      "sidebar main main aside"
-      "sidebar footer footer aside";
-    --ly-app-shell-wide-columns:
-      minmax(min(100%, var(--ly-recipe-rail)), 0.24fr)
-      minmax(0, 0.7fr)
-      minmax(0, 1.3fr)
-      minmax(min(100%, var(--ly-recipe-aside)), 0.3fr);
+    --ly-split-primary: 0.7fr;
+    --ly-split-secondary: 1.3fr;
   }
 }

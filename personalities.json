@@ -16,6 +16,9 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "minimal-saas"
+      ],
+      "compatibleVisualPresets": [
+        "organic-modern"
       ]
     },
     {
@@ -24,7 +27,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "bento"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "maximalist",
@@ -32,7 +36,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "maximalist"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "bauhaus",
@@ -40,6 +45,9 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "bauhaus"
+      ],
+      "compatibleVisualPresets": [
+        "art-deco"
       ]
     },
     {
@@ -48,6 +56,9 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "tactile"
+      ],
+      "compatibleVisualPresets": [
+        "clay"
       ]
     },
     {
@@ -56,7 +67,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "neumorphism"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "retrofuturism",
@@ -64,7 +76,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "retrofuturism"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "brutalism",
@@ -72,7 +85,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "brutalism"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "cyberpunk",
@@ -80,7 +94,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "cyberpunk"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "y2k",
@@ -88,7 +103,8 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "y2k"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "retro-glass",
@@ -96,31 +112,36 @@
       "visualCompatibility": "native",
       "recommendedVisualPresets": [
         "retro-glass"
-      ]
+      ],
+      "compatibleVisualPresets": []
     },
     {
       "id": "f-pattern",
       "label": "F-pattern",
       "visualCompatibility": "any",
-      "recommendedVisualPresets": []
+      "recommendedVisualPresets": [],
+      "compatibleVisualPresets": []
     },
     {
       "id": "z-pattern",
       "label": "Z-pattern",
       "visualCompatibility": "any",
-      "recommendedVisualPresets": []
+      "recommendedVisualPresets": [],
+      "compatibleVisualPresets": []
     },
     {
       "id": "split-screen",
       "label": "Split Screen",
       "visualCompatibility": "any",
-      "recommendedVisualPresets": []
+      "recommendedVisualPresets": [],
+      "compatibleVisualPresets": []
     },
     {
       "id": "mondrian",
       "label": "Mondrian",
       "visualCompatibility": "any",
-      "recommendedVisualPresets": []
+      "recommendedVisualPresets": [],
+      "compatibleVisualPresets": []
     },
     {
       "id": "synthwave",
@@ -130,19 +151,59 @@
         "cyberpunk",
         "retrofuturism"
       ],
+      "compatibleVisualPresets": [],
       "visualVerification": {
         "method": "rendered-computed-style",
         "test": "test/demo-smoke.test.mjs",
         "computedProperties": {
           "cyberpunk": {
-            "boxShadow": "0px 0px 18px"
+            "boxShadow": "0px 0px 12px"
           },
           "retrofuturism": {
-            "boxShadow": "0px 10px 30px"
+            "boxShadow": "0px 2.88px 6.72px"
           }
         },
         "assertion": "A visible browser contract fixture renders each preset's distinct article box-shadow while data-ly-layout remains synthwave."
       }
+    },
+    {
+      "id": "technical-blueprint",
+      "label": "Technical Blueprint",
+      "visualCompatibility": "native",
+      "recommendedVisualPresets": [
+        "technical-blueprint"
+      ],
+      "compatibleVisualPresets": []
+    },
+    {
+      "id": "data-terminal",
+      "label": "Data Terminal",
+      "visualCompatibility": "native",
+      "recommendedVisualPresets": [
+        "data-terminal"
+      ],
+      "compatibleVisualPresets": [
+        "neo-noir"
+      ]
+    },
+    {
+      "id": "industrial-hmi",
+      "label": "Industrial HMI",
+      "visualCompatibility": "recommended",
+      "recommendedVisualPresets": [
+        "industrial-utility"
+      ],
+      "compatibleVisualPresets": []
+    },
+    {
+      "id": "editorial",
+      "label": "Editorial",
+      "visualCompatibility": "recommended",
+      "recommendedVisualPresets": [
+        "editorial-luxe",
+        "paper-editorial"
+      ],
+      "compatibleVisualPresets": []
     }
   ]
 }

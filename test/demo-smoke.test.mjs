@@ -46,6 +46,15 @@ const recipes = [
   "card-grid"
 ];
 const personalities = personalityMetadata.personalities.map(({ id }) => id);
+const expectedUiPresetPairs = [
+  ["minimal-saas", "saas"], ["bento", "bento"], ["maximalist", "max"],
+  ["bauhaus", "bau"], ["tactile", "tactile"], ["neumorphism", "neo"],
+  ["retrofuturism", "retro"], ["brutalism", "brutal"], ["cyberpunk", "cyber"],
+  ["y2k", "y2k"], ["retro-glass", "rg"], ["editorial-luxe", "luxe"],
+  ["organic-modern", "organic"], ["industrial-utility", "utility"],
+  ["technical-blueprint", "blueprint"], ["art-deco", "deco"], ["clay", "clay"],
+  ["data-terminal", "terminal"], ["paper-editorial", "paper"], ["neo-noir", "noir"]
+];
 const wrappers = [
   "default",
   "compact",
@@ -138,8 +147,8 @@ const topologyEdges = [
 ];
 
 const assertStaticDemoContract = () => {
-  assert.match(demoHtml, /Layout Style CSS v3/);
-  assert.match(demoHtml, /content="3\.1\.0"/);
+  assert.match(demoHtml, /Layout Style CSS v3\.2/);
+  assert.match(demoHtml, /content="3\.2\.0"/);
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -147,21 +156,29 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.1\.0"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.2\.0"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.1\.0"/,
+    /href="\.\/demo\.css\?v=3\.2\.0"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.1\.0"/,
+    /src="\.\/demo\.js\?v=3\.2\.0"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
   assert.doesNotMatch(demoHtml, /class="ly-(?:app-shell|dashboard|docs|list-detail|split-hero|gallery|card-grid)/);
+  for (const fixtureId of ["pairingGuidance", "mosaicFixture", "actionBarFixture", "resilienceFixture"]) {
+    assert.match(demoHtml, new RegExp(`id="${fixtureId}"`), `Missing visible ${fixtureId} fixture.`);
+  }
+  assert.match(demoHtml, /class="ly-mosaic/);
+  assert.match(demoHtml, /class="ly-action-bar/);
+  assert.match(demoHtml, /data-ly-actions="start"/);
+  assert.match(demoHtml, /data-ly-actions="end"/);
+  assert.match(demoHtml, /class="ly-scroll/);
 
   assert.match(demoJs, /phone-portrait/);
   assert.match(demoJs, /desktop-portrait/);
@@ -170,10 +187,32 @@ const assertStaticDemoContract = () => {
   assert.match(demoJs, /URLSearchParams/);
   assert.doesNotMatch(demoJs, /RECIPE_CLASSES/);
   assert.doesNotMatch(demoJs, /layoutIntegrationStylesheet/);
+  for (const uiPreset of [
+    "editorial-luxe", "organic-modern", "industrial-utility", "technical-blueprint",
+    "art-deco", "clay", "data-terminal", "paper-editorial", "neo-noir"
+  ]) {
+    assert.match(demoJs, new RegExp(`id: "${uiPreset}"`));
+  }
+  const fallbackPresetSource = demoJs.slice(
+    demoJs.indexOf("presets: Object.freeze(["),
+    demoJs.indexOf("themes: Object.freeze([")
+  );
+  assert.deepEqual(
+    [...fallbackPresetSource.matchAll(/id: "([a-z0-9-]+)"[^}]+prefix: "([a-z0-9-]+)"/g)]
+      .map(([, id, prefix]) => [id, prefix]),
+    expectedUiPresetPairs,
+    "The packaged UI manifest fallback must mirror the approved twenty-preset inventory."
+  );
 
   assert.match(demoCss, /--demo-container-block-size/);
   assert.match(demoCss, /data-demo-height-tier="short"/);
   assert.match(demoCss, /data-demo-height-tier="shallow"/);
+  const regionDeclarations = demoCss.match(/\.demo-region\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.doesNotMatch(
+    regionDeclarations,
+    /overflow:\s*hidden/,
+    "Demo regions must not mask required content overflow."
+  );
   assert.equal(
     (
       demoCss.match(
@@ -360,6 +399,13 @@ const layoutSnapshot = async (page) =>
       trackCount: computedRecipe.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
       areas: computedRecipe.gridTemplateAreas,
       overlaps,
+      regionRectangles: regionRectangles.map(({ area, rectangle }) => ({
+        area,
+        top: rectangle.top,
+        right: rectangle.right,
+        bottom: rectangle.bottom,
+        left: rectangle.left
+      })),
       clippedRegions: regions
         .filter(
           (region) =>
@@ -387,8 +433,482 @@ const assertNoHorizontalFailures = (snapshot, label) => {
     snapshot.regionWidths.every((width) => width > 0),
     `${label}: a rendered region collapsed to zero width.`
   );
-  assert.deepEqual(snapshot.overlaps, [], `${label}: regions overlapped.`);
+  assert.deepEqual(
+    snapshot.overlaps,
+    [],
+    `${label}: regions overlapped. ${JSON.stringify(snapshot.regionRectangles)}`
+  );
   assert.deepEqual(snapshot.clippedRegions, [], `${label}: required region content was clipped.`);
+};
+
+/**
+ * Verifies usable automatic recipe floors and accessible two-axis Scroll
+ * behavior in both the standalone and complete ecosystem modes.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyContentResilience = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  for (const ecosystem of ["layout-only", "all-three"]) {
+    await page.goto(`${baseUrl}?ecosystem=${ecosystem}&wrapper=full`, {
+      waitUntil: "domcontentloaded"
+    });
+    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+    await setCustomAllocation(page, "73rem");
+
+    const result = await page.evaluate(() => {
+      const wrapper = document.querySelector("#previewWrapper");
+      wrapper.style.setProperty("--ly-shell-min", "auto");
+      const recipeAreas = {
+        "app-shell": ["header", "sidebar", "main", "aside", "footer"],
+        dashboard: ["header", "nav", "main", "aside", "footer"],
+        docs: ["header", "nav", "main", "aside", "footer"],
+        "list-detail": ["primary", "secondary", "actions"],
+        "split-hero": ["content", "media", "actions"]
+      };
+      const measurements = {};
+      let scrollMetrics;
+
+      /**
+       * Converts a public rem-valued geometry token to rendered pixels.
+       *
+       * @param {CSSStyleDeclaration} style Computed layout-root styles.
+       * @param {string} property Public custom-property name.
+       * @returns {number} Token value in CSS pixels.
+       */
+      const tokenPixels = (style, property) =>
+        Number.parseFloat(style.getPropertyValue(property)) *
+        Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+      for (const [recipeName, areas] of Object.entries(recipeAreas)) {
+        const recipe = document.createElement("section");
+        recipe.dataset.lyRecipe = recipeName;
+
+        for (const areaName of areas) {
+          const region = document.createElement("article");
+          region.dataset.lyArea = areaName;
+          const label = document.createElement("strong");
+          label.textContent = `${areaName} operational workspace`;
+          const copy = document.createElement("p");
+          copy.textContent =
+            "Ordinary multi-word content must retain a practical reading and interaction width.";
+          region.append(label, copy);
+          recipe.append(region);
+        }
+
+        wrapper.replaceChildren(recipe);
+        const rootStyle = getComputedStyle(wrapper);
+        const areaWidths = Object.fromEntries(
+          areas.map((areaName) => [
+            areaName,
+            recipe.querySelector(`[data-ly-area="${areaName}"]`).getBoundingClientRect().width
+          ])
+        );
+        measurements[recipeName] = {
+          areaWidths,
+          mainFloor: tokenPixels(rootStyle, "--ly-recipe-main-min"),
+          paneFloor: tokenPixels(rootStyle, "--ly-pane-min"),
+          splitFloor: tokenPixels(rootStyle, "--ly-split-min")
+        };
+
+        if (recipeName === "app-shell") {
+          const scroll = document.createElement("div");
+          scroll.className = "ly-scroll";
+          scroll.style.inlineSize = "18rem";
+          scroll.style.blockSize = "8rem";
+          const oversizedContent = document.createElement("div");
+          oversizedContent.style.inlineSize = "64rem";
+          oversizedContent.style.blockSize = "24rem";
+          oversizedContent.textContent =
+            "https://example.test/a-legitimate-wide-technical-resource-that-must-remain-accessible";
+          scroll.append(oversizedContent);
+          recipe.querySelector('[data-ly-area="main"]').append(scroll);
+          scroll.scrollLeft = 80;
+          scroll.scrollTop = 80;
+          scrollMetrics = {
+            horizontalOverflow: scroll.scrollWidth - scroll.clientWidth,
+            verticalOverflow: scroll.scrollHeight - scroll.clientHeight,
+            scrollLeft: scroll.scrollLeft,
+            scrollTop: scroll.scrollTop,
+            overflowX: getComputedStyle(scroll).overflowX,
+            overflowY: getComputedStyle(scroll).overflowY
+          };
+        }
+      }
+
+      return { measurements, scrollMetrics };
+    });
+
+    for (const recipeName of ["app-shell", "dashboard", "docs"]) {
+      const measurement = result.measurements[recipeName];
+      assert(
+        measurement.areaWidths.main + 1 >= measurement.mainFloor,
+        `${ecosystem} ${recipeName} main width ${measurement.areaWidths.main}px did not meet ${measurement.mainFloor}px.`
+      );
+    }
+    for (const areaName of ["primary", "secondary"]) {
+      const measurement = result.measurements["list-detail"];
+      assert(
+        measurement.areaWidths[areaName] + 1 >= measurement.paneFloor,
+        `${ecosystem} List Detail ${areaName} did not meet its pane floor.`
+      );
+    }
+    for (const areaName of ["content", "media"]) {
+      const measurement = result.measurements["split-hero"];
+      assert(
+        measurement.areaWidths[areaName] + 1 >= measurement.splitFloor,
+        `${ecosystem} Split Hero ${areaName} did not meet its split floor.`
+      );
+    }
+    assert(
+      result.scrollMetrics.horizontalOverflow > 0,
+      `${ecosystem} Scroll lacked inline overflow.`
+    );
+    assert(
+      result.scrollMetrics.verticalOverflow > 0,
+      `${ecosystem} Scroll lacked block overflow.`
+    );
+    assert(result.scrollMetrics.scrollLeft > 0, `${ecosystem} Scroll could not move inline.`);
+    assert(
+      result.scrollMetrics.scrollTop > 0,
+      `${ecosystem} Scroll could not move in block flow.`
+    );
+    assert.equal(result.scrollMetrics.overflowX, "auto");
+    assert.equal(result.scrollMetrics.overflowY, "auto");
+  }
+};
+
+/**
+ * Verifies Mosaic track tiers, span collapse, manual ownership, DOM order, and
+ * nearest-container behavior across every threshold-adjacent allocation.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyMosaicComposition = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  await setCustomAllocation(page, "80rem");
+  for (const scenario of [
+    { width: "32rem", tracks: 1, spansActive: false },
+    { width: "43rem", tracks: 6, spansActive: true },
+    { width: "71rem", tracks: 6, spansActive: true },
+    { width: "73rem", tracks: 12, spansActive: true }
+  ]) {
+    const snapshot = await page.evaluate((scopeWidth) => {
+      const wrapper = document.querySelector("#previewWrapper");
+      wrapper.style.setProperty("--ly-wrapper-local-gutter", "0px");
+      wrapper.style.inlineSize = scopeWidth;
+      const mosaic = document.createElement("section");
+      mosaic.className = "ly-mosaic";
+      const definitions = [
+        ["ly-span-2", "two"],
+        ["ly-span-4 ly-row-span-2", "four"],
+        ["ly-span-6 ly-row-span-3", "six"],
+        ["ly-span-full", "full"]
+      ];
+
+      for (const [className, label] of definitions) {
+        const item = document.createElement("article");
+        item.className = className;
+        const action = document.createElement("button");
+        action.type = "button";
+        action.dataset.mosaicFocus = label;
+        action.textContent = label;
+        item.append(action);
+        mosaic.append(item);
+      }
+
+      wrapper.replaceChildren(mosaic);
+      const items = [...mosaic.children];
+      const style = getComputedStyle(mosaic);
+      return {
+        scopeWidth: wrapper.getBoundingClientRect().width,
+        tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+        overflow: mosaic.scrollWidth - mosaic.clientWidth,
+        mosaicWidth: mosaic.getBoundingClientRect().width,
+        fullWidth: items.at(-1).getBoundingClientRect().width,
+        spanTwo: getComputedStyle(items[0]).gridColumn,
+        rowTwo: getComputedStyle(items[1]).gridRow,
+        rowThree: getComputedStyle(items[2]).gridRow,
+        domOrder: items.map((item) => item.querySelector("button").dataset.mosaicFocus),
+        focusOrder: [...mosaic.querySelectorAll("button")].map(
+          (button) => button.dataset.mosaicFocus
+        )
+      };
+    }, scenario.width);
+
+    assert.equal(
+      snapshot.tracks,
+      scenario.tracks,
+      `${scenario.width} Mosaic track count drifted at ${snapshot.scopeWidth}px.`
+    );
+    assert(snapshot.overflow <= 2, `${scenario.width} Mosaic overflowed by ${snapshot.overflow}px.`);
+    assert(
+      Math.abs(snapshot.fullWidth - snapshot.mosaicWidth) <= 2,
+      `${scenario.width} full-span item did not cover the Mosaic.`
+    );
+    assert.deepEqual(snapshot.focusOrder, snapshot.domOrder, "Mosaic focus order drifted from DOM order.");
+    if (scenario.spansActive) {
+      assert.match(snapshot.spanTwo, /span 2/);
+      assert.match(snapshot.rowTwo, /span 2/);
+      assert.match(snapshot.rowThree, /span 3/);
+    } else {
+      assert.match(snapshot.spanTwo, /1 \/ -1/);
+      assert(!/span 2/.test(snapshot.rowTwo));
+      assert(!/span 3/.test(snapshot.rowThree));
+    }
+  }
+
+  await setCustomAllocation(page, "73rem");
+  const ownership = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    const manual = document.createElement("section");
+    manual.className = "ly-mosaic";
+    manual.dataset.lyResponsive = "manual";
+    manual.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
+    manual.append(document.createElement("div"), document.createElement("div"));
+
+    const nestedScope = document.createElement("div");
+    nestedScope.className = "ly-root";
+    nestedScope.style.inlineSize = "32rem";
+    const nested = document.createElement("section");
+    nested.className = "ly-mosaic";
+    nested.append(document.createElement("div"), document.createElement("div"));
+    nestedScope.append(nested);
+    wrapper.replaceChildren(manual, nestedScope);
+
+    return {
+      manualTracks: getComputedStyle(manual).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+      nestedTracks: getComputedStyle(nested).gridTemplateColumns.split(/\s+/).filter(Boolean).length
+    };
+  });
+
+  assert.equal(ownership.manualTracks, 3, "Manual Mosaic must retain application-owned tracks.");
+  assert.equal(ownership.nestedTracks, 1, "Nested Mosaic must use its nearest layout scope.");
+};
+
+/**
+ * Verifies Action Bar alignment, intrinsic wrapping, focus order, safe-area
+ * padding, and shallow-height sticky fallback.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyActionBarComposition = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  await setCustomAllocation(page, "53rem");
+
+  const wide = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    wrapper.style.setProperty("--ly-safe-area-block-end", "12px");
+    const actionBar = document.createElement("div");
+    actionBar.className = "ly-action-bar ly-action-bar--sticky";
+
+    for (const groupName of ["start", "end"]) {
+      const group = document.createElement("div");
+      group.dataset.lyActions = groupName;
+      const action = document.createElement("button");
+      action.type = "button";
+      action.dataset.actionFocus = groupName;
+      action.textContent = groupName === "start" ? "Cancel workflow" : "Publish changes";
+      group.append(action);
+      actionBar.append(group);
+    }
+
+    wrapper.replaceChildren(actionBar);
+    const [start, end] = actionBar.children;
+    const barRect = actionBar.getBoundingClientRect();
+    const startRect = start.getBoundingClientRect();
+    const endRect = end.getBoundingClientRect();
+    const style = getComputedStyle(actionBar);
+    return {
+      sameRow: Math.abs(startRect.top - endRect.top) <= 1,
+      logicalEndGap: Math.abs(barRect.right - endRect.right),
+      paddingBlockEnd: style.paddingBlockEnd,
+      position: style.position,
+      domOrder: [...actionBar.querySelectorAll("button")].map(
+        (button) => button.dataset.actionFocus
+      )
+    };
+  });
+
+  assert(wide.sameRow, "Action groups must share a row when allocation permits.");
+  assert(wide.logicalEndGap <= 1, "End actions must reach logical inline-end.");
+  assert.equal(wide.paddingBlockEnd, "12px", "Action Bar must honor safe-area padding.");
+  assert.equal(wide.position, "sticky", "Regular-height Action Bar must remain sticky.");
+  assert.deepEqual(wide.domOrder, ["start", "end"]);
+
+  const narrow = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    const actionBar = wrapper.querySelector(".ly-action-bar");
+    wrapper.style.inlineSize = "20rem";
+    for (const group of actionBar.children) group.style.inlineSize = "12rem";
+    const [start, end] = actionBar.children;
+    return {
+      wrapped: end.getBoundingClientRect().top > start.getBoundingClientRect().top + 1,
+      domOrder: [...actionBar.querySelectorAll("button")].map(
+        (button) => button.dataset.actionFocus
+      ),
+      orderValues: [...actionBar.children].map((group) => getComputedStyle(group).order)
+    };
+  });
+
+  assert(narrow.wrapped, "Action groups must wrap when their intrinsic widths no longer fit.");
+  assert.deepEqual(narrow.domOrder, ["start", "end"], "Action Bar must retain DOM focus order.");
+  assert.deepEqual(narrow.orderValues, ["0", "0"], "Action Bar must not visually reorder groups.");
+
+  await page.setViewportSize({ width: 800, height: 464 });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+  const shallowPosition = await page.locator("#previewWrapper").evaluate((wrapper) => {
+    const actionBar = document.createElement("div");
+    actionBar.className = "ly-action-bar ly-action-bar--sticky";
+    wrapper.replaceChildren(actionBar);
+    return getComputedStyle(actionBar).position;
+  });
+  assert.equal(shallowPosition, "static", "Shallow-height Action Bar must disable stickiness.");
+};
+
+/**
+ * Verifies that automatic App Shells remove absent side tracks while preserving
+ * personality-owned both-side topology and the manual stacked fallback.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyAreaAwareAppShell = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const combinations = [
+    {
+      label: "both",
+      areas: ["header", "sidebar", "main", "aside", "footer"],
+      tracks: { "53rem": 2, "73rem": null },
+      areaFragment: { "53rem": "sidebar main", "73rem": null }
+    },
+    {
+      label: "sidebar-only",
+      areas: ["header", "sidebar", "main", "footer"],
+      tracks: { "53rem": 2, "73rem": 2 },
+      areaFragment: { "53rem": "sidebar main", "73rem": "sidebar main" }
+    },
+    {
+      label: "aside-only",
+      areas: ["header", "main", "aside", "footer"],
+      tracks: { "53rem": 2, "73rem": 2 },
+      areaFragment: { "53rem": "main aside", "73rem": "main aside" }
+    },
+    {
+      label: "neither",
+      areas: ["header", "main", "footer"],
+      tracks: { "53rem": 1, "73rem": 1 },
+      areaFragment: { "53rem": '"main"', "73rem": '"main"' }
+    }
+  ];
+
+  for (const personality of [
+    "minimal-saas",
+    "retrofuturism",
+    "cyberpunk",
+    "y2k",
+    "retro-glass",
+    "split-screen"
+  ]) {
+    await setControl(page, "personalitySelect", personality);
+    for (const width of ["53rem", "73rem"]) {
+      await setCustomAllocation(page, width);
+      for (const combination of combinations) {
+        const snapshot = await page.evaluate(({ areas }) => {
+          const wrapper = document.querySelector("#previewWrapper");
+          wrapper.style.setProperty("--ly-shell-min", "auto");
+          const recipe = document.createElement("section");
+          recipe.dataset.lyRecipe = "app-shell";
+          for (const areaName of areas) {
+            const region = document.createElement("article");
+            region.dataset.lyArea = areaName;
+            region.textContent = `${areaName} workspace`;
+            recipe.append(region);
+          }
+          wrapper.replaceChildren(recipe);
+          const style = getComputedStyle(recipe);
+          const rootStyle = getComputedStyle(wrapper);
+          const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+          return {
+            areas: style.gridTemplateAreas,
+            tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+            overflow: recipe.scrollWidth - recipe.clientWidth,
+            mainWidth: recipe.querySelector('[data-ly-area="main"]').getBoundingClientRect().width,
+            mainFloor:
+              Number.parseFloat(rootStyle.getPropertyValue("--ly-recipe-main-min")) * rootFontSize
+          };
+        }, combination);
+
+        const expectedTracks = combination.tracks[width];
+        if (expectedTracks !== null) {
+          assert.equal(
+            snapshot.tracks,
+            expectedTracks,
+            `${personality} ${width} ${combination.label} reserved an empty side track.`
+          );
+        }
+        const expectedFragment = combination.areaFragment[width];
+        if (expectedFragment !== null) {
+          assert(
+            snapshot.areas.includes(expectedFragment),
+            `${personality} ${width} ${combination.label} topology drifted: ${snapshot.areas}`
+          );
+        }
+        assert(
+          snapshot.mainWidth + 1 >= snapshot.mainFloor,
+          `${personality} ${width} ${combination.label} main fell below its usable floor.`
+        );
+        assert(
+          snapshot.overflow <= 2,
+          `${personality} ${width} ${combination.label} overflowed by ${snapshot.overflow}px.`
+        );
+      }
+    }
+  }
+
+  await setCustomAllocation(page, "73rem");
+  const manual = await page.evaluate(() => {
+    const wrapper = document.querySelector("#previewWrapper");
+    const recipe = document.createElement("section");
+    recipe.dataset.lyRecipe = "app-shell";
+    recipe.dataset.lyResponsive = "manual";
+    for (const areaName of ["header", "main", "footer"]) {
+      const region = document.createElement("article");
+      region.dataset.lyArea = areaName;
+      recipe.append(region);
+    }
+    wrapper.replaceChildren(recipe);
+    const style = getComputedStyle(recipe);
+    return {
+      areas: style.gridTemplateAreas,
+      tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length
+    };
+  });
+  assert.equal(manual.tracks, 1, "Manual App Shell must retain its stacked track.");
+  assert.match(manual.areas, /"header" "sidebar" "main" "aside" "footer"/);
 };
 
 const installExternalFixtures = async (page) => {
@@ -423,7 +943,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
   await page.waitForFunction(() => /\d+\s*×\s*\d+/.test(document.querySelector("#containerReadout")?.textContent));
 
-  assert.equal(await page.title(), "Layout Style CSS v3 — Intrinsic Responsive Demo");
+  assert.equal(await page.title(), "Layout Style CSS v3.2 — Intrinsic Responsive Demo");
   await page.locator("main").waitFor();
   await page.locator("[data-ly-recipe]").waitFor();
   await page.locator("#topologyReadout").waitFor();
@@ -468,8 +988,51 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   assert.equal(await page.locator("#previewRoot").getAttribute("data-ly-density"), "normal");
 };
 
+/**
+ * Verifies the public 3.2 composition fixtures at threshold-adjacent widths,
+ * including sticky interaction and deliberate two-axis content overflow.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyCompositionFixtures = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+    waitUntil: "domcontentloaded"
+  });
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  assert.equal(await page.locator("#personalitySelect option").count(), 20);
+  const mosaicTracks = {};
+  for (const width of ["32rem", "43rem", "71rem", "73rem"]) {
+    await setCustomAllocation(page, width);
+    mosaicTracks[width] = await page.locator("#mosaicFixture .ly-mosaic").evaluate((mosaic) =>
+      getComputedStyle(mosaic).gridTemplateColumns.split(/\s+/).filter(Boolean).length
+    );
+  }
+  assert.deepEqual(mosaicTracks, { "32rem": 1, "43rem": 6, "71rem": 6, "73rem": 12 });
+
+  const stickyToggle = page.locator("#actionBarStickyToggle");
+  await stickyToggle.click();
+  assert.equal(await stickyToggle.getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator("#fixtureActionBar").getAttribute("class"), "ly-action-bar ly-action-bar--sticky");
+
+  await setCustomAllocation(page, "32rem");
+  const resilience = await page.locator("#resilienceScroll").evaluate((scroll) => ({
+    inlineOverflow: scroll.scrollWidth - scroll.clientWidth,
+    blockOverflow: scroll.scrollHeight - scroll.clientHeight,
+    tabIndex: scroll.tabIndex,
+    documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+  }));
+  assert(resilience.inlineOverflow > 0, "The fixture must expose legitimate inline overflow.");
+  assert(resilience.blockOverflow > 0, "The fixture must expose legitimate block overflow.");
+  assert.equal(resilience.tabIndex, 0);
+  assert(resilience.documentOverflow <= 2, "The content fixture must not overflow the document.");
+};
+
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.1.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.2.0", baseUrl).toString();
   const pairingFixture = {
     schemaVersion: 1,
     personalities: [
@@ -477,13 +1040,15 @@ const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
         id: "minimal-saas",
         label: "Minimal SaaS",
         visualCompatibility: "native",
-        recommendedVisualPresets: ["minimal-saas"]
+        recommendedVisualPresets: ["minimal-saas"],
+        compatibleVisualPresets: ["organic-modern"]
       },
       {
         id: "synthwave",
         label: "Synthwave",
         visualCompatibility: "recommended",
-        recommendedVisualPresets: ["cyberpunk", "retrofuturism"]
+        recommendedVisualPresets: ["cyberpunk", "retrofuturism"],
+        compatibleVisualPresets: []
       }
     ]
   };
@@ -512,6 +1077,13 @@ const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
     ],
     "The personality switcher must render the layout pairing metadata it loads."
   );
+  assert.match(await page.locator("#recommendedUiGuidance").textContent(), /Minimal SaaS/i);
+  assert.match(await page.locator("#compatibleUiGuidance").textContent(), /Organic Modern/i);
+
+  const selectedUi = await page.locator("#uiSelect").inputValue();
+  await setControl(page, "personalitySelect", "synthwave");
+  assert.equal(await page.locator("#uiSelect").inputValue(), selectedUi);
+  assert.match(await page.locator("#recommendedUiGuidance").textContent(), /Cyberpunk.*Retrofuturism/i);
 
   await page.unroute(metadataUrl);
 };
@@ -521,8 +1093,8 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
 
   assert.deepEqual(synthwave?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
   assert.deepEqual(synthwave?.visualVerification?.computedProperties, {
-    cyberpunk: { boxShadow: "0px 0px 18px" },
-    retrofuturism: { boxShadow: "0px 10px 30px" }
+    cyberpunk: { boxShadow: "0px 0px 12px" },
+    retrofuturism: { boxShadow: "0px 2.88px 6.72px" }
   });
   for (const ui of synthwave.recommendedVisualPresets) {
     await page.goto(
@@ -569,7 +1141,7 @@ const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
  * @returns {Promise<void>}
  */
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.1.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.2.0", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
   try {
     const recoveryPage = await recoveryContext.newPage();
@@ -652,9 +1224,7 @@ const verifyAppShellRowGeometry = async (page, baseUrl) => {
       label: `wide ${personality}`,
       width: "73rem",
       personality,
-      rows: ["bento", "neumorphism", "split-screen", "tactile"].includes(personality)
-        ? 4
-        : 3
+      rows: personality === "split-screen" ? 4 : 3
     }))
   ];
 
@@ -1109,6 +1679,143 @@ const verifyPersonalityMatrix = async (page, baseUrl) => {
   }
 };
 
+/**
+ * Verifies the defining rendered signatures for changed and deliberately
+ * preserved 3.2 personalities at a wide allocation.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifyPersonalityGeometry = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem&height=50rem`,
+    { waitUntil: "domcontentloaded" }
+  );
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  const snapshots = {};
+  for (const personality of [
+    "bento",
+    "maximalist",
+    "bauhaus",
+    "tactile",
+    "neumorphism",
+    "brutalism",
+    "y2k",
+    "retro-glass",
+    "retrofuturism",
+    "cyberpunk",
+    "split-screen"
+  ]) {
+    await setControl(page, "personalitySelect", personality);
+    snapshots[personality] = await page.evaluate(() => {
+      const root = document.querySelector("#previewRoot");
+      const recipe = document.querySelector('[data-ly-recipe="app-shell"]');
+      const style = getComputedStyle(recipe);
+      const rootStyle = getComputedStyle(root);
+      const sidebar = recipe.querySelector('[data-ly-area="sidebar"]').getBoundingClientRect();
+      const main = recipe.querySelector('[data-ly-area="main"]').getBoundingClientRect();
+      return {
+        areas: style.gridTemplateAreas,
+        tracks: style.gridTemplateColumns.split(/\s+/).filter(Boolean).map(Number.parseFloat),
+        trackCount: style.gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+        profileGap: rootStyle.getPropertyValue("--ly-profile-gap").trim(),
+        wrapper: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim(),
+        sidebarBeforeMain: sidebar.left < main.left
+      };
+    });
+  }
+
+  assert.equal(snapshots.bento.trackCount, 3, "Bento must remove its old four-track shell.");
+  assert.equal(snapshots.maximalist.profileGap, "0.75rem");
+  assert.equal(snapshots.bauhaus.profileGap, "0.5rem");
+  assert.equal(snapshots.tactile.wrapper, "96rem");
+  assert(snapshots.neumorphism.sidebarBeforeMain, "Neumorphism must not keep a right sidebar.");
+  assert.equal(snapshots.brutalism.wrapper, "100%");
+  assert.equal(snapshots.brutalism.profileGap, "0.25rem");
+  for (const personality of ["y2k", "retro-glass"]) {
+    assert.match(snapshots[personality].areas, /"header header header"/);
+    assert.match(snapshots[personality].areas, /"sidebar main aside"/);
+    assert.match(snapshots[personality].areas, /"footer footer footer"/);
+  }
+  assert.match(snapshots.retrofuturism.areas, /"sidebar header aside"/);
+  assert.match(snapshots.cyberpunk.areas, /"sidebar header header"/);
+  assert.equal(snapshots["split-screen"].trackCount, 2);
+  assert(
+    Math.abs(snapshots["split-screen"].tracks[0] - snapshots["split-screen"].tracks[1]) <= 2,
+    "Split Screen must preserve equal App Shell halves."
+  );
+};
+
+/**
+ * Verifies the defining computed and rendered signatures of the four new 3.2
+ * personality modules before they are added to the public manifest selector.
+ *
+ * @param {import("@playwright/test").Page} page Active browser page.
+ * @param {string} baseUrl Demo server URL.
+ * @returns {Promise<void>}
+ */
+const verifySpecializedPersonalityGeometry = async (page, baseUrl) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(
+    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=split-hero&container=73rem&height=50rem`,
+    { waitUntil: "domcontentloaded" }
+  );
+  await page.waitForFunction(() => document.body.dataset.demoReady === "true");
+
+  /**
+   * Captures resolved layout tokens and split geometry for one staged profile.
+   *
+   * @param {string} personality Canonical layout personality identifier.
+   * @returns {Promise<Record<string, string | number>>} Resolved profile snapshot.
+   */
+  const snapshotProfile = async (personality) =>
+    page.evaluate(async (name) => {
+      const root = document.querySelector("#previewRoot");
+      root.dataset.lyLayout = name;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const rootStyle = getComputedStyle(root);
+      const recipe = document.querySelector('[data-ly-recipe="split-hero"]');
+      const content = recipe.querySelector('[data-ly-area="content"]').getBoundingClientRect();
+      const media = recipe.querySelector('[data-ly-area="media"]').getBoundingClientRect();
+      return {
+        wrapper: rootStyle.getPropertyValue("--ly-personality-wrapper-max").trim(),
+        gridMin: rootStyle.getPropertyValue("--ly-grid-min").trim(),
+        cardGridMin: rootStyle.getPropertyValue("--ly-card-grid-min").trim(),
+        galleryMin: rootStyle.getPropertyValue("--ly-gallery-min").trim(),
+        rail: rootStyle.getPropertyValue("--ly-recipe-rail").trim(),
+        aside: rootStyle.getPropertyValue("--ly-recipe-aside").trim(),
+        primary: rootStyle.getPropertyValue("--ly-split-primary").trim(),
+        secondary: rootStyle.getPropertyValue("--ly-split-secondary").trim(),
+        frameRatio: rootStyle.getPropertyValue("--ly-frame-ratio").trim(),
+        contentWidth: content.width,
+        mediaWidth: media.width
+      };
+    }, personality);
+
+  const blueprint = await snapshotProfile("technical-blueprint");
+  const terminal = await snapshotProfile("data-terminal");
+  const hmi = await snapshotProfile("industrial-hmi");
+  const editorial = await snapshotProfile("editorial");
+
+  assert.equal(blueprint.wrapper, "100%");
+  assert.equal(blueprint.primary, "2.2fr");
+  assert.equal(blueprint.secondary, "0.8fr");
+  assert(blueprint.contentWidth > blueprint.mediaWidth * 2, "Blueprint canvas must dominate its split.");
+  assert.equal(terminal.wrapper, "100%");
+  assert.equal(terminal.gridMin, "10rem");
+  assert.equal(terminal.cardGridMin, "10rem");
+  assert.equal(terminal.galleryMin, "10rem");
+  assert.equal(hmi.rail, "7rem");
+  assert.equal(hmi.aside, "32rem");
+  assert.equal(editorial.frameRatio, "4 / 5");
+  assert.equal(editorial.primary, "1.65fr");
+  assert.equal(editorial.secondary, "0.75fr");
+  assert(editorial.contentWidth > editorial.mediaWidth, "Editorial split must favor its content rail.");
+};
+
 const verifyMinimumWidth = async (page, baseUrl) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto(`${baseUrl}?ecosystem=layout-only&device=custom&container=auto`, {
@@ -1235,7 +1942,7 @@ const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
   const result = await page.evaluate(() => {
     const innerRoot = document.createElement("section");
     innerRoot.className = "ly-root";
-    innerRoot.dataset.lyLayout = "bauhaus";
+    innerRoot.dataset.lyLayout = "bento";
     innerRoot.dataset.lyDensity = "normal";
     innerRoot.style.inlineSize = "50rem";
     innerRoot.style.maxInlineSize = "100%";
@@ -1404,6 +2111,9 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
             primitiveName === "scroll"
               ? `Bounded vertical item ${index + 1}`
               : `Shrink-safe item ${index + 1}`;
+          if (primitiveName === "scroll" && index === 0) {
+            item.style.inlineSize = "120rem";
+          }
           if (primitiveName === "sidebar") {
             item.dataset.lySidebar = index === 0 ? "side" : "content";
           }
@@ -1414,12 +2124,18 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
         }
 
         wrapper.replaceChildren(fixture);
+        if (primitiveName === "scroll") {
+          fixture.scrollLeft = 80;
+          fixture.scrollTop = 80;
+        }
         const style = getComputedStyle(fixture);
         return {
           documentOverflow:
             document.documentElement.scrollWidth - document.documentElement.clientWidth,
           horizontal: fixture.scrollWidth - fixture.clientWidth,
           vertical: fixture.scrollHeight - fixture.clientHeight,
+          scrollLeft: fixture.scrollLeft,
+          scrollTop: fixture.scrollTop,
           overflowX: style.overflowX,
           overflowY: style.overflowY
         };
@@ -1428,16 +2144,17 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
       assert(result.documentOverflow <= 2, `${primitive} overflowed the ${width}px document.`);
       if (primitive === "reel") {
         assert(result.horizontal > 2 && result.overflowX === "auto", "Reel must scroll internally.");
+      } else if (primitive === "scroll") {
+        assert(result.horizontal > 2, "Scroll must retain legitimate inline overflow.");
       } else {
         assert(result.horizontal <= 2, `${primitive} introduced horizontal scrolling.`);
       }
 
       if (primitive === "scroll") {
         assert(result.vertical > 2 && result.overflowY === "auto", "Scroll must be vertically bounded.");
-        assert(
-          !["auto", "scroll", "visible"].includes(result.overflowX),
-          `The bounded vertical scroll primitive exposed inline overflow as ${result.overflowX}.`
-        );
+        assert.equal(result.overflowX, "auto", "Scroll must expose inline overflow.");
+        assert(result.scrollLeft > 0, "Scroll must permit inline movement.");
+        assert(result.scrollTop > 0, "Scroll must permit block movement.");
       } else {
         assert(
           !(result.vertical > 2 && ["auto", "scroll"].includes(result.overflowY)),
@@ -1499,6 +2216,7 @@ try {
   await verifyPersonalityMetadataFailureRecovery(page, server.baseUrl);
   await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
+  await verifyCompositionFixtures(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
   await verifyAppShellRowGeometry(page, server.baseUrl);
   await verifyManualAndNearestContainer(page, server.baseUrl);
@@ -1508,10 +2226,16 @@ try {
   await verifyDefaultFontHeightTiers(server.baseUrl);
   await verifyDeviceMatrix(page, server.baseUrl);
   await verifyPersonalityMatrix(page, server.baseUrl);
+  await verifyPersonalityGeometry(page, server.baseUrl);
+  await verifySpecializedPersonalityGeometry(page, server.baseUrl);
   await verifyMinimumWidth(page, server.baseUrl);
   await verifyWorkspaceMeasure(page, server.baseUrl);
   await verifyBreakoutGeometry(page, server.baseUrl);
   await verifyProfileAndUtilityIsolation(page, server.baseUrl);
+  await verifyContentResilience(page, server.baseUrl);
+  await verifyMosaicComposition(page, server.baseUrl);
+  await verifyActionBarComposition(page, server.baseUrl);
+  await verifyAreaAwareAppShell(page, server.baseUrl);
   await verifyPrimitiveOverflow(page, server.baseUrl);
   await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);

@@ -35,6 +35,12 @@ Put canonical structural hooks in markup:
 
 The `ly-*` hooks control structure. Companion classes and data attributes can paint or animate the same elements without taking over layout.
 
+## Pairing Guidance
+
+`layout-style-css/personalities.json` publishes independent `recommendedVisualPresets` and `compatibleVisualPresets` arrays. The Layout Lab displays both for the selected personality but never changes the user's `data-ui` selection. See [Layout Personality Reference](Layout-Personality-Reference.md) for the complete matrix.
+
+For UI Style Kit 2.4 content, allow long labels and paragraphs to wrap and keep required structural regions shrink-safe. Put legitimately wide tables, code, or technical canvases inside `.ly-scroll`; do not conceal them with generic clipping.
+
 ## v3 Boundary
 
 The deprecated v2 UI-prefixed structural bridge is not shipped. Migrate bridge aliases to canonical Layout hooks; do not copy the bridge into application CSS. See [Migrating To 3.0](Migrating-To-3.0.md).
