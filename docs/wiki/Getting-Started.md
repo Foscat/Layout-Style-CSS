@@ -1,9 +1,9 @@
 # Getting Started
 
-Install `layout-style-css@3.2.0` and import the root bundle:
+Install `layout-style-css@3.2.1` and import the root bundle:
 
 ```bash
-npm install layout-style-css@3.2.0
+npm install layout-style-css@3.2.1
 ```
 
 ```js

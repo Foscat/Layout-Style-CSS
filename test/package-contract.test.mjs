@@ -19,8 +19,9 @@ const ecosystemManifest = JSON.parse(
 );
 // Exact overrides keep the release audit deterministic without promoting transitive tooling to direct dependencies.
 const expectedSecurityOverrides = {
+  colord: "2.10.0",
   "fast-uri": "3.1.7",
-  "js-yaml": "4.3.1",
+  "js-yaml": "4.3.2",
   nanoid: "3.3.18",
   postcss: "8.5.23",
 };
@@ -130,11 +131,11 @@ test("package defaults and homepage expose the intended distribution contract", 
   }
 });
 
-test("release metadata stays synchronized for the 3.2.0 minor", () => {
-  assert.equal(manifest.version, "3.2.0");
-  assert.equal(packageLock.version, "3.2.0");
-  assert.equal(packageLock.packages[""].version, "3.2.0");
-  assert.equal(ecosystemManifest.version, "3.2.0");
+test("release metadata stays synchronized for the 3.2.1 patch", () => {
+  assert.equal(manifest.version, "3.2.1");
+  assert.equal(packageLock.version, "3.2.1");
+  assert.equal(packageLock.packages[""].version, "3.2.1");
+  assert.equal(ecosystemManifest.version, "3.2.1");
   assert.equal(manifest.devDependencies["ui-style-kit-css"], "2.4.0");
   assert.equal(packageLock.packages[""].devDependencies["ui-style-kit-css"], "2.4.0");
   assert.equal(packageLock.packages["node_modules/ui-style-kit-css"].version, "2.4.0");

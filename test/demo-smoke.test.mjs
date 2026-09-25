@@ -9,21 +9,7 @@ const root = normalize(fileURLToPath(new URL("..", import.meta.url))).replace(/[
 const demoHtml = readFileSync(join(root, "demo", "index.html"), "utf8");
 const demoCss = readFileSync(join(root, "demo", "demo.css"), "utf8");
 const demoJs = readFileSync(join(root, "demo", "demo.js"), "utf8");
-const uiManifest = JSON.parse(
-  readFileSync(join(root, "node_modules", "ui-style-kit-css", "manifest.json"), "utf8")
-);
 const personalityMetadata = JSON.parse(readFileSync(join(root, "personalities.json"), "utf8"));
-const companionCssFixtures = Object.freeze({
-  "ui-style-kit.visual.min.css": readFileSync(
-    join(root, "node_modules", "ui-style-kit-css", "dist", "ui-style-kit.visual.min.css")
-  ),
-  "interactive-surface-theme.css": readFileSync(
-    join(root, "node_modules", "ui-style-kit-css", "styles", "interactive-surface-theme.css")
-  ),
-  "state-core.css": readFileSync(
-    join(root, "node_modules", "interactive-surface-css", "state-core.css")
-  )
-});
 
 const browserName =
   process.argv.find((argument) => argument.startsWith("--browser="))?.split("=")[1] ??
@@ -46,15 +32,6 @@ const recipes = [
   "card-grid"
 ];
 const personalities = personalityMetadata.personalities.map(({ id }) => id);
-const expectedUiPresetPairs = [
-  ["minimal-saas", "saas"], ["bento", "bento"], ["maximalist", "max"],
-  ["bauhaus", "bau"], ["tactile", "tactile"], ["neumorphism", "neo"],
-  ["retrofuturism", "retro"], ["brutalism", "brutal"], ["cyberpunk", "cyber"],
-  ["y2k", "y2k"], ["retro-glass", "rg"], ["editorial-luxe", "luxe"],
-  ["organic-modern", "organic"], ["industrial-utility", "utility"],
-  ["technical-blueprint", "blueprint"], ["art-deco", "deco"], ["clay", "clay"],
-  ["data-terminal", "terminal"], ["paper-editorial", "paper"], ["neo-noir", "noir"]
-];
 const wrappers = [
   "default",
   "compact",
@@ -148,7 +125,20 @@ const topologyEdges = [
 
 const assertStaticDemoContract = () => {
   assert.match(demoHtml, /Layout Style CSS v3\.2/);
-  assert.match(demoHtml, /content="3\.2\.0"/);
+  assert.match(demoHtml, /content="3\.2\.1"/);
+  for (const companionPackage of ["ui-style-kit-css", "interactive-surface-css"]) {
+    assert.doesNotMatch(
+      `${demoHtml}\n${demoJs}`,
+      new RegExp(companionPackage),
+      `The standalone demo must not load or configure ${companionPackage}.`
+    );
+  }
+  assert.doesNotMatch(demoHtml, /(?:unpkg\.com|data-ui-kit|data-ecosystem)/);
+  assert.match(
+    demoHtml,
+    /class="demo-bridge-note"[\s\S]*href="https:\/\/sanderson-technology-enterprises\.github\.io\/interface-systems-lab\/"[\s\S]*Interface Systems Lab/,
+    "Bridge guidance must direct people to Interface Systems Lab."
+  );
   assert.match(demoHtml, /id="deviceSelect"/);
   assert.match(demoHtml, /id="containerSelect"/);
   assert.match(demoHtml, /id="heightSelect"/);
@@ -156,17 +146,17 @@ const assertStaticDemoContract = () => {
   assert.match(demoHtml, /id="topologyReadout"/);
   assert.match(
     demoHtml,
-    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.2\.0"/,
+    /href="\.\.\/dist\/layout-style-css\.css\?v=3\.2\.1"/,
     "The demo should cache-bust its v3 layout bundle."
   );
   assert.match(
     demoHtml,
-    /href="\.\/demo\.css\?v=3\.2\.0"/,
+    /href="\.\/demo\.css\?v=3\.2\.1"/,
     "The demo should cache-bust its v3 presentation styles."
   );
   assert.match(
     demoHtml,
-    /src="\.\/demo\.js\?v=3\.2\.0"/,
+    /src="\.\/demo\.js\?v=3\.2\.1"/,
     "The demo should cache-bust its v3 controller."
   );
   assert.doesNotMatch(demoHtml, /integrations\/ui-style-kit\.css/);
@@ -187,23 +177,6 @@ const assertStaticDemoContract = () => {
   assert.match(demoJs, /URLSearchParams/);
   assert.doesNotMatch(demoJs, /RECIPE_CLASSES/);
   assert.doesNotMatch(demoJs, /layoutIntegrationStylesheet/);
-  for (const uiPreset of [
-    "editorial-luxe", "organic-modern", "industrial-utility", "technical-blueprint",
-    "art-deco", "clay", "data-terminal", "paper-editorial", "neo-noir"
-  ]) {
-    assert.match(demoJs, new RegExp(`id: "${uiPreset}"`));
-  }
-  const fallbackPresetSource = demoJs.slice(
-    demoJs.indexOf("presets: Object.freeze(["),
-    demoJs.indexOf("themes: Object.freeze([")
-  );
-  assert.deepEqual(
-    [...fallbackPresetSource.matchAll(/id: "([a-z0-9-]+)"[^}]+prefix: "([a-z0-9-]+)"/g)]
-      .map(([, id, prefix]) => [id, prefix]),
-    expectedUiPresetPairs,
-    "The packaged UI manifest fallback must mirror the approved twenty-preset inventory."
-  );
-
   assert.match(demoCss, /--demo-container-block-size/);
   assert.match(demoCss, /data-demo-height-tier="short"/);
   assert.match(demoCss, /data-demo-height-tier="shallow"/);
@@ -330,31 +303,26 @@ const contrastRatio = (foreground, background) => {
 
 const verifyCodeBlockContrast = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${baseUrl}?ecosystem=all-three&mode=light`, {
-    waitUntil: "domcontentloaded"
-  });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
-  for (const mode of ["light", "dark", "contrast"]) {
-    await setControl(page, "modeSelect", mode);
-    const blocks = await page.locator(".demo-code-card pre").evaluateAll((preElements) =>
-      preElements.map((preElement) => {
-        const codeElement = preElement.querySelector("code");
-        return {
-          background: getComputedStyle(preElement).backgroundColor,
-          color: getComputedStyle(codeElement).color
-        };
-      })
-    );
+  const blocks = await page.locator(".demo-code-card pre").evaluateAll((preElements) =>
+    preElements.map((preElement) => {
+      const codeElement = preElement.querySelector("code");
+      return {
+        background: getComputedStyle(preElement).backgroundColor,
+        color: getComputedStyle(codeElement).color
+      };
+    })
+  );
 
-    assert.equal(blocks.length, 2, `${mode}: expected both copy-ready code blocks.`);
-    for (const [index, block] of blocks.entries()) {
-      const ratio = contrastRatio(parseRgbColor(block.color), parseRgbColor(block.background));
-      assert(
-        ratio >= 4.5,
-        `${mode} code block ${index + 1} has ${ratio.toFixed(2)}:1 contrast; expected at least 4.5:1.`
-      );
-    }
+  assert.equal(blocks.length, 2, "Expected both copy-ready code blocks.");
+  for (const [index, block] of blocks.entries()) {
+    const ratio = contrastRatio(parseRgbColor(block.color), parseRgbColor(block.background));
+    assert(
+      ratio >= 4.5,
+      `Code block ${index + 1} has ${ratio.toFixed(2)}:1 contrast; expected at least 4.5:1.`
+    );
   }
 };
 
@@ -443,7 +411,7 @@ const assertNoHorizontalFailures = (snapshot, label) => {
 
 /**
  * Verifies usable automatic recipe floors and accessible two-axis Scroll
- * behavior in both the standalone and complete ecosystem modes.
+ * behavior in the standalone Layout Style CSS demo.
  *
  * @param {import("@playwright/test").Page} page Active browser page.
  * @param {string} baseUrl Demo server URL.
@@ -452,8 +420,8 @@ const assertNoHorizontalFailures = (snapshot, label) => {
 const verifyContentResilience = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 
-  for (const ecosystem of ["layout-only", "all-three"]) {
-    await page.goto(`${baseUrl}?ecosystem=${ecosystem}&wrapper=full`, {
+  for (const demoMode of ["standalone"]) {
+    await page.goto(`${baseUrl}?wrapper=full`, {
       waitUntil: "domcontentloaded"
     });
     await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -546,35 +514,35 @@ const verifyContentResilience = async (page, baseUrl) => {
       const measurement = result.measurements[recipeName];
       assert(
         measurement.areaWidths.main + 1 >= measurement.mainFloor,
-        `${ecosystem} ${recipeName} main width ${measurement.areaWidths.main}px did not meet ${measurement.mainFloor}px.`
+        `${demoMode} ${recipeName} main width ${measurement.areaWidths.main}px did not meet ${measurement.mainFloor}px.`
       );
     }
     for (const areaName of ["primary", "secondary"]) {
       const measurement = result.measurements["list-detail"];
       assert(
         measurement.areaWidths[areaName] + 1 >= measurement.paneFloor,
-        `${ecosystem} List Detail ${areaName} did not meet its pane floor.`
+        `${demoMode} List Detail ${areaName} did not meet its pane floor.`
       );
     }
     for (const areaName of ["content", "media"]) {
       const measurement = result.measurements["split-hero"];
       assert(
         measurement.areaWidths[areaName] + 1 >= measurement.splitFloor,
-        `${ecosystem} Split Hero ${areaName} did not meet its split floor.`
+        `${demoMode} Split Hero ${areaName} did not meet its split floor.`
       );
     }
     assert(
       result.scrollMetrics.horizontalOverflow > 0,
-      `${ecosystem} Scroll lacked inline overflow.`
+      `${demoMode} Scroll lacked inline overflow.`
     );
     assert(
       result.scrollMetrics.verticalOverflow > 0,
-      `${ecosystem} Scroll lacked block overflow.`
+      `${demoMode} Scroll lacked block overflow.`
     );
-    assert(result.scrollMetrics.scrollLeft > 0, `${ecosystem} Scroll could not move inline.`);
+    assert(result.scrollMetrics.scrollLeft > 0, `${demoMode} Scroll could not move inline.`);
     assert(
       result.scrollMetrics.scrollTop > 0,
-      `${ecosystem} Scroll could not move in block flow.`
+      `${demoMode} Scroll could not move in block flow.`
     );
     assert.equal(result.scrollMetrics.overflowX, "auto");
     assert.equal(result.scrollMetrics.overflowY, "auto");
@@ -591,7 +559,7 @@ const verifyContentResilience = async (page, baseUrl) => {
  */
 const verifyMosaicComposition = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -706,7 +674,7 @@ const verifyMosaicComposition = async (page, baseUrl) => {
  */
 const verifyActionBarComposition = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -793,7 +761,7 @@ const verifyActionBarComposition = async (page, baseUrl) => {
  */
 const verifyAreaAwareAppShell = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -911,25 +879,6 @@ const verifyAreaAwareAppShell = async (page, baseUrl) => {
   assert.match(manual.areas, /"header" "sidebar" "main" "aside" "footer"/);
 };
 
-const installExternalFixtures = async (page) => {
-  await page.route("https://unpkg.com/**", async (route) => {
-    const url = route.request().url();
-    if (url.endsWith("/manifest.json")) {
-      await route.fulfill({
-        body: JSON.stringify(uiManifest),
-        contentType: "application/json",
-        status: 200
-      });
-      return;
-    }
-
-    const [fixtureName, fixtureBody] =
-      Object.entries(companionCssFixtures).find(([name]) => url.endsWith(`/${name}`)) ?? [];
-    assert(fixtureName && fixtureBody, `No local fixture exists for ${url}.`);
-    await route.fulfill({ body: fixtureBody, contentType: "text/css", status: 200 });
-  });
-};
-
 /**
  * Verifies demo identity, required controls, durable query state, and legacy
  * density URL normalization.
@@ -939,7 +888,7 @@ const installExternalFixtures = async (page) => {
  * @returns {Promise<void>}
  */
 const verifyIdentityAndControls = async (page, baseUrl) => {
-  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
   await page.waitForFunction(() => /\d+\s*×\s*\d+/.test(document.querySelector("#containerReadout")?.textContent));
 
@@ -961,6 +910,14 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   ]) {
     assert.equal(await page.locator(`#${id}`).count(), 1, `Missing #${id}.`);
   }
+  for (const removedId of ["uiSelect", "themeSelect", "modeSelect", "ecosystemSelect"]) {
+    assert.equal(await page.locator(`#${removedId}`).count(), 0, `Unexpected #${removedId}.`);
+  }
+  assert.equal(
+    await page.locator(".demo-bridge-note a").getAttribute("href"),
+    "https://sanderson-technology-enterprises.github.io/interface-systems-lab/"
+  );
+  assert.equal(await page.locator("#importsSnippet").textContent(), 'import "layout-style-css";');
 
   assert.deepEqual(
     await page.locator("#containerSelect option").evaluateAll((options) => options.map(({ value }) => value)),
@@ -969,7 +926,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
   );
 
   await page.goto(
-    `${baseUrl}?device=custom&container=49rem&height=31rem&responsive=manual&wrapper=wide&recipe=docs&personality=bauhaus&ecosystem=layout-only`,
+    `${baseUrl}?device=custom&container=49rem&height=31rem&responsive=manual&wrapper=wide&recipe=docs&personality=bauhaus`,
     { waitUntil: "domcontentloaded" }
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -998,7 +955,7 @@ const verifyIdentityAndControls = async (page, baseUrl) => {
  */
 const verifyCompositionFixtures = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1032,7 +989,7 @@ const verifyCompositionFixtures = async (page, baseUrl) => {
 };
 
 const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.2.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.2.1", baseUrl).toString();
   const pairingFixture = {
     schemaVersion: 1,
     personalities: [
@@ -1060,7 +1017,7 @@ const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
       status: 200
     })
   );
-  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
   assert.deepEqual(
@@ -1080,76 +1037,29 @@ const verifyPersonalityOptionsUsePairingMetadata = async (page, baseUrl) => {
   assert.match(await page.locator("#recommendedUiGuidance").textContent(), /Minimal SaaS/i);
   assert.match(await page.locator("#compatibleUiGuidance").textContent(), /Organic Modern/i);
 
-  const selectedUi = await page.locator("#uiSelect").inputValue();
   await setControl(page, "personalitySelect", "synthwave");
-  assert.equal(await page.locator("#uiSelect").inputValue(), selectedUi);
   assert.match(await page.locator("#recommendedUiGuidance").textContent(), /Cyberpunk.*Retrofuturism/i);
 
   await page.unroute(metadataUrl);
 };
 
-const verifySynthwaveVisualRecommendations = async (page, baseUrl) => {
-  const synthwave = personalityMetadata.personalities.find(({ id }) => id === "synthwave");
-
-  assert.deepEqual(synthwave?.recommendedVisualPresets, ["cyberpunk", "retrofuturism"]);
-  assert.deepEqual(synthwave?.visualVerification?.computedProperties, {
-    cyberpunk: { boxShadow: "0px 0px 12px" },
-    retrofuturism: { boxShadow: "0px 2.88px 6.72px" }
-  });
-  for (const ui of synthwave.recommendedVisualPresets) {
-    await page.goto(
-      `${baseUrl}?ecosystem=layout-ui&personality=synthwave&ui=${ui}&theme=cyber-lime&mode=dark`,
-      { waitUntil: "domcontentloaded" }
-    );
-    await page.waitForFunction(() => document.body.dataset.demoReady === "true");
-
-    const rendered = await page.evaluate(() => {
-      /* A dedicated visible article isolates UI paint from the layout demo's own chrome. */
-      const pairingFixture = document.createElement("article");
-      pairingFixture.id = "pairingVisualFixture";
-      pairingFixture.textContent = "Visual pairing verification";
-      pairingFixture.style.position = "fixed";
-      pairingFixture.style.inset = "1rem 1rem auto auto";
-      pairingFixture.style.zIndex = "1000";
-      document.body.append(pairingFixture);
-
-      return {
-        layout: document.querySelector("#previewRoot")?.dataset.lyLayout,
-        ui: document.body.dataset.ui,
-        fixtureVisible: pairingFixture.getClientRects().length > 0,
-        pairingFixtureShadow: getComputedStyle(pairingFixture).boxShadow
-      };
-    });
-
-    assert.equal(rendered.layout, "synthwave", `${ui} must not override the independent layout selector.`);
-    assert.equal(rendered.ui, ui);
-    assert.equal(rendered.fixtureVisible, true, "The visual pairing fixture must participate in rendering.");
-    assert.match(
-      rendered.pairingFixtureShadow,
-      new RegExp(synthwave.visualVerification.computedProperties[ui].boxShadow),
-      `${ui} must retain its distinct rendered article shadow treatment.`
-    );
-  }
-};
-
 /**
  * Verifies that metadata failure falls back to the packaged personality list
- * inside a hermetic browser context with local companion stylesheet fixtures.
+ * inside a hermetic browser context.
  *
  * @param {import("@playwright/test").Page} page Active demo page.
  * @param {string} baseUrl Demo server URL.
  * @returns {Promise<void>}
  */
 const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
-  const metadataUrl = new URL("../personalities.json?v=3.2.0", baseUrl).toString();
+  const metadataUrl = new URL("../personalities.json?v=3.2.1", baseUrl).toString();
   const recoveryContext = await page.context().browser().newContext();
   try {
     const recoveryPage = await recoveryContext.newPage();
-    await installExternalFixtures(recoveryPage);
     await recoveryPage.route(metadataUrl, (route) =>
       route.fulfill({ status: 503, body: "Unavailable" })
     );
-    await recoveryPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+    await recoveryPage.goto(baseUrl, {
       waitUntil: "domcontentloaded"
     });
     await recoveryPage.waitForFunction(
@@ -1175,7 +1085,7 @@ const verifyPersonalityMetadataFailureRecovery = async (page, baseUrl) => {
 
 const verifyTopologyEdges = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1231,7 +1141,7 @@ const verifyAppShellRowGeometry = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   for (const testCase of cases) {
     await page.goto(
-      `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=${testCase.width}&height=50rem&personality=${testCase.personality}`,
+      `${baseUrl}?wrapper=full&recipe=app-shell&container=${testCase.width}&height=50rem&personality=${testCase.personality}`,
       { waitUntil: "domcontentloaded" }
     );
     await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1266,7 +1176,7 @@ const verifyAppShellRowGeometry = async (page, baseUrl) => {
 const verifyManualAndNearestContainer = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(
-    `${baseUrl}?ecosystem=layout-only&device=custom&container=73rem&wrapper=full&recipe=docs&responsive=manual`,
+    `${baseUrl}?device=custom&container=73rem&wrapper=full&recipe=docs&responsive=manual`,
     { waitUntil: "domcontentloaded" }
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1344,7 +1254,7 @@ const verifyManualAndNearestContainer = async (page, baseUrl) => {
 
 const verifyHeightBehavior = async (page, baseUrl) => {
   await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem`,
+    `${baseUrl}?wrapper=full&recipe=app-shell&container=73rem`,
     { waitUntil: "domcontentloaded" }
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1436,8 +1346,7 @@ const verifySectionAndGutterContracts = async (browser, baseUrl) => {
   for (const height of [1080, 704, 480]) {
     const contractPage = await browser.newPage({ viewport: { width: 1440, height } });
     try {
-      await installExternalFixtures(contractPage);
-      await contractPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+      await contractPage.goto(baseUrl, {
         waitUntil: "domcontentloaded"
       });
       await contractPage.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1499,8 +1408,7 @@ const verifyDensityContexts = async (browser, baseUrl) => {
   for (const height of [900, 600, 480]) {
     const densityPage = await browser.newPage({ viewport: { width: 1440, height } });
     try {
-      await installExternalFixtures(densityPage);
-      await densityPage.goto(`${baseUrl}?ecosystem=layout-only`, {
+      await densityPage.goto(baseUrl, {
         waitUntil: "domcontentloaded"
       });
       await densityPage.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1592,7 +1500,6 @@ const verifyDefaultFontHeightTiers = async (baseUrl) => {
   const fontPage = await fontBrowser.newPage();
 
   try {
-    await installExternalFixtures(fontPage);
 
     for (const sample of [
       { height: 550, tier: "shallow" },
@@ -1601,7 +1508,7 @@ const verifyDefaultFontHeightTiers = async (baseUrl) => {
     ]) {
       await fontPage.setViewportSize({ width: 1440, height: sample.height });
       await fontPage.goto(
-        `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem`,
+        `${baseUrl}?wrapper=full&recipe=app-shell&container=73rem`,
         { waitUntil: "domcontentloaded" }
       );
       await fontPage.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1622,7 +1529,7 @@ const verifyDefaultFontHeightTiers = async (baseUrl) => {
 };
 
 const verifyDeviceMatrix = async (page, baseUrl) => {
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1649,7 +1556,7 @@ const verifyDeviceMatrix = async (page, baseUrl) => {
 
 const verifyPersonalityMatrix = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1690,7 +1597,7 @@ const verifyPersonalityMatrix = async (page, baseUrl) => {
 const verifyPersonalityGeometry = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=app-shell&container=73rem&height=50rem`,
+    `${baseUrl}?wrapper=full&recipe=app-shell&container=73rem&height=50rem`,
     { waitUntil: "domcontentloaded" }
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1760,7 +1667,7 @@ const verifyPersonalityGeometry = async (page, baseUrl) => {
 const verifySpecializedPersonalityGeometry = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(
-    `${baseUrl}?ecosystem=layout-only&wrapper=full&recipe=split-hero&container=73rem&height=50rem`,
+    `${baseUrl}?wrapper=full&recipe=split-hero&container=73rem&height=50rem`,
     { waitUntil: "domcontentloaded" }
   );
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1818,7 +1725,7 @@ const verifySpecializedPersonalityGeometry = async (page, baseUrl) => {
 
 const verifyMinimumWidth = async (page, baseUrl) => {
   await page.setViewportSize({ width: 320, height: 800 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&device=custom&container=auto`, {
+  await page.goto(`${baseUrl}?device=custom&container=auto`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -1845,7 +1752,7 @@ const verifyMinimumWidth = async (page, baseUrl) => {
  */
 const verifyWorkspaceMeasure = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
   const widths = await page.evaluate(() => {
@@ -1891,7 +1798,7 @@ const verifyWorkspaceMeasure = async (page, baseUrl) => {
 
 const verifyBreakoutGeometry = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
   const widths = await page.evaluate(() => {
@@ -1934,7 +1841,7 @@ const verifyBreakoutGeometry = async (page, baseUrl) => {
  */
 const verifyProfileAndUtilityIsolation = async (page, baseUrl) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full&personality=minimal-saas`, {
+  await page.goto(`${baseUrl}?wrapper=full&personality=minimal-saas`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -2026,7 +1933,7 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
     "scroll"
   ];
 
-  await page.goto(`${baseUrl}?ecosystem=layout-only&wrapper=full`, {
+  await page.goto(`${baseUrl}?wrapper=full`, {
     waitUntil: "domcontentloaded"
   });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
@@ -2167,7 +2074,7 @@ const verifyPrimitiveOverflow = async (page, baseUrl) => {
 
 const verifyInteractions = async (page, baseUrl) => {
   await page.setViewportSize({ width: 360, height: 800 });
-  await page.goto(`${baseUrl}?ecosystem=layout-only`, { waitUntil: "domcontentloaded" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.demoReady === "true");
 
   const drawerToggle = page.locator("#demoControlsToggle");
@@ -2205,16 +2112,20 @@ const browser = await browserType.launch({ headless: true });
 const page = await browser.newPage();
 const pageErrors = [];
 const consoleErrors = [];
+const companionPackageRequests = [];
 page.on("pageerror", (error) => pageErrors.push(error.message));
 page.on("console", (message) => {
   if (message.type() === "error") consoleErrors.push(message.text());
 });
+page.on("request", (request) => {
+  if (/(?:ui-style-kit-css|interactive-surface-css)/.test(request.url())) {
+    companionPackageRequests.push(request.url());
+  }
+});
 
 try {
-  await installExternalFixtures(page);
   await verifyPersonalityOptionsUsePairingMetadata(page, server.baseUrl);
   await verifyPersonalityMetadataFailureRecovery(page, server.baseUrl);
-  await verifySynthwaveVisualRecommendations(page, server.baseUrl);
   await verifyIdentityAndControls(page, server.baseUrl);
   await verifyCompositionFixtures(page, server.baseUrl);
   await verifyTopologyEdges(page, server.baseUrl);
@@ -2240,6 +2151,11 @@ try {
   await verifyCodeBlockContrast(page, server.baseUrl);
   await verifyInteractions(page, server.baseUrl);
 
+  assert.deepEqual(
+    companionPackageRequests,
+    [],
+    "The standalone demo must not request companion-package assets."
+  );
   assert.deepEqual(pageErrors, [], `Page errors:\n${pageErrors.join("\n")}`);
   assert.deepEqual(consoleErrors, [], `Console errors:\n${consoleErrors.join("\n")}`);
   console.log(

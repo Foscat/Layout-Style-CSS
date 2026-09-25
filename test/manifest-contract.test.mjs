@@ -171,7 +171,7 @@ function runtimeConsumedCustomProperties(css) {
 test("ecosystem manifest publishes the structural API and package export", () => {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.name, packageJson.name);
-  assert.equal(manifest.version, "3.2.0");
+  assert.equal(manifest.version, "3.2.1");
   assert.equal(manifest.version, packageJson.version);
   assert.equal(manifest.schemaPolicy.compatibility, "additive-within-major");
   assert.equal(

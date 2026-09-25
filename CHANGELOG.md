@@ -2,6 +2,16 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [3.2.1] - 2026-09-24
+
+### Security
+
+- Pinned patched `colord` and `js-yaml` transitive tooling releases after the final release audit identified newly disclosed denial-of-service advisories.
+
+### Tests
+
+- Added real-browser fixtures for 320–390px containers, short landscape shells, sticky fallbacks, nested internal scrolling, bounded wide tables, manual and automatic Mosaic coexistence, long-content minimum sizing, and positioned controls that remain outside document overflow.
+
 ## [3.2.0] - 2026-09-08
 
 ### Added
