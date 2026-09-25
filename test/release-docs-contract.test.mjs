@@ -100,7 +100,7 @@ assert(
 );
 
 for (const requiredText of [
-  "3.2.0",
+  "3.2.1",
   "Node.js 20",
   "dependency-free",
   "zero-configuration",
@@ -327,9 +327,11 @@ const minorReleaseHeadings = changelog.match(/^## \[3\.1\.0\] - 2026-08-25$/gm) 
 assert.equal(minorReleaseHeadings.length, 1, "Changelog needs one dated 3.1.0 section.");
 const nextMinorReleaseHeadings = changelog.match(/^## \[3\.2\.0\] - 2026-09-08$/gm) ?? [];
 assert.equal(nextMinorReleaseHeadings.length, 1, "Changelog needs one dated 3.2.0 section.");
+const responsivePatchHeadings = changelog.match(/^## \[3\.2\.1\] - 2026-09-24$/gm) ?? [];
+assert.equal(responsivePatchHeadings.length, 1, "Changelog needs one dated 3.2.1 section.");
 assert(
-  release.includes("layout-style-css@3.2.0") &&
-    release.includes("v3.2.0") &&
+  release.includes("layout-style-css@3.2.1") &&
+    release.includes("v3.2.1") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
 );
@@ -357,6 +359,12 @@ assert(
   "Static contract files must run sequentially to keep generated dist reads deterministic."
 );
 assert.equal(packageJson.scripts["test:demo:quick"], "node test/demo-smoke.test.mjs --quick --browser=chromium");
+assert.equal(
+  packageJson.scripts["test:responsive-regions"],
+  "node test/responsive-region-fixture.test.mjs"
+);
+assert(packageJson.scripts.test.includes("test:responsive-regions"));
+assert(packageJson.scripts["test:full"].includes("test:responsive-regions"));
 for (const browser of ["chromium", "firefox", "webkit"]) {
   assert.equal(
     packageJson.scripts[`test:demo:${browser}`],
@@ -390,7 +398,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
 const demoSmoke = read("test", "demo-smoke.test.mjs");
-assert(publishWorkflow.includes("for example v3.2.0"));
+assert(publishWorkflow.includes("for example v3.2.1"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(
   !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&
