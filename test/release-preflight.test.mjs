@@ -96,7 +96,7 @@ test("stages active candidate version without mutating the reviewed UI fixture",
 
   const staged = releaseContract.stageFixtureForCandidate(sourceRoot, {
     candidatePackage: "layout-style-css",
-    candidateVersion: "3.2.0",
+    candidateVersion: "3.2.1",
   });
   try {
     assert.notEqual(staged.fixtureRoot, sourceRoot);
@@ -111,7 +111,7 @@ test("stages active candidate version without mutating the reviewed UI fixture",
           "utf8",
         ),
       ).supportedCombinations.current["layout-style-css"],
-      "3.2.0",
+      "3.2.1",
     );
     assert.equal(
       JSON.parse(

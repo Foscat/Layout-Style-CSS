@@ -2,7 +2,7 @@
 
 Zero-configuration, dependency-free structural CSS that responds to the width and height a layout actually receives.
 
-`layout-style-css@3.2.0` is the current v3 release candidate. It provides intrinsic wrappers, Mosaic and Action Bar compositions, seven semantic recipes, explicit local density controls, and twenty spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
+`layout-style-css@3.2.1` is the current v3 release candidate. It provides intrinsic wrappers, Mosaic and Action Bar compositions, seven semantic recipes, explicit local density controls, and twenty spatial personalities. Layout owns structure; UI Style Kit owns paint; Interactive Surface owns interaction styling.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ Zero-configuration, dependency-free structural CSS that responds to the width an
 ## Install
 
 ```bash
-npm install layout-style-css@3.2.0
+npm install layout-style-css@3.2.1
 ```
 
 Most applications need one import:
@@ -200,8 +200,8 @@ This order lets UI Style Kit establish paint and theme roles, Interactive Surfac
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.2.0/dist/layout-style-css.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.2.0/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.2.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.2.1/dist/layout-style-css.min.css">
 ```
 
 ## Clean-Break Migration

@@ -6,9 +6,9 @@
     <meta http-equiv="content-language" content="en-US">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="title" content="Layout Style CSS v3.2 Intrinsic Responsive Demo">
-    <meta name="version" content="3.2.0">
+    <meta name="version" content="3.2.1">
     <meta name="description" content="Explore zero-configuration intrinsic wrappers, responsive recipes, vertical adaptations, and twenty layout personalities in Layout Style CSS v3.2.">
-    <meta name="keywords" content="CSS layout library, container queries, layout recipes, UI Style Kit CSS, Interactive Surface CSS, responsive CSS">
+    <meta name="keywords" content="CSS layout library, container queries, layout recipes, structural CSS, responsive CSS">
     <meta name="author" content="Foscat">
     <meta name="creator" content="Foscat">
     <meta name="publisher" content="Foscat">
@@ -57,8 +57,6 @@
     <meta itemprop="description" content="A live workbench for semantic wrappers, automatic and manual recipes, vertical responsiveness, and spatial personalities.">
     <meta itemprop="image" content="https://foscat.github.io/Layout-Style-CSS/assets/social-card.png">
     <link rel="canonical" href="https://foscat.github.io/Layout-Style-CSS/">
-    <link rel="dns-prefetch" href="https://unpkg.com">
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="image_src" href="./assets/social-card.png">
     <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
     <link rel="shortcut icon" href="./assets/favicon.svg">
@@ -68,18 +66,15 @@
     <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
     <title>Layout Style CSS v3.2 — Intrinsic Responsive Demo</title>
 
-    <link id="uiKitStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.4.0/dist/ui-style-kit.visual.min.css" integrity="sha384-j5bPiIe4xk0SXTBv9M7P3dM2qy376BcVtt3E5loMXA03bkJ6YN7dXm3u467NU1+m" crossorigin="anonymous">
-    <link id="uiKitInteractiveThemeStylesheet" rel="stylesheet" href="https://unpkg.com/ui-style-kit-css@2.4.0/styles/interactive-surface-theme.css" integrity="sha384-tgMgbHJ1PJA/xIET75Lt45Ro3fbYEMCJIWjt+HIGhNRaA1Ru+2gH4JH5q/YsRUqs" crossorigin="anonymous">
-    <link id="interactiveSurfaceStylesheet" rel="stylesheet" href="https://unpkg.com/interactive-surface-css@1.5.0/state-core.css" integrity="sha384-v2NwNOzOcQ5ed7W7OHahaKHXspqfD0p8XO+kueqrsyfEcuBO2izsAQb/J/PxF0eX" crossorigin="anonymous">
-    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css?v=3.2.0">
-    <link rel="stylesheet" href="./demo.css?v=3.2.0">
+    <link id="layoutCoreStylesheet" rel="stylesheet" href="../dist/layout-style-css.css?v=3.2.1">
+    <link rel="stylesheet" href="./demo.css?v=3.2.1">
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "layout-style-css",
-        "version": "3.2.0",
+        "version": "3.2.1",
         "description": "A dependency-free CSS layout library for intrinsic wrappers, composition primitives, width and height responsive recipes, and spatial personalities.",
         "programmingLanguage": "CSS",
         "applicationCategory": "DeveloperApplication",
@@ -91,10 +86,10 @@
         "publisher": { "@type": "Organization", "name": "Foscat" }
       }
     </script>
-    <script src="./personality-metadata.js?v=3.2.0"></script>
-    <script type="module" src="./demo.js?v=3.2.0" data-personalities-url="../personalities.json?v=3.2.0"></script>
+    <script src="./personality-metadata.js?v=3.2.1"></script>
+    <script type="module" src="./demo.js?v=3.2.1" data-personalities-url="../personalities.json?v=3.2.1"></script>
   </head>
-  <body class="ly-root" data-ui="minimal-saas" data-theme="arctic-indigo" data-mode="light" data-ly-layout="minimal-saas" data-demo-density="normal" data-ecosystem="all-three">
+  <body class="ly-root" data-ly-layout="minimal-saas" data-demo-density="normal">
     <a class="demo-skip-link" href="#layoutLab">Skip to the layout lab</a>
 
     <header class="demo-topbar">
@@ -103,8 +98,8 @@
         <strong>Intrinsic Responsive Lab</strong>
       </div>
       <div class="demo-topbar-actions">
-        <span id="ecosystemStatus" class="demo-status" role="status">All three libraries</span>
-        <button type="button" id="demoControlsToggle" aria-expanded="false" aria-controls="demoControlsDrawer" data-demo-button data-ui-kit="button button-secondary">
+        <span class="demo-status">Layout Style CSS only</span>
+        <button type="button" id="demoControlsToggle" aria-expanded="false" aria-controls="demoControlsDrawer" data-demo-button>
           Layout controls
         </button>
       </div>
@@ -119,14 +114,14 @@
             <span class="demo-kicker">Workbench</span>
             <h2 id="controlsTitle">Layout controls</h2>
           </div>
-          <button type="button" id="demoControlsClose" data-demo-button data-ui-kit="button button-secondary">
+          <button type="button" id="demoControlsClose" data-demo-button>
             Close
           </button>
         </div>
 
         <form class="demo-controls-grid" autocomplete="off">
           <label for="deviceSelect">Device preset
-            <select id="deviceSelect" data-query-key="device" data-ui-kit="select">
+            <select id="deviceSelect" data-query-key="device">
               <option value="custom">Custom allocation</option>
               <option value="phone-portrait">Phone portrait - 360 x 800</option>
               <option value="phone-landscape">Phone landscape - 800 x 360</option>
@@ -138,7 +133,7 @@
           </label>
 
           <label for="wrapperSelect">Wrapper
-            <select id="wrapperSelect" data-query-key="wrapper" data-ui-kit="select">
+            <select id="wrapperSelect" data-query-key="wrapper">
               <option value="default">Default</option>
               <option value="compact">Compact · 40rem</option>
               <option value="prose">Prose · 68ch</option>
@@ -151,7 +146,7 @@
           </label>
 
           <label for="recipeSelect">Recipe
-            <select id="recipeSelect" data-query-key="recipe" data-ui-kit="select">
+            <select id="recipeSelect" data-query-key="recipe">
               <option value="app-shell">App shell</option>
               <option value="dashboard">Dashboard</option>
               <option value="docs">Documentation</option>
@@ -163,18 +158,22 @@
           </label>
 
           <label for="personalitySelect">Personality
-            <select id="personalitySelect" data-query-key="personality" data-ui-kit="select" aria-busy="true">
+            <select id="personalitySelect" data-query-key="personality" aria-busy="true">
               <option value="" disabled selected>Loading layout personalities</option>
             </select>
           </label>
           <p id="personalityMetadataStatus" class="demo-copy-status" role="status" aria-live="polite"></p>
           <div id="pairingGuidance" class="demo-pairing-guidance" aria-live="polite">
-            <p id="recommendedUiGuidance">Recommended UI: Minimal SaaS</p>
-            <p id="compatibleUiGuidance">Compatible UI: Organic Modern</p>
+            <p id="recommendedUiGuidance">Recommended visual pairing: Minimal SaaS</p>
+            <p id="compatibleUiGuidance">Compatible visual pairing: Organic Modern</p>
+            <p class="demo-bridge-note">
+              Companion-library bridges are demonstrated in
+              <a href="https://sanderson-technology-enterprises.github.io/interface-systems-lab/">Interface Systems Lab</a>.
+            </p>
           </div>
 
           <label for="containerSelect">Preview width
-            <select id="containerSelect" data-query-key="container" data-ui-kit="select">
+            <select id="containerSelect" data-query-key="container">
               <option value="auto">Auto</option>
               <option value="20rem">20rem - minimum supported</option>
               <option value="32rem">32rem - narrow</option>
@@ -193,7 +192,7 @@
           </label>
 
           <label for="heightSelect">Preview height
-            <select id="heightSelect" data-query-key="height" data-ui-kit="select">
+            <select id="heightSelect" data-query-key="height">
               <option value="auto">Auto</option>
               <option value="29rem">29rem - below shallow threshold</option>
               <option value="31rem">31rem - above shallow threshold</option>
@@ -204,66 +203,20 @@
           </label>
 
           <label for="responsiveSelect">Recipe responsiveness
-            <select id="responsiveSelect" data-query-key="responsive" data-ui-kit="select">
+            <select id="responsiveSelect" data-query-key="responsive">
               <option value="auto">Automatic</option>
               <option value="manual">Manual fallback</option>
             </select>
           </label>
 
           <label for="densitySelect">Density
-            <select id="densitySelect" data-query-key="density" data-ui-kit="select">
+            <select id="densitySelect" data-query-key="density">
               <option value="compact">Compact</option>
               <option value="normal">Normal</option>
               <option value="spacious">Spacious</option>
             </select>
           </label>
 
-          <label for="uiSelect">UI style
-            <select id="uiSelect" data-query-key="ui" data-ui-kit="select">
-              <option value="minimal-saas">Minimal SaaS</option>
-              <option value="bento">Bento</option>
-              <option value="maximalist">Maximalist</option>
-              <option value="bauhaus">Bauhaus</option>
-              <option value="tactile">Tactile</option>
-              <option value="neumorphism">Neumorphism</option>
-              <option value="retrofuturism">Retrofuturism</option>
-              <option value="brutalism">Brutalism</option>
-              <option value="cyberpunk">Cyberpunk</option>
-              <option value="y2k">Y2K</option>
-              <option value="retro-glass">Retro Glass</option>
-            </select>
-          </label>
-
-          <label for="themeSelect">Theme
-            <select id="themeSelect" data-query-key="theme" data-ui-kit="select">
-              <option value="midnight-gold">Midnight Gold</option>
-              <option value="ocean-steel">Ocean Steel</option>
-              <option value="forest-moss">Forest Moss</option>
-              <option value="sunset-ember">Sunset Ember</option>
-              <option value="royal-plum">Royal Plum</option>
-              <option value="graphite-cyan">Graphite Cyan</option>
-              <option value="desert-sage">Desert Sage</option>
-              <option value="rose-quartz">Rose Quartz</option>
-              <option value="cyber-lime">Cyber Lime</option>
-              <option value="arctic-indigo">Arctic Indigo</option>
-            </select>
-          </label>
-
-          <label for="modeSelect">Mode
-            <select id="modeSelect" data-query-key="mode" data-ui-kit="select">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="contrast">High contrast</option>
-            </select>
-          </label>
-
-          <label for="ecosystemSelect">Ecosystem
-            <select id="ecosystemSelect" data-query-key="ecosystem" data-ui-kit="select">
-              <option value="layout-only">Layout only</option>
-              <option value="layout-ui">Layout + UI</option>
-              <option value="all-three">All three</option>
-            </select>
-          </label>
         </form>
       </aside>
 
@@ -277,8 +230,8 @@
             </p>
           </div>
           <div class="demo-state-panel">
-            <span>Interactive Surface 1.5.0 state</span>
-            <button type="button" id="stateToggle" class="interactive-surface" aria-pressed="false" data-surface-level="2" data-surface-variant="primary" data-demo-button data-ui-kit="button button-primary">
+            <span>Demo interaction state</span>
+            <button type="button" id="stateToggle" aria-pressed="false" data-demo-button>
               Toggle active state
             </button>
           </div>
@@ -302,23 +255,23 @@
                 <div id="recipePreview" class="demo-recipe" data-ly-recipe="app-shell">
                   <header class="ly-header ly-header--sticky demo-region" data-ly-area="header" data-demo-sequence="header">
                     <strong>Header</strong>
-                    <button type="button" data-demo-button data-demo-focus="header" data-ui-kit="button">Header action</button>
+                    <button type="button" data-demo-button data-demo-focus="header">Header action</button>
                   </header>
                   <nav class="demo-region" data-ly-area="nav" data-demo-sequence="nav" aria-label="Preview navigation">
                     <strong>Navigation</strong>
-                    <button type="button" data-demo-button data-demo-focus="nav" data-ui-kit="button">Navigation action</button>
+                    <button type="button" data-demo-button data-demo-focus="nav">Navigation action</button>
                   </nav>
                   <main class="demo-region" data-ly-area="main" data-demo-sequence="main">
                     <strong>Main</strong>
-                    <button type="button" data-demo-button data-demo-focus="main" data-ui-kit="button">Main action</button>
+                    <button type="button" data-demo-button data-demo-focus="main">Main action</button>
                   </main>
                   <aside class="demo-region" data-ly-area="aside" data-demo-sequence="aside">
                     <strong>Aside</strong>
-                    <button type="button" data-demo-button data-demo-focus="aside" data-ui-kit="button">Aside action</button>
+                    <button type="button" data-demo-button data-demo-focus="aside">Aside action</button>
                   </aside>
                   <footer class="demo-region" data-ly-area="footer" data-demo-sequence="footer">
                     <strong>Footer</strong>
-                    <button type="button" data-demo-button data-demo-focus="footer" data-ui-kit="button">Footer action</button>
+                    <button type="button" data-demo-button data-demo-focus="footer">Footer action</button>
                   </footer>
                 </div>
               </div>
@@ -328,7 +281,7 @@
                     <h3 id="fixtureTitle">Intrinsic workflow fixtures</h3>
                   </div>
 
-                  <article id="mosaicFixture" class="demo-fixture" data-ui-kit="card">
+                  <article id="mosaicFixture" class="demo-fixture">
                     <div class="demo-fixture-heading">
                       <h3>Mosaic</h3>
                       <span>1 / 6 / 12 tracks</span>
@@ -343,23 +296,23 @@
                     </div>
                   </article>
 
-                  <article id="actionBarFixture" class="demo-fixture" data-ui-kit="card">
+                  <article id="actionBarFixture" class="demo-fixture">
                     <div class="demo-fixture-heading">
                       <h3>Action Bar</h3>
-                      <button type="button" id="actionBarStickyToggle" aria-pressed="false" data-demo-button data-ui-kit="button button-secondary">Enable sticky mode</button>
+                      <button type="button" id="actionBarStickyToggle" aria-pressed="false" data-demo-button>Enable sticky mode</button>
                     </div>
                     <div id="fixtureActionBar" class="ly-action-bar">
                       <div data-ly-actions="start">
-                        <button type="button" data-demo-button data-ui-kit="button button-secondary">Save draft</button>
-                        <button type="button" data-demo-button data-ui-kit="button button-secondary">Validate inventory</button>
+                        <button type="button" data-demo-button>Save draft</button>
+                        <button type="button" data-demo-button>Validate inventory</button>
                       </div>
                       <div data-ly-actions="end">
-                        <button type="button" data-demo-button data-ui-kit="button button-primary">Publish work order</button>
+                        <button type="button" data-demo-button>Publish work order</button>
                       </div>
                     </div>
                   </article>
 
-                  <article id="resilienceFixture" class="demo-fixture" data-ui-kit="card">
+                  <article id="resilienceFixture" class="demo-fixture">
                     <div class="demo-fixture-heading">
                       <h3>Content resilience</h3>
                       <span>Legitimate two-axis overflow</span>
@@ -394,18 +347,18 @@
             <p id="copyStatus" class="demo-copy-status" role="status" aria-live="polite">Ready to copy.</p>
           </div>
 
-          <article class="demo-code-card" data-ui-kit="card">
+          <article class="demo-code-card">
             <div class="demo-code-card-heading">
               <h3>Imports</h3>
-              <button type="button" id="copyImports" data-copy-target="importsSnippet" data-demo-button data-ui-kit="button button-secondary">Copy imports</button>
+              <button type="button" id="copyImports" data-copy-target="importsSnippet" data-demo-button>Copy imports</button>
             </div>
             <pre><code id="importsSnippet"></code></pre>
           </article>
 
-          <article class="demo-code-card" data-ui-kit="card">
+          <article class="demo-code-card">
             <div class="demo-code-card-heading">
               <h3>Markup</h3>
-              <button type="button" id="copyMarkup" data-copy-target="markupSnippet" data-demo-button data-ui-kit="button button-secondary">Copy markup</button>
+              <button type="button" id="copyMarkup" data-copy-target="markupSnippet" data-demo-button>Copy markup</button>
             </div>
             <pre><code id="markupSnippet"></code></pre>
           </article>
