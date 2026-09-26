@@ -1,7 +1,7 @@
 {
   "name": "layout-style-css",
   "author": "Kyle Foster",
-  "version": "3.2.1",
+  "version": "3.2.3",
   "description": "Dependency-free structural CSS for responsive wrappers, composition primitives, recipes, utilities, and layout personalities.",
   "type": "module",
   "license": "MIT",

@@ -131,11 +131,11 @@ test("package defaults and homepage expose the intended distribution contract", 
   }
 });
 
-test("release metadata stays synchronized for the 3.2.1 patch", () => {
-  assert.equal(manifest.version, "3.2.1");
-  assert.equal(packageLock.version, "3.2.1");
-  assert.equal(packageLock.packages[""].version, "3.2.1");
-  assert.equal(ecosystemManifest.version, "3.2.1");
+test("release metadata stays synchronized for the 3.2.3 patch", () => {
+  assert.equal(manifest.version, "3.2.3");
+  assert.equal(packageLock.version, "3.2.3");
+  assert.equal(packageLock.packages[""].version, "3.2.3");
+  assert.equal(ecosystemManifest.version, "3.2.3");
   assert.equal(manifest.devDependencies["ui-style-kit-css"], "2.4.0");
   assert.equal(packageLock.packages[""].devDependencies["ui-style-kit-css"], "2.4.0");
   assert.equal(packageLock.packages["node_modules/ui-style-kit-css"].version, "2.4.0");

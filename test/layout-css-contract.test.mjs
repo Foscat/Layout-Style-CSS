@@ -126,7 +126,7 @@ function customPropertyValue(css, property) {
   return value.replace(/\s+/g, " ").trim();
 }
 
-assert.equal(packageJson.version, "3.2.1", "The patch branch must expose version 3.2.1");
+assert.equal(packageJson.version, "3.2.3", "The patch branch must expose version 3.2.3");
 assert.equal(packageJson.engines?.node, ">=20", "Development must retain the Node 20 floor");
 assert.deepEqual(packageJson.exports, expectedExports, "Package exports must match the clean v3 API");
 assert.deepEqual(
