@@ -100,6 +100,21 @@ test("local release verification accepts an explicit reviewed Interactive fixtur
   );
 });
 
+test("detects whether the reviewed UI preflight accepts coordinated companion candidates", () => {
+  assert.equal(
+    releaseContract.supportsCompanionCandidateRoot(
+      "if (arg === '--companion-candidate-root') parsed.push(value);",
+    ),
+    true,
+  );
+  assert.equal(
+    releaseContract.supportsCompanionCandidateRoot(
+      "throw new Error(`Unknown release-preflight option: ${arg}`);",
+    ),
+    false,
+  );
+});
+
 test("stages active candidate version without mutating the reviewed UI fixture", () => {
   assert.ok(
     releaseContract,
@@ -215,6 +230,7 @@ test("staged preflight uses published UI only for the current matrix", () => {
     releaseContract.applyCurrentMatrixUiSpec(
       tempRoot,
       "ui-style-kit-css@2.4.0",
+      { "interactive-surface-css": "1.7.0" },
     );
     const patchedScript = fs.readFileSync(scriptPath, "utf8");
     assert.match(
@@ -235,6 +251,16 @@ test("staged preflight uses published UI only for the current matrix", () => {
       ).supportedCombinations.current["ui-style-kit-css"],
       "2.4.0",
       "The current matrix metadata must describe the reviewed published UI artifact.",
+    );
+    assert.equal(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(tempRoot, "ecosystem-compatibility.json"),
+          "utf8",
+        ),
+      ).supportedCombinations.current["interactive-surface-css"],
+      "1.7.0",
+      "The current matrix metadata must retain the reviewed published Interactive artifact.",
     );
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
