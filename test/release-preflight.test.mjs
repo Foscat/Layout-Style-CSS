@@ -46,6 +46,47 @@ test("pins an immutable reviewed UI release fixture and writes exact checkout ou
   }
 });
 
+test("resolves the published UI package from the reviewed revision instead of descendant worktree metadata", () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "layout-release-fixture-revision-"),
+  );
+  try {
+    assert.equal(spawnSync("git", ["init", tempRoot]).status, 0);
+    assert.equal(
+      spawnSync("git", ["-C", tempRoot, "config", "user.email", "fixture@example.test"]).status,
+      0,
+    );
+    assert.equal(
+      spawnSync("git", ["-C", tempRoot, "config", "user.name", "Fixture Test"]).status,
+      0,
+    );
+    fs.writeFileSync(
+      path.join(tempRoot, "ecosystem-compatibility.json"),
+      `${JSON.stringify({ supportedCombinations: { current: { "ui-style-kit-css": "2.4.0" } } }, null, 2)}\n`,
+    );
+    assert.equal(spawnSync("git", ["-C", tempRoot, "add", "ecosystem-compatibility.json"]).status, 0);
+    assert.equal(spawnSync("git", ["-C", tempRoot, "commit", "-m", "fixture baseline"]).status, 0);
+    const revision = spawnSync("git", ["-C", tempRoot, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+    }).stdout.trim();
+    fs.writeFileSync(
+      path.join(tempRoot, "ecosystem-compatibility.json"),
+      `${JSON.stringify({ supportedCombinations: { current: { "ui-style-kit-css": "2.5.0" } } }, null, 2)}\n`,
+    );
+
+    assert.equal(
+      releaseContract.resolveFixturePackageSpecAtRevision(
+        tempRoot,
+        revision,
+        "ui-style-kit-css",
+      ),
+      "ui-style-kit-css@2.4.0",
+    );
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("local release verification accepts an explicit reviewed Interactive fixture", () => {
   assert.equal(
     releaseContract.resolveInteractiveRoot("C:/workspace/Layout-Style-CSS", {
@@ -96,7 +137,7 @@ test("stages active candidate version without mutating the reviewed UI fixture",
 
   const staged = releaseContract.stageFixtureForCandidate(sourceRoot, {
     candidatePackage: "layout-style-css",
-    candidateVersion: "3.2.1",
+    candidateVersion: "3.2.3",
   });
   try {
     assert.notEqual(staged.fixtureRoot, sourceRoot);
@@ -111,7 +152,7 @@ test("stages active candidate version without mutating the reviewed UI fixture",
           "utf8",
         ),
       ).supportedCombinations.current["layout-style-css"],
-      "3.2.1",
+      "3.2.3",
     );
     assert.equal(
       JSON.parse(
@@ -153,6 +194,22 @@ test("staged preflight uses published UI only for the current matrix", () => {
     "const currentArgs = [checkerPath, '--matrix', 'current', `--${candidateKey}-spec`, tarball];\n" +
       "console.log(run(process.execPath, [checkerPath, '--matrix', 'minimum', '--skip-docs'], { cwd: fixtureRoot }));\n",
   );
+  fs.writeFileSync(
+    path.join(tempRoot, "ecosystem-compatibility.json"),
+    `${JSON.stringify(
+      {
+        supportedCombinations: {
+          current: {
+            "ui-style-kit-css": "2.5.0",
+            "interactive-surface-css": "1.7.1",
+            "layout-style-css": "3.2.3",
+          },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
 
   try {
     releaseContract.applyCurrentMatrixUiSpec(
@@ -168,6 +225,16 @@ test("staged preflight uses published UI only for the current matrix", () => {
       patchedScript,
       /\[checkerPath, '--matrix', 'minimum', '--skip-docs'\]/,
       "The minimum matrix must keep using the fixture's published minimum packages.",
+    );
+    assert.equal(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(tempRoot, "ecosystem-compatibility.json"),
+          "utf8",
+        ),
+      ).supportedCombinations.current["ui-style-kit-css"],
+      "2.4.0",
+      "The current matrix metadata must describe the reviewed published UI artifact.",
     );
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });

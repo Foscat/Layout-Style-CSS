@@ -100,7 +100,7 @@ assert(
 );
 
 for (const requiredText of [
-  "3.2.1",
+  "3.2.3",
   "Node.js 20",
   "dependency-free",
   "zero-configuration",
@@ -329,9 +329,11 @@ const nextMinorReleaseHeadings = changelog.match(/^## \[3\.2\.0\] - 2026-09-08$/
 assert.equal(nextMinorReleaseHeadings.length, 1, "Changelog needs one dated 3.2.0 section.");
 const responsivePatchHeadings = changelog.match(/^## \[3\.2\.1\] - 2026-09-24$/gm) ?? [];
 assert.equal(responsivePatchHeadings.length, 1, "Changelog needs one dated 3.2.1 section.");
+const releaseRecoveryHeadings = changelog.match(/^## \[3\.2\.3\] - 2026-09-26$/gm) ?? [];
+assert.equal(releaseRecoveryHeadings.length, 1, "Changelog needs one dated 3.2.3 section.");
 assert(
-  release.includes("layout-style-css@3.2.1") &&
-    release.includes("v3.2.1") &&
+  release.includes("layout-style-css@3.2.3") &&
+    release.includes("v3.2.3") &&
     release.includes("does not publish"),
   "Release documentation must distinguish verification from publication."
 );
@@ -398,7 +400,7 @@ for (const browser of ["chromium", "firefox", "webkit"]) {
 
 const publishWorkflow = read(".github", "workflows", "npm-publish.yml");
 const demoSmoke = read("test", "demo-smoke.test.mjs");
-assert(publishWorkflow.includes("for example v3.2.1"));
+assert(publishWorkflow.includes("for example v3.2.3"));
 assert(publishWorkflow.includes("playwright install --with-deps chromium firefox webkit"));
 assert(
   !/^\s*run:\s+npm\s+run\s+release:verify\s*$/m.test(publishWorkflow) &&

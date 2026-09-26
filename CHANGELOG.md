@@ -2,6 +2,13 @@
 
 All notable changes to `layout-style-css` are documented here. This project follows semantic versioning.
 
+## [3.2.3] - 2026-09-26
+
+### Fixed
+
+- Recovered the release train with a fresh immutable version after the unpublished `v3.2.1` and `v3.2.2` tags were found to reference mismatched package metadata.
+- Preserved the reviewed 3.2.1 CSS, exports, and compatibility behavior without moving either pre-existing tag.
+
 ## [3.2.1] - 2026-09-24
 
 ### Security

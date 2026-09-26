@@ -9,7 +9,7 @@
 ## Package
 
 ```bash
-npm install layout-style-css@3.2.1
+npm install layout-style-css@3.2.3
 ```
 
 ```js
@@ -36,11 +36,11 @@ Package and bundler defaults (`main`, `style`, and the root export) use the read
 ## CDN
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.2.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://unpkg.com/layout-style-css@3.2.3/dist/layout-style-css.min.css">
 ```
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.2.1/dist/layout-style-css.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layout-style-css@3.2.3/dist/layout-style-css.min.css">
 ```
 
 The CDN paths include `/dist/` because CDN clients address files in the published tarball, while package import maps use the public exports.

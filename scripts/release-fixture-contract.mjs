@@ -220,7 +220,54 @@ export function resolveFixturePackageSpec(fixtureRoot, packageName) {
 }
 
 /**
- * Forces the staged UI checker to consume the published UI package for current checks.
+ * Resolves an exact package spec from the immutable compatibility contract at a
+ * reviewed Git revision instead of reading potentially newer worktree content.
+ *
+ * @param {string} fixtureRoot UI fixture repository path.
+ * @param {string} revision Reviewed 40-character commit SHA.
+ * @param {string} packageName Ecosystem package name.
+ * @returns {string} Exact npm package specifier recorded by the reviewed commit.
+ */
+export function resolveFixturePackageSpecAtRevision(
+  fixtureRoot,
+  revision,
+  packageName,
+) {
+  assert.match(
+    revision,
+    /^[0-9a-f]{40}$/,
+    "Fixture revision must be an immutable 40-character commit SHA.",
+  );
+  assert.ok(packageName, "Package name is required.");
+
+  const result = spawnSync(
+    "git",
+    [
+      "-C",
+      path.resolve(fixtureRoot),
+      "show",
+      `${revision}:ecosystem-compatibility.json`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(
+    result.status,
+    0,
+    `Unable to read the reviewed compatibility contract at ${revision}: ${result.stderr}`,
+  );
+
+  const contract = JSON.parse(result.stdout);
+  const version = contract.supportedCombinations?.current?.[packageName];
+  assert.ok(
+    version,
+    `Reviewed compatibility contract must define a current ${packageName} version.`,
+  );
+  return `${packageName}@${version}`;
+}
+
+/**
+ * Forces the staged UI checker and compatibility matrix to consume the same
+ * published UI package for current checks.
  *
  * This avoids running the UI package's own release tests against the temporary
  * Layout candidate contract while leaving the minimum matrix under the fixture's
@@ -235,6 +282,15 @@ export function applyCurrentMatrixUiSpec(fixtureRoot, uiPackageSpec) {
     uiPackageSpec,
     /^@?[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)?@[0-9A-Za-z_.-]+$/,
     "UI package spec must be an exact npm specifier.",
+  );
+
+  const versionSeparator = uiPackageSpec.lastIndexOf("@");
+  const packageName = uiPackageSpec.slice(0, versionSeparator);
+  const packageVersion = uiPackageSpec.slice(versionSeparator + 1);
+  assert.equal(
+    packageName,
+    "ui-style-kit-css",
+    "Current matrix override must target ui-style-kit-css.",
   );
 
   const preflightPath = path.join(
@@ -255,6 +311,23 @@ export function applyCurrentMatrixUiSpec(fixtureRoot, uiPackageSpec) {
       currentMatrixDeclaration,
       `const currentArgs = [checkerPath, '--matrix', 'current', '--ui-spec', '${uiPackageSpec}', \`--\${candidateKey}-spec\`, tarball];`,
     ),
+  );
+
+  const compatibilityPath = path.join(
+    path.resolve(fixtureRoot),
+    "ecosystem-compatibility.json",
+  );
+  const compatibility = JSON.parse(
+    fs.readFileSync(compatibilityPath, "utf8"),
+  );
+  assert.ok(
+    compatibility.supportedCombinations?.current,
+    "Staged compatibility contract must define a current matrix.",
+  );
+  compatibility.supportedCombinations.current[packageName] = packageVersion;
+  fs.writeFileSync(
+    compatibilityPath,
+    `${JSON.stringify(compatibility, null, 2)}\n`,
   );
 }
 
@@ -311,7 +384,11 @@ async function runCli(args) {
   if (stagedFixture.fixtureRoot !== resolvedFixtureRoot) {
     applyCurrentMatrixUiSpec(
       stagedFixture.fixtureRoot,
-      resolveFixturePackageSpec(stagedFixture.fixtureRoot, "ui-style-kit-css"),
+      resolveFixturePackageSpecAtRevision(
+        resolvedFixtureRoot,
+        descriptor.revision,
+        "ui-style-kit-css",
+      ),
     );
   }
   const siblingInteractive = resolveInteractiveRoot(rootDir);
@@ -333,8 +410,6 @@ async function runCli(args) {
       rootDir,
       "--candidate-package",
       packageName,
-      "--companion-candidate-root",
-      stagedFixture.fixtureRoot,
       "--companion-candidate-root",
       siblingInteractive,
       "--interactive-repo",
